@@ -4,4 +4,4 @@ mkdir build
 cd build
 cmake ..
 make -j `nproc`
-test/test0_test
+test/test1_test
