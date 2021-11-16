@@ -1,5 +1,5 @@
-#ifndef DBTRAIN_MYSQL_H_
-#define DBTRAIN_MYSQL_H_
+#ifndef DBTRAIN_MYSQL_H
+#define DBTRAIN_MYSQL_H
 
 #include <stdint.h>
 #include <stdio.h>

@@ -1,5 +1,5 @@
-#ifndef DBTRAIN_MYSQL_BACKEND_H_
-#define DBTRAIN_MYSQL_BACKEND_H_
+#ifndef DBTRAIN_MYSQL_BACKEND_H
+#define DBTRAIN_MYSQL_BACKEND_H
 
 #include "defines.h"
 

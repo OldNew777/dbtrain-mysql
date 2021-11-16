@@ -1,5 +1,5 @@
-#ifndef DBTRAIN_MYSQL_INT_FIELD_H_
-#define DBTRAIN_MYSQL_INT_FIELD_H_
+#ifndef DBTRAIN_MYSQL_INT_FIELD_H
+#define DBTRAIN_MYSQL_INT_FIELD_H
 
 #include "field.h"
 
@@ -11,20 +11,20 @@ class IntField : public Field {
   IntField(const int& dataInt);
   ~IntField() = default;
 
-  void SetData(const uint8_t* src, Size nSize) override;
-  void GetData(uint8_t* dst, Size nSize) const override;
+  virtual void SetData(const uint8_t* src, Size nSize) override;
+  virtual void GetData(uint8_t* dst, Size nSize) const override;
 
-  FieldType GetType() const override;
-  Size GetSize() const override;
+  virtual FieldType GetType() const override;
+  virtual Size GetSize() const override;
 
   int GetIntData() const;
-  std::string ToString() const override;
+  virtual std::string ToString() const override;
 
-  uint32_t Hash() const override;
+  virtual uint32_t Hash() const override;
 
-  Field* Clone() const override;
+  virtual Field* Clone() const override;
 
-  void Add() override;
+  virtual void Add() override;
 
   bool operator==(const IntField& b) const;
   bool operator<(const IntField& b) const;
@@ -39,4 +39,4 @@ class IntField : public Field {
 
 }  // namespace dbtrain_mysql
 
-#endif  // DBTRAIN_MYSQL_INT_FIELD_H_
+#endif  // DBTRAIN_MYSQL_INT_FIELD_H

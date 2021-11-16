@@ -1,5 +1,5 @@
-#ifndef DBTRAIN_MYSQL_FIELD_H_
-#define DBTRAIN_MYSQL_FIELD_H_
+#ifndef DBTRAIN_MYSQL_FIELD_H
+#define DBTRAIN_MYSQL_FIELD_H
 
 #include "defines.h"
 
@@ -42,4 +42,4 @@ String toString(FieldType iType);
 
 }  // namespace dbtrain_mysql
 
-#endif  // DBTRAIN_MYSQL_FIELD_H_
+#endif  // DBTRAIN_MYSQL_FIELD_H

@@ -1,5 +1,5 @@
-#ifndef THDB_STRING_FIELD_H_
-#define THDB_STRING_FIELD_H_
+#ifndef THDB_STRING_FIELD_H
+#define THDB_STRING_FIELD_H
 
 #include <cstring>
 #include <string>
@@ -16,21 +16,22 @@ class CharField : public Field {
   CharField(Size nSize);
   CharField(const String& charData);
   ~CharField() = default;
+
   void SetSize(Size nSize);
 
-  void SetData(const uint8_t* src, Size nSize) override;
-  void GetData(uint8_t* dst, Size nSize) const override;
+  virtual void SetData(const uint8_t* src, Size nSize) override;
+  virtual void GetData(uint8_t* dst, Size nSize) const override;
 
-  FieldType GetType() const override;
-  Size GetSize() const override;
+  virtual FieldType GetType() const override;
+  virtual Size GetSize() const override;
 
-  String ToString() const override;
+  virtual String ToString() const override;
   String GetString() const;
 
-  uint32_t Hash() const override;
+  virtual uint32_t Hash() const override;
 
-  Field* Clone() const override;
-  void Add() override;
+  virtual Field* Clone() const override;
+  virtual void Add() override;
 
   bool operator==(const CharField& b) const;
   bool operator<(const CharField& b) const;
@@ -46,4 +47,4 @@ class CharField : public Field {
 
 }  // namespace dbtrain_mysql
 
-#endif  // THDB_STRING_FIELD_H_
+#endif  // THDB_STRING_FIELD_H

@@ -1,5 +1,5 @@
-#ifndef DBTRAIN_MYSQL_FLOAT_FIELD_H_
-#define DBTRAIN_MYSQL_FLOAT_FIELD_H_
+#ifndef DBTRAIN_MYSQL_FLOAT_FIELD_H
+#define DBTRAIN_MYSQL_FLOAT_FIELD_H
 
 #include "field.h"
 
@@ -11,19 +11,19 @@ class FloatField : public Field {
   FloatField(const float& floatData);
   ~FloatField() = default;
 
-  void SetData(const uint8_t* src, Size nSize) override;
-  void GetData(uint8_t* dst, Size nSize) const override;
+  virtual void SetData(const uint8_t* src, Size nSize) override;
+  virtual void GetData(uint8_t* dst, Size nSize) const override;
 
-  FieldType GetType() const override;
-  Size GetSize() const override;
+  virtual FieldType GetType() const override;
+  virtual Size GetSize() const override;
 
-  float GetFloatData() const;
-  String ToString() const override;
+  virtual float GetFloatData() const;
+  virtual String ToString() const override;
 
-  uint32_t Hash() const override;
+  virtual uint32_t Hash() const override;
 
-  Field* Clone() const override;
-  void Add() override;
+  virtual Field* Clone() const override;
+  virtual void Add() override;
 
   /**
    * @brief equal function. should consider again between Add() and precisely
@@ -42,4 +42,4 @@ class FloatField : public Field {
 
 }  // namespace dbtrain_mysql
 
-#endif  // DBTRAIN_MYSQL_FLOAT_FIELD_H_
+#endif  // DBTRAIN_MYSQL_FLOAT_FIELD_H
