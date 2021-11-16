@@ -10,10 +10,9 @@ namespace dbtrain_mysql {
 
 class OsException : public Exception {
  public:
-  OsException() : Exception() {}
-  OsException(const String& msg) : Exception(msg) {}
-  virtual const char* what() const throw() {
-    return ("OsException : " + _msg).c_str();
+  OsException() : Exception() { _className = "OsException"; }
+  OsException(const String& msg) : Exception(msg) {
+    _className = "OsException";
   }
 };
 
@@ -22,9 +21,9 @@ class NewPageException : public OsException {
   NewPageException(const String& msg) = delete;
 
  public:
-  NewPageException() { _msg = "Cannot allocate new page"; }
-  virtual const char* what() const throw() {
-    return ("NewPageException : " + _msg).c_str();
+  NewPageException() {
+    _className = "NewPageException";
+    _msg = "Cannot allocate new page";
   }
 };
 
@@ -35,10 +34,8 @@ class PageNotInitException : public OsException {
 
  public:
   PageNotInitException(int pageID) : _nPageID(pageID) {
+    _className = "PageNotInitException";
     _msg = "Page " + std::to_string(pageID) + " does not initialize";
-  }
-  virtual const char* what() const throw() {
-    return ("PageNotInitException : " + _msg).c_str();
   }
 
  private:
@@ -52,10 +49,8 @@ class PageOutOfSizeException : public OsException {
 
  public:
   PageOutOfSizeException(PageOffset nPageOffset) : _nPageOffset(nPageOffset) {
+    _className = "PageOutOfSizeException";
     _msg = "Page out of size : " + std::to_string((int)_nPageOffset);
-  }
-  virtual const char* what() const throw() {
-    return ("PageOutOfSizeException : " + _msg).c_str();
   }
 
  private:

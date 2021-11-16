@@ -9,19 +9,19 @@ namespace dbtrain_mysql {
 
 class PageException : public Exception {
  public:
-  PageException() : Exception() {}
-  PageException(const String& msg) : Exception(msg) {}
-  virtual const char* what() const throw() {
-    return ("PageException : " + _msg).c_str();
+  PageException() : Exception() { _className = "PageException"; }
+  PageException(const String& msg) : Exception(msg) {
+    _className = "PageException";
   }
 };
 
 class RecordPageException : public PageException {
  public:
-  RecordPageException() : PageException() {}
-  RecordPageException(const String& msg) : PageException(msg) {}
-  virtual const char* what() const throw() {
-    return ("RecordPageException : " + _msg).c_str();
+  RecordPageException() : PageException() {
+    _className = "RecordPageException";
+  }
+  RecordPageException(const String& msg) : PageException(msg) {
+    _className = "RecordPageException";
   }
 };
 
@@ -32,10 +32,8 @@ class RecordPageSlotUnusedException : public RecordPageException {
 
  public:
   RecordPageSlotUnusedException(SlotID nSlotID) : _nSlotID(nSlotID) {
+    _className = "RecordPageSlotUnusedException";
     _msg = "Slot " + std::to_string(_nSlotID) + " is unused";
-  }
-  virtual const char* what() const throw() {
-    return ("RecordPageSlotUnusedException : " + _msg).c_str();
   }
 
  protected:
@@ -49,10 +47,8 @@ class RecordPageFullException : public RecordPageException {
 
  public:
   RecordPageFullException(PageID nPageID) : _nPageID(nPageID) {
+    _className = "RecordPageFullException";
     _msg = "RecordPage " + std::to_string(_nPageID) + " is full";
-  }
-  virtual const char* what() const throw() {
-    return ("RecordPageFullException : " + _msg).c_str();
   }
 
  protected:
@@ -61,10 +57,12 @@ class RecordPageFullException : public RecordPageException {
 
 class RecordTypeException : public PageException {
  public:
-  RecordTypeException() { _msg = "Unknown record type"; }
-  RecordTypeException(const String& msg) : PageException(msg) {}
-  virtual const char* what() const throw() {
-    return ("RecordTypeException : " + _msg).c_str();
+  RecordTypeException() {
+    _className = "RecordTypeException";
+    _msg = "Unknown record type";
+  }
+  RecordTypeException(const String& msg) : PageException(msg) {
+    _className = "RecordTypeException";
   }
 };
 

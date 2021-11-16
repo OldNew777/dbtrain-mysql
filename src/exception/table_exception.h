@@ -8,10 +8,9 @@ namespace dbtrain_mysql {
 
 class TableException : public Exception {
  public:
-  TableException() : Exception() {}
-  TableException(const String& msg) : Exception(msg) {}
-  virtual const char* what() const throw() {
-    return ("TableException : " + _msg).c_str();
+  TableException() : Exception() { _className = "TableException"; }
+  TableException(const String& msg) : Exception(msg) {
+    _className = "TableException";
   }
 
  protected:
@@ -20,26 +19,25 @@ class TableException : public Exception {
 
 class TableNotExistException : public TableException {
  public:
-  TableNotExistException() : TableException() {}
+  TableNotExistException() : TableException() {
+    _className = "TableNotExistException";
+  }
   TableNotExistException(const String& table) {
+    _className = "TableNotExistException";
     this->_table = table;
     _msg = "Table '" + table + "' does not exist";
-  }
-  virtual const char* what() const throw() {
-    return ("TableNotExistException : " + _msg).c_str();
   }
 };
 
 class TableExistException : public TableException {
  public:
-  TableExistException() : TableException() {}
+  TableExistException() : TableException() {
+    _className = "TableExistException";
+  }
   TableExistException(const String& table) {
+    _className = "TableExistException";
     this->_table = table;
     _msg = "Table '" + table + "' already exists";
-  }
-
-  virtual const char* what() const throw() {
-    return ("TableExistException : " + _msg).c_str();
   }
 };
 

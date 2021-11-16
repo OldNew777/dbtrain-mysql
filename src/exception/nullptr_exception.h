@@ -8,17 +8,15 @@ namespace dbtrain_mysql {
 
 class NullptrException : public Exception {
  public:
-  NullptrException() : Exception() {}
+  NullptrException() : Exception() { _className = "NullptrException"; }
   NullptrException(const String& function) : _function(function) {
+    _className = "NullptrException";
     _msg = "Nullptr exception in function '" + function + "'";
   }
   NullptrException(const String& function, const String& msg)
       : _function(function) {
+    _className = "NullptrException";
     _msg = "Nullptr exception in function '" + function + "', " + msg;
-  }
-
-  virtual const char* what() const throw() {
-    return ("NullptrException : " + _msg).c_str();
   }
 
  protected:

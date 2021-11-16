@@ -7,10 +7,10 @@
 namespace dbtrain_mysql {
 
 class IndexException : public Exception {
-  IndexException() : Exception() {}
-  IndexException(const String& msg) : Exception(msg) {}
-  virtual const char* what() const throw() {
-    return ("IndexException : " + _msg).c_str();
+ public:
+  IndexException() : Exception() { _className = "IndexException"; }
+  IndexException(const String& msg) : Exception(msg) {
+    _className = "IndexException";
   }
 };
 
