@@ -1,5 +1,5 @@
-./build/bin/thdb_clear
-./build/bin/thdb_init
+# ./build/bin/thdb_clear
+# ./build/bin/thdb_init
 mkdir build
 cd build
 cmake ..
