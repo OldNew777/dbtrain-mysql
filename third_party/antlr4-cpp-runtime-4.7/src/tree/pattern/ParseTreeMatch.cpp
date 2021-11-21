@@ -11,7 +11,7 @@ using namespace antlr4::tree;
 using namespace antlr4::tree::pattern;
 
 ParseTreeMatch::ParseTreeMatch(ParseTree *tree, const ParseTreePattern &pattern,
-                               const std::map<std::string, std::vector<ParseTree *>> &labels,
+                               const std::map<std::string, std::vector<ParseTree *> > &labels,
                                ParseTree *mismatchedNode)
   : _tree(tree), _pattern(pattern), _labels(labels), _mismatchedNode(mismatchedNode) {
   if (tree == nullptr) {
@@ -37,7 +37,7 @@ std::vector<ParseTree *> ParseTreeMatch::getAll(const std::string &label) {
   return iterator->second;
 }
 
-std::map<std::string, std::vector<ParseTree *>>& ParseTreeMatch::getLabels() {
+std::map<std::string, std::vector<ParseTree *> >& ParseTreeMatch::getLabels() {
   return _labels;
 }
 

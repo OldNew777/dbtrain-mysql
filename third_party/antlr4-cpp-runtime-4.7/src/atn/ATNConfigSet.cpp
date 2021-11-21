@@ -105,8 +105,8 @@ BitSet ATNConfigSet::getAlts() {
   return alts;
 }
 
-std::vector<Ref<SemanticContext>> ATNConfigSet::getPredicates() {
-  std::vector<Ref<SemanticContext>> preds;
+std::vector<Ref<SemanticContext> > ATNConfigSet::getPredicates() {
+  std::vector<Ref<SemanticContext> > preds;
   for (auto c : configs) {
     if (c->semanticContext != SemanticContext::NONE) {
       preds.push_back(c->semanticContext);

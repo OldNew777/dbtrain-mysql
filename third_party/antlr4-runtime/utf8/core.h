@@ -66,7 +66,7 @@ namespace internal
     const uint16_t LEAD_SURROGATE_MAX  = 0xdbffu;
     const uint16_t TRAIL_SURROGATE_MIN = 0xdc00u;
     const uint16_t TRAIL_SURROGATE_MAX = 0xdfffu;
-    const uint16_t LEAD_OFFSET         = 0xd7c0u;       // LEAD_SURROGATE_MIN - (0x10000 >> 10)
+    const uint16_t LEAD_OFFSET         = 0xd7c0u;       // LEAD_SURROGATE_MIN - (0x10000 > > 10)
     const uint32_t SURROGATE_OFFSET    = 0xfca02400u;   // 0x10000u - (LEAD_SURROGATE_MIN << 10) - TRAIL_SURROGATE_MIN
 
     // Maximum valid value for a Unicode code point
@@ -85,7 +85,7 @@ namespace internal
     template<typename octet_type>
     inline bool is_trail(octet_type oc)
     {
-        return ((utf8::internal::mask8(oc) >> 6) == 0x2);
+        return ((utf8::internal::mask8(oc) > > 6) == 0x2);
     }
 
     template <typename u16>
@@ -119,11 +119,11 @@ namespace internal
         uint8_t lead = utf8::internal::mask8(*lead_it);
         if (lead < 0x80)
             return 1;
-        else if ((lead >> 5) == 0x6)
+        else if ((lead > > 5) == 0x6)
             return 2;
-        else if ((lead >> 4) == 0xe)
+        else if ((lead > > 4) == 0xe)
             return 3;
-        else if ((lead >> 3) == 0x1e)
+        else if ((lead > > 3) == 0x1e)
             return 4;
         else
             return 0;

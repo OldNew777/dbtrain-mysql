@@ -11,10 +11,10 @@
 
 using namespace antlr4;
 
-ListTokenSource::ListTokenSource(std::vector<std::unique_ptr<Token>> tokens) : ListTokenSource(std::move(tokens), "") {
+ListTokenSource::ListTokenSource(std::vector<std::unique_ptr<Token> > tokens) : ListTokenSource(std::move(tokens), "") {
 }
 
-ListTokenSource::ListTokenSource(std::vector<std::unique_ptr<Token>> tokens_, const std::string &sourceName_)
+ListTokenSource::ListTokenSource(std::vector<std::unique_ptr<Token> > tokens_, const std::string &sourceName_)
   : tokens(std::move(tokens_)), sourceName(sourceName_) {
   InitializeInstanceFields();
   if (tokens.empty()) {
@@ -82,7 +82,7 @@ std::string ListTokenSource::getSourceName() {
   return "List";
 }
 
-Ref<TokenFactory<CommonToken>> ListTokenSource::getTokenFactory() {
+Ref<TokenFactory<CommonToken> > ListTokenSource::getTokenFactory() {
   return _factory;
 }
 

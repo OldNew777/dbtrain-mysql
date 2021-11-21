@@ -21,7 +21,7 @@ namespace pattern {
     const ParseTreePattern &_pattern;
 
     /// This is the backing field for getLabels().
-    std::map<std::string, std::vector<ParseTree *>> _labels;
+    std::map<std::string, std::vector<ParseTree *> > _labels;
 
     /// This is the backing field for getMismatchedNode().
     ParseTree *_mismatchedNode;
@@ -42,7 +42,7 @@ namespace pattern {
     /// <exception cref="IllegalArgumentException"> if {@code pattern} is {@code null} </exception>
     /// <exception cref="IllegalArgumentException"> if {@code labels} is {@code null} </exception>
     ParseTreeMatch(ParseTree *tree, ParseTreePattern const& pattern,
-                   const std::map<std::string, std::vector<ParseTree *>> &labels, ParseTree *mismatchedNode);
+                   const std::map<std::string, std::vector<ParseTree *> > &labels, ParseTree *mismatchedNode);
     ParseTreeMatch(ParseTreeMatch const&) = default;
     virtual ~ParseTreeMatch();
 
@@ -96,7 +96,7 @@ namespace pattern {
     /// </summary>
     /// <returns> A mapping from labels to parse tree nodes. If the parse tree
     /// pattern did not contain any rule or token tags, this map will be empty. </returns>
-    virtual std::map<std::string, std::vector<ParseTree *>>& getLabels();
+    virtual std::map<std::string, std::vector<ParseTree *> >& getLabels();
 
     /// <summary>
     /// Get the node at which we first detected a mismatch.

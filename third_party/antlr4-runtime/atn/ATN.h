@@ -62,7 +62,7 @@ namespace atn {
 
     /// For lexer ATNs, this is an array of {@link LexerAction} objects which may
     /// be referenced by action transitions in the ATN.
-    std::vector<Ref<LexerAction>> lexerActions;
+    std::vector<Ref<LexerAction> > lexerActions;
 
     std::vector<TokensStartState *> modeToStartState;
 

@@ -34,12 +34,12 @@ using namespace antlr4::misc;
 
 inline uint32_t rotl32 (uint32_t x, int8_t r)
 {
-  return (x << r) | (x >> (32 - r));
+  return (x << r) | (x > > (32 - r));
 }
 
 inline uint64_t rotl64 (uint64_t x, int8_t r)
 {
-  return (x << r) | (x >> (64 - r));
+  return (x << r) | (x > > (64 - r));
 }
 
 #define	ROTL32(x,y)	rotl32(x,y)
@@ -94,11 +94,11 @@ size_t MurmurHash::update(size_t hash, size_t value) {
 
 size_t MurmurHash::finish(size_t hash, size_t entryCount) {
   hash ^= entryCount * 4;
-  hash ^= hash >> 16;
+  hash ^= hash > > 16;
   hash *= 0x85EBCA6B;
-  hash ^= hash >> 13;
+  hash ^= hash > > 13;
   hash *= 0xC2B2AE35;
-  hash ^= hash >> 16;
+  hash ^= hash > > 16;
   return hash;
 }
 
@@ -123,11 +123,11 @@ size_t MurmurHash::update(size_t hash, size_t value) {
 
 size_t MurmurHash::finish(size_t hash, size_t entryCount) {
   hash ^= entryCount * 8;
-  hash ^= hash >> 33;
+  hash ^= hash > > 33;
   hash *= 0xff51afd7ed558ccd;
-  hash ^= hash >> 33;
+  hash ^= hash > > 33;
   hash *= 0xc4ceb9fe1a85ec53;
-  hash ^= hash >> 33;
+  hash ^= hash > > 33;
   return hash;
 }
 

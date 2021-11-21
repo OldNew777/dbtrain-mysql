@@ -99,7 +99,7 @@ namespace atn {
   protected:
     static size_t calculateEmptyHashCode();
     static size_t calculateHashCode(Ref<PredictionContext> parent, size_t returnState);
-    static size_t calculateHashCode(const std::vector<Ref<PredictionContext>> &parents,
+    static size_t calculateHashCode(const std::vector<Ref<PredictionContext> > &parents,
                                     const std::vector<size_t> &returnStates);
 
   public:
@@ -210,19 +210,19 @@ namespace atn {
   protected:
     /// Make pass over all M parents; merge any equal() ones.
     /// @returns true if the list has been changed (i.e. duplicates where found).
-    static bool combineCommonParents(std::vector<Ref<PredictionContext>> &parents);
+    static bool combineCommonParents(std::vector<Ref<PredictionContext> > &parents);
 
   public:
     static std::string toDOTString(const Ref<PredictionContext> &context);
 
     static Ref<PredictionContext> getCachedContext(const Ref<PredictionContext> &context,
       PredictionContextCache &contextCache,
-      std::map<Ref<PredictionContext>, Ref<PredictionContext>> &visited);
+      std::map<Ref<PredictionContext>, Ref<PredictionContext> > &visited);
 
     // ter's recursive version of Sam's getAllNodes()
-    static std::vector<Ref<PredictionContext>> getAllContextNodes(const Ref<PredictionContext> &context);
+    static std::vector<Ref<PredictionContext> > getAllContextNodes(const Ref<PredictionContext> &context);
     static void getAllContextNodes_(const Ref<PredictionContext> &context,
-      std::vector<Ref<PredictionContext>> &nodes, std::set<PredictionContext *> &visited);
+      std::vector<Ref<PredictionContext> > &nodes, std::set<PredictionContext *> &visited);
 
     virtual std::string toString() const;
     virtual std::string toString(Recognizer *recog) const;

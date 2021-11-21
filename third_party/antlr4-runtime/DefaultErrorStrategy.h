@@ -459,7 +459,7 @@ namespace antlr4 {
     virtual void consumeUntil(Parser *recognizer, const misc::IntervalSet &set);
 
   private:
-    std::vector<std::unique_ptr<Token>> _errorSymbols; // Temporarily created token.
+    std::vector<std::unique_ptr<Token> > _errorSymbols; // Temporarily created token.
     void InitializeInstanceFields();
   };
 

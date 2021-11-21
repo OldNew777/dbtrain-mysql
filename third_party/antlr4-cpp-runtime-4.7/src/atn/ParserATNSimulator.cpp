@@ -313,7 +313,7 @@ void ParserATNSimulator::predicateDFAState(dfa::DFAState *dfaState, DecisionStat
   // Update DFA so reach becomes accept state with (predicate,alt)
   // pairs if preds found for conflicting alts
   BitSet altsToCollectPredsFrom = getConflictingAltsOrUniqueAlt(dfaState->configs.get());
-  std::vector<Ref<SemanticContext>> altToPred = getPredsForAmbigAlts(altsToCollectPredsFrom, dfaState->configs.get(), nalts);
+  std::vector<Ref<SemanticContext> > altToPred = getPredsForAmbigAlts(altsToCollectPredsFrom, dfaState->configs.get(), nalts);
   if (!altToPred.empty()) {
     dfaState->predicates = getPredicatePredictions(altsToCollectPredsFrom, altToPred);
     dfaState->prediction = ATN::INVALID_ALT_NUMBER; // make sure we use preds
@@ -447,7 +447,7 @@ std::unique_ptr<ATNConfigSet> ParserATNSimulator::computeReachSet(ATNConfigSet *
    * ensure that the alternative matching the longest overall sequence is
    * chosen when multiple such configurations can match the input.
    */
-  std::vector<Ref<ATNConfig>> skippedStopStates;
+  std::vector<Ref<ATNConfig> > skippedStopStates;
 
   // First figure out where we can reach on input t
   for (auto &c : closure_->configs) {
@@ -597,7 +597,7 @@ std::unique_ptr<ATNConfigSet> ParserATNSimulator::computeStartState(ATNState *p,
 }
 
 std::unique_ptr<ATNConfigSet> ParserATNSimulator::applyPrecedenceFilter(ATNConfigSet *configs) {
-  std::map<size_t, Ref<PredictionContext>> statesFromAlt1;
+  std::map<size_t, Ref<PredictionContext> > statesFromAlt1;
   std::unique_ptr<ATNConfigSet> configSet(new ATNConfigSet(configs->fullCtx));
   for (Ref<ATNConfig> &config : configs->configs) {
     // handle alt 1 first
@@ -653,7 +653,7 @@ atn::ATNState* ParserATNSimulator::getReachableTarget(Transition *trans, size_t 
 }
 
 // Note that caller must memory manage the returned value from this function
-std::vector<Ref<SemanticContext>> ParserATNSimulator::getPredsForAmbigAlts(const BitSet &ambigAlts,
+std::vector<Ref<SemanticContext> > ParserATNSimulator::getPredsForAmbigAlts(const BitSet &ambigAlts,
   ATNConfigSet *configs, size_t nalts) {
   // REACH=[1|1|[]|0:0, 1|2|[]|0:1]
   /* altToPred starts as an array of all null contexts. The entry at index i
@@ -667,7 +667,7 @@ std::vector<Ref<SemanticContext>> ParserATNSimulator::getPredsForAmbigAlts(const
    *
    * From this, it is clear that NONE||anything==NONE.
    */
-  std::vector<Ref<SemanticContext>> altToPred(nalts + 1);
+  std::vector<Ref<SemanticContext> > altToPred(nalts + 1);
 
   for (auto &c : configs->configs) {
     if (ambigAlts.test(c->alt)) {
@@ -696,7 +696,7 @@ std::vector<Ref<SemanticContext>> ParserATNSimulator::getPredsForAmbigAlts(const
 }
 
 std::vector<dfa::DFAState::PredPrediction *> ParserATNSimulator::getPredicatePredictions(const antlrcpp::BitSet &ambigAlts,
-  std::vector<Ref<SemanticContext>> altToPred) {
+  std::vector<Ref<SemanticContext> > altToPred) {
   std::vector<dfa::DFAState::PredPrediction*> pairs;
   bool containsPredicate = false;
   for (size_t i = 1; i < altToPred.size(); i++) {

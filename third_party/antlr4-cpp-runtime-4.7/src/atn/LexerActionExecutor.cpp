@@ -15,23 +15,23 @@ using namespace antlr4::atn;
 using namespace antlr4::misc;
 using namespace antlrcpp;
 
-LexerActionExecutor::LexerActionExecutor(const std::vector<Ref<LexerAction>> &lexerActions)
+LexerActionExecutor::LexerActionExecutor(const std::vector<Ref<LexerAction> > &lexerActions)
   : _lexerActions(lexerActions), _hashCode(generateHashCode()) {
 }
 
 Ref<LexerActionExecutor> LexerActionExecutor::append(Ref<LexerActionExecutor> const& lexerActionExecutor,
                                                      Ref<LexerAction> const& lexerAction) {
   if (lexerActionExecutor == nullptr) {
-    return std::make_shared<LexerActionExecutor>(std::vector<Ref<LexerAction>> { lexerAction });
+    return std::make_shared<LexerActionExecutor>(std::vector<Ref<LexerAction> > { lexerAction });
   }
 
-  std::vector<Ref<LexerAction>> lexerActions = lexerActionExecutor->_lexerActions; // Make a copy.
+  std::vector<Ref<LexerAction> > lexerActions = lexerActionExecutor->_lexerActions; // Make a copy.
   lexerActions.push_back(lexerAction);
   return std::make_shared<LexerActionExecutor>(lexerActions);
 }
 
 Ref<LexerActionExecutor> LexerActionExecutor::fixOffsetBeforeMatch(int offset) {
-  std::vector<Ref<LexerAction>> updatedLexerActions;
+  std::vector<Ref<LexerAction> > updatedLexerActions;
   for (size_t i = 0; i < _lexerActions.size(); i++) {
     if (_lexerActions[i]->isPositionDependent() && !is<LexerIndexedCustomAction>(_lexerActions[i])) {
       if (updatedLexerActions.empty()) {
@@ -49,7 +49,7 @@ Ref<LexerActionExecutor> LexerActionExecutor::fixOffsetBeforeMatch(int offset) {
   return std::make_shared<LexerActionExecutor>(updatedLexerActions);
 }
 
-std::vector<Ref<LexerAction>> LexerActionExecutor::getLexerActions() const {
+std::vector<Ref<LexerAction> > LexerActionExecutor::getLexerActions() const {
   return _lexerActions;
 }
 

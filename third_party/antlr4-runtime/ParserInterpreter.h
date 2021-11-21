@@ -131,7 +131,7 @@ namespace antlr4 {
      *  Those values are used to create new recursive rule invocation contexts
      *  associated with left operand of an alt like "expr '*' expr".
      */
-    std::stack<std::pair<ParserRuleContext *, size_t>> _parentContextStack;
+    std::stack<std::pair<ParserRuleContext *, size_t> > _parentContextStack;
 
     /** We need a map from (decision,inputIndex)->forced alt for computing ambiguous
      *  parse trees. For now, we allow exactly one override.

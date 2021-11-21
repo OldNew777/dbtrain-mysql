@@ -186,8 +186,8 @@ ATN ATNDeserializer::deserialize(const std::vector<uint16_t>& input) {
   //
   // STATES
   //
-  std::vector<std::pair<LoopEndState*, size_t>> loopBackStateNumbers;
-  std::vector<std::pair<BlockStartState*, size_t>> endStateNumbers;
+  std::vector<std::pair<LoopEndState*, size_t> > loopBackStateNumbers;
+  std::vector<std::pair<BlockStartState*, size_t> > endStateNumbers;
   size_t nstates = data[p++];
   for (size_t i = 0; i < nstates; i++) {
     size_t stype = data[p++];

@@ -75,7 +75,7 @@ size_t UnbufferedCharStream::fill(size_t n) {
 
 char32_t UnbufferedCharStream::nextChar()  {
   wchar_t result = 0;
-  _input >> result;
+  _input > > result;
   return result;
 }
 

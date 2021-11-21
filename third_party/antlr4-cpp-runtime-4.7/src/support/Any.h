@@ -41,7 +41,7 @@ struct Any
   }
 
   template<typename U>
-  Any(U&& value) : _ptr(new Derived<StorageType<U>>(std::forward<U>(value))) {
+  Any(U&& value) : _ptr(new Derived<StorageType<U> >(std::forward<U>(value))) {
   }
 
   template<class U>
@@ -67,7 +67,7 @@ struct Any
 
   template<class U>
   operator U() {
-    return as<StorageType<U>>();
+    return as<StorageType<U> >();
   }
 
   Any& operator = (const Any& a) {

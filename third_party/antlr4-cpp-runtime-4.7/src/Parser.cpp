@@ -202,7 +202,7 @@ size_t Parser::getNumberOfSyntaxErrors() {
   return _syntaxErrors;
 }
 
-Ref<TokenFactory<CommonToken>> Parser::getTokenFactory() {
+Ref<TokenFactory<CommonToken> > Parser::getTokenFactory() {
   return _input->getTokenSource()->getTokenFactory();
 }
 

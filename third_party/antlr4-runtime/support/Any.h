@@ -41,7 +41,7 @@ struct ANTLR4CPP_PUBLIC Any
   }
 
   template<typename U>
-  Any(U&& value) : _ptr(new Derived<StorageType<U>>(std::forward<U>(value))) {
+  Any(U&& value) : _ptr(new Derived<StorageType<U> >(std::forward<U>(value))) {
   }
 
   template<class U>
@@ -67,22 +67,22 @@ struct ANTLR4CPP_PUBLIC Any
 
   template<class U, typename std::enable_if<std::is_copy_constructible<U>::value || std::is_copy_assignable<U>::value>::value>
   operator U() {
-    return as<StorageType<U>>();
+    return as<StorageType<U> >();
   }
 
   template<class U, typename std::enable_if<(!std::is_copy_constructible<U>::value && !std::is_copy_assignable<U>::value) && (std::is_move_constructible<U>::value || std::is_move_assignable<U>::value)>::value>
   operator U() {
-    return std::move(as<StorageType<U>>());
+    return std::move(as<StorageType<U> >());
   }
 
   template<class U, typename std::enable_if<std::is_copy_constructible<U>::value || std::is_copy_assignable<U>::value>::value>
   operator const U() const {
-    return as<const StorageType<U>>();
+    return as<const StorageType<U> >();
   }
 
   template<class U, typename std::enable_if<!(!std::is_copy_constructible<U>::value && !std::is_copy_assignable<U>::value) && (std::is_move_constructible<U>::value || std::is_move_assignable<U>::value)>::value>
   operator const U() const {
-    return std::move(as<const StorageType<U>>());
+    return std::move(as<const StorageType<U> >());
   }
 
   Any& operator = (const Any& a) {
@@ -153,7 +153,7 @@ private:
   }
 
   template<class U>
-  Derived<StorageType<U>>* getDerived(bool checkCast) const {
+  Derived<StorageType<U> >* getDerived(bool checkCast) const {
     typedef StorageType<U> T;
 
     auto derived = dynamic_cast<Derived<T>*>(_ptr);

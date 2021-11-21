@@ -31,7 +31,7 @@ namespace antlr4 {
 
   protected:
     /// How to create token objects.
-    Ref<TokenFactory<CommonToken>> _factory;
+    Ref<TokenFactory<CommonToken> > _factory;
 
   public:
     /// The goal of all lexer rules/methods is to create a token object.
@@ -100,7 +100,7 @@ namespace antlr4 {
       this->_factory = factory;
     }
 
-    virtual Ref<TokenFactory<CommonToken>> getTokenFactory() override;
+    virtual Ref<TokenFactory<CommonToken> > getTokenFactory() override;
 
     /// Set the char stream and reset the lexer
     virtual void setInputStream(IntStream *input) override;
@@ -162,7 +162,7 @@ namespace antlr4 {
 
     /// Return a list of all Token objects in input char stream.
     /// Forces load of all tokens. Does not include EOF token.
-    virtual std::vector<std::unique_ptr<Token>> getAllTokens();
+    virtual std::vector<std::unique_ptr<Token> > getAllTokens();
 
     virtual void recover(const LexerNoViableAltException &e);
 

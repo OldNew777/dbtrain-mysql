@@ -144,7 +144,7 @@ namespace pattern {
 
     // ---- SUPPORT CODE ----
 
-    virtual std::vector<std::unique_ptr<Token>> tokenize(const std::string &pattern);
+    virtual std::vector<std::unique_ptr<Token> > tokenize(const std::string &pattern);
 
     /// Split "<ID> = <e:expr>;" into 4 chunks for tokenizing by tokenize().
     virtual std::vector<Chunk> split(const std::string &pattern);
@@ -161,7 +161,7 @@ namespace pattern {
     /// a corresponding node in {@code patternTree}, or {@code null} if the match
     /// was successful. The specific node returned depends on the matching
     /// algorithm used by the implementation, and may be overridden. </returns>
-    virtual ParseTree* matchImpl(ParseTree *tree, ParseTree *patternTree, std::map<std::string, std::vector<ParseTree *>> &labels);
+    virtual ParseTree* matchImpl(ParseTree *tree, ParseTree *patternTree, std::map<std::string, std::vector<ParseTree *> > &labels);
 
     /// Is t <expr> subtree?
     virtual RuleTagToken* getRuleTagToken(ParseTree *t);
