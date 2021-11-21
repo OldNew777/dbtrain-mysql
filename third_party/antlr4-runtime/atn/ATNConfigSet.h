@@ -16,7 +16,7 @@ namespace atn {
   class ANTLR4CPP_PUBLIC ATNConfigSet {
   public:
     /// Track the elements as they are added to the set; supports get(i)
-    std::vector<Ref<ATNConfig> > configs;
+    std::vector<Ref<ATNConfig>> configs;
 
     // TODO: these fields make me pretty uncomfortable but nice to pack up info together, saves recomputation
     // TODO: can we track conflicts as they are added to save scanning configs later?
@@ -69,7 +69,7 @@ namespace atn {
      * @since 4.3
      */
     antlrcpp::BitSet getAlts();
-    virtual std::vector<Ref<SemanticContext> > getPredicates();
+    virtual std::vector<Ref<SemanticContext>> getPredicates();
 
     virtual Ref<ATNConfig> get(size_t i) const;
 

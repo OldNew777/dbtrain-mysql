@@ -105,7 +105,7 @@ namespace antlr4 {
      * considered a complete view of the input once {@link #fetchedEOF} is set
      * to {@code true}.
      */
-    std::vector<std::unique_ptr<Token> > _tokens;
+    std::vector<std::unique_ptr<Token>> _tokens;
 
     /**
      * The index into {@link #tokens} of the current token (next token to

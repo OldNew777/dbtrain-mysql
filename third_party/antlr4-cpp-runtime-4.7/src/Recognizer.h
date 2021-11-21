@@ -135,7 +135,7 @@ namespace antlr4 {
 
     virtual void setInputStream(IntStream *input) = 0;
 
-    virtual Ref<TokenFactory<CommonToken> > getTokenFactory() = 0;
+    virtual Ref<TokenFactory<CommonToken>> getTokenFactory() = 0;
 
     template<typename T1>
     void setTokenFactory(TokenFactory<T1> *input);
@@ -147,8 +147,8 @@ namespace antlr4 {
     std::mutex _mutex;
 
   private:
-    static std::map<const dfa::Vocabulary*, std::map<std::string, size_t> > _tokenTypeMapCache;
-    static std::map<std::vector<std::string>, std::map<std::string, size_t> > _ruleIndexMapCache;
+    static std::map<const dfa::Vocabulary*, std::map<std::string, size_t>> _tokenTypeMapCache;
+    static std::map<std::vector<std::string>, std::map<std::string, size_t>> _ruleIndexMapCache;
 
     ProxyErrorListener _proxListener; // Manages a collection of listeners.
 

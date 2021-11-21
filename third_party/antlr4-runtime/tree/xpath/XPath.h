@@ -62,7 +62,7 @@ namespace xpath {
     virtual ~XPath() {}
 
     // TODO: check for invalid token/rule names, bad syntax
-    virtual std::vector<std::unique_ptr<XPathElement> > split(const std::string &path);
+    virtual std::vector<std::unique_ptr<XPathElement>> split(const std::string &path);
 
     static std::vector<ParseTree *> findAll(ParseTree *tree, std::string const& xpath, Parser *parser);
 

@@ -175,7 +175,7 @@ namespace antlr4 {
 
     /// Return a list of all Token objects in input char stream.
     /// Forces load of all tokens. Does not include EOF token.
-    virtual std::vector<std::unique_ptr<Token> > getAllTokens();
+    virtual std::vector<std::unique_ptr<Token>> getAllTokens();
 
     virtual void recover(const LexerNoViableAltException &e);
 

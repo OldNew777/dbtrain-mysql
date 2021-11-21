@@ -20,7 +20,7 @@ namespace antlr4 {
   protected:
     // This list will be emptied token by token as we call nextToken().
     // Token streams can be used to buffer tokens for a while.
-    std::vector<std::unique_ptr<Token> > tokens;
+    std::vector<std::unique_ptr<Token>> tokens;
 
   private:
     /// <summary>
@@ -49,7 +49,7 @@ namespace antlr4 {
     /// <param name="tokens"> The collection of <seealso cref="Token"/> objects to provide as a
     /// <seealso cref="TokenSource"/>. </param>
     /// <exception cref="NullPointerException"> if {@code tokens} is {@code null} </exception>
-    ListTokenSource(std::vector<std::unique_ptr<Token> > tokens);
+    ListTokenSource(std::vector<std::unique_ptr<Token>> tokens);
     ListTokenSource(const ListTokenSource& other) = delete;
 
     ListTokenSource& operator = (const ListTokenSource& other) = delete;
@@ -66,7 +66,7 @@ namespace antlr4 {
     /// been reached).
     /// </param>
     /// <exception cref="NullPointerException"> if {@code tokens} is {@code null} </exception>
-    ListTokenSource(std::vector<std::unique_ptr<Token> > tokens_, const std::string &sourceName_);
+    ListTokenSource(std::vector<std::unique_ptr<Token>> tokens_, const std::string &sourceName_);
 
     virtual size_t getCharPositionInLine() override;
     virtual std::unique_ptr<Token> nextToken() override;

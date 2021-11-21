@@ -548,11 +548,11 @@ namespace atn {
 
     virtual ATNState *getReachableTarget(Transition *trans, size_t ttype);
 
-    virtual std::vector<Ref<SemanticContext> > getPredsForAmbigAlts(const antlrcpp::BitSet &ambigAlts,
+    virtual std::vector<Ref<SemanticContext>> getPredsForAmbigAlts(const antlrcpp::BitSet &ambigAlts,
       ATNConfigSet *configs, size_t nalts);
 
     virtual std::vector<dfa::DFAState::PredPrediction*> getPredicatePredictions(const antlrcpp::BitSet &ambigAlts,
-      std::vector<Ref<SemanticContext> > altToPred);
+      std::vector<Ref<SemanticContext>> altToPred);
 
     /**
      * This method is used to improve the localization of error messages by

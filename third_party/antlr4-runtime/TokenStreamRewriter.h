@@ -215,7 +215,7 @@ namespace antlr4 {
     /// You may have multiple, named streams of rewrite operations.
     /// I'm calling these things "programs."
     /// Maps String (name) -> rewrite (List)
-    std::map<std::string, std::vector<RewriteOperation*> > _programs;
+    std::map<std::string, std::vector<RewriteOperation*>> _programs;
 
     /// <summary>
     /// Map String (program name) -> Integer index </summary>

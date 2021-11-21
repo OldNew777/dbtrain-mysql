@@ -136,7 +136,7 @@ size_t Lexer::popMode() {
 }
 
 
-Ref<TokenFactory<CommonToken> > Lexer::getTokenFactory() {
+Ref<TokenFactory<CommonToken>> Lexer::getTokenFactory() {
   return _factory;
 }
 
@@ -225,8 +225,8 @@ size_t Lexer::getChannel() {
   return channel;
 }
 
-std::vector<std::unique_ptr<Token> > Lexer::getAllTokens() {
-  std::vector<std::unique_ptr<Token> > tokens;
+std::vector<std::unique_ptr<Token>> Lexer::getAllTokens() {
+  std::vector<std::unique_ptr<Token>> tokens;
   std::unique_ptr<Token> t = nextToken();
   while (t->getType() != EOF) {
     tokens.push_back(std::move(t));

@@ -86,14 +86,14 @@ Guid::Guid(const uint16_t *bytes, bool reverse)
   if (reverse) {
     for (size_t i = 8; i > 0; --i)
     {
-      _bytes.push_back(bytes[i - 1] > > 8);
+      _bytes.push_back(bytes[i - 1] >> 8);
       _bytes.push_back(bytes[i - 1] & 0xFF);
     }
   } else {
     for (size_t i = 0; i < 8; ++i)
     {
       _bytes.push_back(bytes[i] & 0xFF);
-      _bytes.push_back(bytes[i] > > 8);
+      _bytes.push_back(bytes[i] >> 8);
     }
   }
 }
@@ -237,15 +237,15 @@ Guid GuidGenerator::newGuid()
 
   const unsigned char bytes[16] =
   {
-    (newId.Data1 > > 24) & 0xFF,
-    (newId.Data1 > > 16) & 0xFF,
-    (newId.Data1 > > 8) & 0xFF,
+    (newId.Data1 >> 24) & 0xFF,
+    (newId.Data1 >> 16) & 0xFF,
+    (newId.Data1 >> 8) & 0xFF,
     (newId.Data1) & 0xff,
 
-    (newId.Data2 > > 8) & 0xFF,
+    (newId.Data2 >> 8) & 0xFF,
     (newId.Data2) & 0xff,
 
-    (newId.Data3 > > 8) & 0xFF,
+    (newId.Data3 >> 8) & 0xFF,
     (newId.Data3) & 0xFF,
 
     newId.Data4[0],
@@ -281,21 +281,21 @@ Guid GuidGenerator::newGuid()
 
   unsigned char bytes[16] =
   {
-    (mostSignificant > > 56) & 0xFF,
-    (mostSignificant > > 48) & 0xFF,
-    (mostSignificant > > 40) & 0xFF,
-    (mostSignificant > > 32) & 0xFF,
-    (mostSignificant > > 24) & 0xFF,
-    (mostSignificant > > 16) & 0xFF,
-    (mostSignificant > > 8) & 0xFF,
+    (mostSignificant >> 56) & 0xFF,
+    (mostSignificant >> 48) & 0xFF,
+    (mostSignificant >> 40) & 0xFF,
+    (mostSignificant >> 32) & 0xFF,
+    (mostSignificant >> 24) & 0xFF,
+    (mostSignificant >> 16) & 0xFF,
+    (mostSignificant >> 8) & 0xFF,
     (mostSignificant) & 0xFF,
-    (leastSignificant > > 56) & 0xFF,
-    (leastSignificant > > 48) & 0xFF,
-    (leastSignificant > > 40) & 0xFF,
-    (leastSignificant > > 32) & 0xFF,
-    (leastSignificant > > 24) & 0xFF,
-    (leastSignificant > > 16) & 0xFF,
-    (leastSignificant > > 8) & 0xFF,
+    (leastSignificant >> 56) & 0xFF,
+    (leastSignificant >> 48) & 0xFF,
+    (leastSignificant >> 40) & 0xFF,
+    (leastSignificant >> 32) & 0xFF,
+    (leastSignificant >> 24) & 0xFF,
+    (leastSignificant >> 16) & 0xFF,
+    (leastSignificant >> 8) & 0xFF,
     (leastSignificant) & 0xFF,
   };
   return bytes;

@@ -1,0 +1,12 @@
+set(TARGET_NAME dbtrain_mysql)
+set(CAMKE_CPP_STANDARD 11)
+
+PROJECT(${TARGET_NAME})
+
+cmake_minimum_required(VERSION 3.12)
+
+add_executable(${TARGET_NAME} ${PROJECT_SOURCE_DIR}/src/main.cc)
+
+include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/third_party/antlr4-cpp-runtime-4.7/src)
+
+add_definitions(-w)

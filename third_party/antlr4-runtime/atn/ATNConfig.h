@@ -140,9 +140,9 @@ namespace std {
     }
   };
 
-  template <> struct hash<std::vector<Ref<ATNConfig> > >
+  template <> struct hash<std::vector<Ref<ATNConfig>> >
   {
-    size_t operator() (const std::vector<Ref<ATNConfig> > &vector) const
+    size_t operator() (const std::vector<Ref<ATNConfig>> &vector) const
     {
       std::size_t seed = 0;
       for (const auto &config : vector) {

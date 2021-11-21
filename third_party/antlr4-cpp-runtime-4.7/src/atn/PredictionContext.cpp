@@ -77,7 +77,7 @@ size_t PredictionContext::calculateHashCode(Ref<PredictionContext> parent, size_
   return hash;
 }
 
-size_t PredictionContext::calculateHashCode(const std::vector<Ref<PredictionContext> > &parents,
+size_t PredictionContext::calculateHashCode(const std::vector<Ref<PredictionContext>> &parents,
                                             const std::vector<size_t> &returnStates) {
   size_t hash = MurmurHash::initialize(INITIAL_HASH);
 
@@ -190,7 +190,7 @@ Ref<PredictionContext> PredictionContext::mergeSingletons(const Ref<SingletonPre
         payloads[0] = b->returnState;
         payloads[1] = a->returnState;
       }
-      std::vector<Ref<PredictionContext> > parents = { singleParent, singleParent };
+      std::vector<Ref<PredictionContext>> parents = { singleParent, singleParent };
       Ref<PredictionContext> a_ = std::make_shared<ArrayPredictionContext>(parents, payloads);
       if (mergeCache != nullptr) {
         mergeCache->put(a, b, a_);
@@ -204,11 +204,11 @@ Ref<PredictionContext> PredictionContext::mergeSingletons(const Ref<SingletonPre
     Ref<PredictionContext> a_;
     if (a->returnState > b->returnState) { // sort by payload
       std::vector<size_t> payloads = { b->returnState, a->returnState };
-      std::vector<Ref<PredictionContext> > parents = { b->parent, a->parent };
+      std::vector<Ref<PredictionContext>> parents = { b->parent, a->parent };
       a_ = std::make_shared<ArrayPredictionContext>(parents, payloads);
     } else {
       std::vector<size_t> payloads = {a->returnState, b->returnState};
-      std::vector<Ref<PredictionContext> > parents = { a->parent, b->parent };
+      std::vector<Ref<PredictionContext>> parents = { a->parent, b->parent };
       a_ = std::make_shared<ArrayPredictionContext>(parents, payloads);
     }
 
@@ -234,13 +234,13 @@ Ref<PredictionContext> PredictionContext::mergeRoot(const Ref<SingletonPredictio
     }
     if (a == EMPTY) { // $ + x = [$,x]
       std::vector<size_t> payloads = { b->returnState, EMPTY_RETURN_STATE };
-      std::vector<Ref<PredictionContext> > parents = { b->parent, nullptr };
+      std::vector<Ref<PredictionContext>> parents = { b->parent, nullptr };
       Ref<PredictionContext> joined = std::make_shared<ArrayPredictionContext>(parents, payloads);
       return joined;
     }
     if (b == EMPTY) { // x + $ = [$,x] ($ is always first if present)
       std::vector<size_t> payloads = { a->returnState, EMPTY_RETURN_STATE };
-      std::vector<Ref<PredictionContext> > parents = { a->parent, nullptr };
+      std::vector<Ref<PredictionContext>> parents = { a->parent, nullptr };
       Ref<PredictionContext> joined = std::make_shared<ArrayPredictionContext>(parents, payloads);
       return joined;
     }
@@ -268,7 +268,7 @@ Ref<PredictionContext> PredictionContext::mergeArrays(const Ref<ArrayPredictionC
   size_t k = 0; // walks target M array
 
   std::vector<size_t> mergedReturnStates(a->returnStates.size() + b->returnStates.size());
-  std::vector<Ref<PredictionContext> > mergedParents(a->returnStates.size() + b->returnStates.size());
+  std::vector<Ref<PredictionContext>> mergedParents(a->returnStates.size() + b->returnStates.size());
 
   // walk and merge to yield mergedParents, mergedReturnStates
   while (i < a->returnStates.size() && j < b->returnStates.size()) {
@@ -361,9 +361,9 @@ Ref<PredictionContext> PredictionContext::mergeArrays(const Ref<ArrayPredictionC
   return M;
 }
 
-bool PredictionContext::combineCommonParents(std::vector<Ref<PredictionContext> > &parents) {
+bool PredictionContext::combineCommonParents(std::vector<Ref<PredictionContext>> &parents) {
 
-  std::set<Ref<PredictionContext> > uniqueParents;
+  std::set<Ref<PredictionContext>> uniqueParents;
   for (size_t p = 0; p < parents.size(); ++p) {
     Ref<PredictionContext> parent = parents[p];
     if (uniqueParents.find(parent) == uniqueParents.end()) { // don't replace
@@ -386,7 +386,7 @@ std::string PredictionContext::toDOTString(const Ref<PredictionContext> &context
   std::stringstream ss;
   ss << "digraph G {\n" << "rankdir=LR;\n";
 
-  std::vector<Ref<PredictionContext> > nodes = getAllContextNodes(context);
+  std::vector<Ref<PredictionContext>> nodes = getAllContextNodes(context);
   std::sort(nodes.begin(), nodes.end(), [](const Ref<PredictionContext> &o1, const Ref<PredictionContext> &o2) {
     return o1->id - o2->id;
   });
@@ -443,7 +443,7 @@ std::string PredictionContext::toDOTString(const Ref<PredictionContext> &context
 
 // The "visited" map is just a temporary structure to control the retrieval process (which is recursive).
 Ref<PredictionContext> PredictionContext::getCachedContext(const Ref<PredictionContext> &context,
-  PredictionContextCache &contextCache, std::map<Ref<PredictionContext>, Ref<PredictionContext> > &visited) {
+  PredictionContextCache &contextCache, std::map<Ref<PredictionContext>, Ref<PredictionContext>> &visited) {
   if (context->isEmpty()) {
     return context;
   }
@@ -463,7 +463,7 @@ Ref<PredictionContext> PredictionContext::getCachedContext(const Ref<PredictionC
 
   bool changed = false;
 
-  std::vector<Ref<PredictionContext> > parents(context->size());
+  std::vector<Ref<PredictionContext>> parents(context->size());
   for (size_t i = 0; i < parents.size(); i++) {
     Ref<PredictionContext> parent = getCachedContext(context->getParent(i), contextCache, visited);
     if (changed || parent != context->getParent(i)) {
@@ -504,15 +504,15 @@ Ref<PredictionContext> PredictionContext::getCachedContext(const Ref<PredictionC
   return updated;
 }
 
-std::vector<Ref<PredictionContext> > PredictionContext::getAllContextNodes(const Ref<PredictionContext> &context) {
-  std::vector<Ref<PredictionContext> > nodes;
+std::vector<Ref<PredictionContext>> PredictionContext::getAllContextNodes(const Ref<PredictionContext> &context) {
+  std::vector<Ref<PredictionContext>> nodes;
   std::set<PredictionContext *> visited;
   getAllContextNodes_(context, nodes, visited);
   return nodes;
 }
 
 
-void PredictionContext::getAllContextNodes_(const Ref<PredictionContext> &context, std::vector<Ref<PredictionContext> > &nodes,
+void PredictionContext::getAllContextNodes_(const Ref<PredictionContext> &context, std::vector<Ref<PredictionContext>> &nodes,
   std::set<PredictionContext *> &visited) {
 
   if (visited.find(context.get()) != visited.end()) {
@@ -562,7 +562,7 @@ std::vector<std::string> PredictionContext::toStrings(Recognizer *recognizer, co
         }
 
         size_t mask = (1 << bits) - 1;
-        index = (perm > > offset) & mask;
+        index = (perm >> offset) & mask;
         last &= index >= p->size() - 1;
         if (index >= p->size()) {
           outerContinue = true;

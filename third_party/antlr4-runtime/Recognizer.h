@@ -157,8 +157,8 @@ namespace antlr4 {
     std::mutex _mutex;
 
   private:
-    static std::map<const dfa::Vocabulary*, std::map<std::string, size_t> > _tokenTypeMapCache;
-    static std::map<std::vector<std::string>, std::map<std::string, size_t> > _ruleIndexMapCache;
+    static std::map<const dfa::Vocabulary*, std::map<std::string, size_t>> _tokenTypeMapCache;
+    static std::map<std::vector<std::string>, std::map<std::string, size_t>> _ruleIndexMapCache;
 
     ProxyErrorListener _proxListener; // Manages a collection of listeners.
 

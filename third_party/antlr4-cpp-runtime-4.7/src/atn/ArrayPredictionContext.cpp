@@ -14,7 +14,7 @@ ArrayPredictionContext::ArrayPredictionContext(Ref<SingletonPredictionContext> c
   : ArrayPredictionContext({ a->parent }, { a->returnState }) {
 }
 
-ArrayPredictionContext::ArrayPredictionContext(std::vector<Ref<PredictionContext> > const& parents_,
+ArrayPredictionContext::ArrayPredictionContext(std::vector<Ref<PredictionContext>> const& parents_,
                                                std::vector<size_t> const& returnStates)
   : PredictionContext(calculateHashCode(parents_, returnStates)), parents(parents_), returnStates(returnStates) {
     assert(parents.size() > 0);

@@ -57,7 +57,7 @@ namespace antlr4 {
     /// we start filling at index 0 again.
     /// </summary>
 
-    std::vector<std::unique_ptr<Token> > _tokens;
+    std::vector<std::unique_ptr<Token>> _tokens;
 
     /// <summary>
     /// 0..n-1 index into <seealso cref="#tokens tokens"/> of next token.

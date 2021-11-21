@@ -58,7 +58,7 @@ bool ParseTreePatternMatcher::matches(ParseTree *tree, const std::string &patter
 }
 
 bool ParseTreePatternMatcher::matches(ParseTree *tree, const ParseTreePattern &pattern) {
-  std::map<std::string, std::vector<ParseTree *> > labels;
+  std::map<std::string, std::vector<ParseTree *>> labels;
   ParseTree *mismatchedNode = matchImpl(tree, pattern.getPatternTree(), labels);
   return mismatchedNode == nullptr;
 }
@@ -69,7 +69,7 @@ ParseTreeMatch ParseTreePatternMatcher::match(ParseTree *tree, const std::string
 }
 
 ParseTreeMatch ParseTreePatternMatcher::match(ParseTree *tree, const ParseTreePattern &pattern) {
-  std::map<std::string, std::vector<ParseTree *> > labels;
+  std::map<std::string, std::vector<ParseTree *>> labels;
   tree::ParseTree *mismatchedNode = matchImpl(tree, pattern.getPatternTree(), labels);
   return ParseTreeMatch(tree, pattern, labels, mismatchedNode);
 }
@@ -121,7 +121,7 @@ Parser* ParseTreePatternMatcher::getParser() {
 }
 
 ParseTree* ParseTreePatternMatcher::matchImpl(ParseTree *tree, ParseTree *patternTree,
-                                              std::map<std::string, std::vector<ParseTree *> > &labels) {
+                                              std::map<std::string, std::vector<ParseTree *>> &labels) {
   if (tree == nullptr) {
     throw IllegalArgumentException("tree cannot be nul");
   }
@@ -221,12 +221,12 @@ RuleTagToken* ParseTreePatternMatcher::getRuleTagToken(ParseTree *t) {
   return nullptr;
 }
 
-std::vector<std::unique_ptr<Token> > ParseTreePatternMatcher::tokenize(const std::string &pattern) {
+std::vector<std::unique_ptr<Token>> ParseTreePatternMatcher::tokenize(const std::string &pattern) {
   // split pattern into chunks: sea (raw input) and islands (<ID>, <expr>)
   std::vector<Chunk> chunks = split(pattern);
 
   // create token stream from text and tags
-  std::vector<std::unique_ptr<Token> > tokens;
+  std::vector<std::unique_ptr<Token>> tokens;
   for (auto chunk : chunks) {
     if (is<TagChunk *>(&chunk)) {
       TagChunk &tagChunk = (TagChunk&)chunk;
