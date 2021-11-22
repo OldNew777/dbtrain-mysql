@@ -72,23 +72,39 @@ void FixedRecord::Build(const std::vector<String>& iRawVec) {
     FieldType iType = _iTypeVec[i];
 
     // TODO : after add NULL data, code here should change
-    if (toUpper(iRawVec[i]) == "NULL") {
-      SetField(i, new NullField());
-      continue;
-    }
 
+    Field* pField = nullptr;
+    bool isNull = (toUpper(iRawVec[i]) == "NULL");
     if (iType == FieldType::INT_TYPE) {
-      int nVal = std::stoi(iRawVec[i]);
-      SetField(i, new IntField(nVal));
+      if (isNull) {
+        pField = new IntField(0);
+        pField->SetNull(true);
+      } else {
+        int nVal = std::stoi(iRawVec[i]);
+        pField = new IntField(nVal);
+      }
     } else if (iType == FieldType::FLOAT_TYPE) {
-      double fVal = std::stod(iRawVec[i]);
-      SetField(i, new FloatField(fVal));
+      if (isNull) {
+        pField = new FloatField(0.0);
+        pField->SetNull(true);
+      } else {
+        double fVal = std::stod(iRawVec[i]);
+        pField = new FloatField(fVal);
+      }
     } else if (iType == FieldType::CHAR_TYPE) {
-      // erase \' and \"
-      SetField(i, new CharField(iRawVec[i].substr(1, iRawVec[i].size() - 2)));
+      // TODO : set length
+      if (isNull) {
+        pField = new CharField();
+        pField->SetNull(true);
+      } else {
+        // erase \' and \"
+        String cVal = iRawVec[i].substr(1, iRawVec[i].size() - 2);
+        pField = new CharField(cVal);
+      }
     } else {
       throw RecordTypeException();
     }
+    SetField(i, pField);
   }
 }
 
