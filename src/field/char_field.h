@@ -1,5 +1,5 @@
-#ifndef THDB_STRING_FIELD_H
-#define THDB_STRING_FIELD_H
+#ifndef DBTRAIN_MYSQL_CHAR_FIELD_H
+#define DBTRAIN_MYSQL_CHAR_FIELD_H
 
 #include <cstring>
 #include <string>
@@ -47,4 +47,4 @@ class CharField : public Field {
 
 }  // namespace dbtrain_mysql
 
-#endif  // THDB_STRING_FIELD_H
+#endif  // DBTRAIN_MYSQL_CHAR_FIELD_H

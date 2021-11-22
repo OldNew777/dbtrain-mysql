@@ -690,7 +690,8 @@
 //           Record* recordB = *iter;
 //           Field* fieldB = recordB->GetField(fieldID_B);
 //           uint32_t hash = fieldB->Hash();
-//           std::vector<thdb::Record*> hashEntryVec = hashMapping->Get(hash);
+//           std::vector<dbtrain_mysql::Record*> hashEntryVec =
+//           hashMapping->Get(hash);
 
 //           for (Size i = 0; i < hashEntryVec.size(); ++i) {
 //             Record* recordA = hashEntryVec[i];

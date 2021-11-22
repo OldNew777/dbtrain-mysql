@@ -1,5 +1,5 @@
-#ifndef THDB_FIXED_RECORD_H
-#define THDB_FIXED_RECORD_H
+#ifndef DBTRAIN_MYSQL_FIXED_RECORD_H
+#define DBTRAIN_MYSQL_FIXED_RECORD_H
 
 #include "defines.h"
 #include "field/field.h"

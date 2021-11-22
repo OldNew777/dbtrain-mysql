@@ -1,3 +1,3 @@
-./build/bin/thdb_clear
-./build/bin/thdb_init
-./build/bin/thdb_shell
+./build/bin/db_clear
+./build/bin/db_init
+./build/bin/db_shell

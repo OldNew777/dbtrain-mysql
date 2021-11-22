@@ -1,5 +1,5 @@
-#ifndef THDB_ERROR_LISTENER_H_
-#define THDB_ERROR_LISTENER_H_
+#ifndef DBTRAIN_MYSQL_ERROR_LISTENER_H
+#define DBTRAIN_MYSQL_ERROR_LISTENER_H
 
 #include "antlr4-runtime.h"
 

@@ -1,5 +1,5 @@
-// #ifndef THDB_INSTANCE_H_
-// #define THDB_INSTANCE_H_
+// #ifndef DBTRAIN_MYSQL_INSTANCE_H
+// #define DBTRAIN_MYSQL_INSTANCE_H
 
 // #include "defines.h"
 // #include "field/fields.h"
