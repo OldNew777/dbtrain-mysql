@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "utils/macros.h"
-
 namespace dbtrain_mysql {
 
 typedef uint32_t PageID;
