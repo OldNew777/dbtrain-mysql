@@ -1,11 +1,12 @@
 #include "parse.h"
-#include "MYSQLBaseVisitor.h"
+#include "MyVisitor.h"
 
 using namespace antlr4;
 
 namespace dbtrain_mysql{
     void Parser::init(const std::string & filename){
         this->afs_ = new ANTLRFileStream(filename);
+        printf("init done\n");
     }
 
     void Parser::parse(){
@@ -13,15 +14,16 @@ namespace dbtrain_mysql{
         CommonTokenStream* tokens = new CommonTokenStream(lexer);
         MYSQLParser* parser = new MYSQLParser(tokens);
         MYSQLParser::ProgramContext* tree = parser->program();
+        dbtrain_mysql::MyVisitor* visitor = new dbtrain_mysql::MyVisitor();
 
-        MYSQLBaseVisitor* visitor = new MYSQLBaseVisitor();
-
-        visitor->visit(tree);
+        printf("start visit\n");
+        if(visitor)
+            visitor->visit(tree);
 
         delete lexer;
         delete tokens;
         delete parser;
-        delete tree;
+        // delete tree;
         delete visitor;
     }
 }

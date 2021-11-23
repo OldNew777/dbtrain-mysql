@@ -9,7 +9,7 @@ project(dbtrain-mysql)
 
 add_definitions(-w)
 
-# Download and unpack googletest at configure time
+# # Download and unpack googletest at configure time
 # configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
 # execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
 #     RESULT_VARIABLE result
@@ -23,7 +23,6 @@ add_definitions(-w)
 # if(result)
 #     message(FATAL_ERROR "Build step for googletest failed: ${result}")
 # endif()
-
 # add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
 #                  ${CMAKE_BINARY_DIR}/googletest-build)
 
@@ -56,6 +55,6 @@ endforeach(executable_source ${EXECUTABLE_SOURCES})
 #     file(GLOB_RECURSE TEST_SOURCES ${test_dir}/*.cc)
 #     get_filename_component(test ${test_dir} NAME)
 #     add_executable(${test}_test ${TEST_SOURCES})
-#     target_link_libraries(${test}_test dbtrain_mysql_shared gtest)
+#     # target_link_libraries(${test}_test dbtrain_mysql_shared gtest)
 #     set_target_properties(${test}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test)
 # endforeach(test_dir ${TESTS})
