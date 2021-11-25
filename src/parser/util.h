@@ -9,5 +9,14 @@ namespace dbtrain_mysql{
         DATE
     };
     typedef db_data_type TYPE;
+
+
+
+    class TableHead{
+    public:
+        std::string headName;
+        TYPE type;
+        TableHead(const std::string& s, const TYPE& t):headName(s), type(t){}
+    };
 }
 #endif 

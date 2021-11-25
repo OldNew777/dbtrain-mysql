@@ -16,9 +16,13 @@ namespace dbtrain_mysql{
         MYSQLParser::ProgramContext* tree = parser->program();
         dbtrain_mysql::MyVisitor* visitor = new dbtrain_mysql::MyVisitor();
 
+
         printf("start visit\n");
-        if(visitor)
+        if(visitor){
+            visitor->init();
             visitor->visit(tree);
+        }
+            
 
         delete lexer;
         delete tokens;

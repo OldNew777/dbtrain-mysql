@@ -5,6 +5,8 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <vector>
+#include <list>
 #include "util.h"
 
 #include "MYSQLVisitor.h"
@@ -12,10 +14,28 @@ using namespace antlr4;
 
 namespace dbtrain_mysql {
     class MyVisitor : public MYSQLVisitor {
+    private:
+    std::vector<TableHead>* _current_table_head;
     public:
         std::string current_db_name = "";
-        bool current_db_available();
-        std::map<std::string, TYPE>* field_map;
+        std::list<std::string>* db_list;
+        std::list<std::string>* table_list = nullptr;
+
+        bool current_db_null();
+        bool db_available(const std::string&);
+        bool table_available(const std::string&);
+
+        void init();
+        ~MyVisitor(){
+            if(db_list != nullptr){
+                delete db_list;
+            }
+            if(table_list != nullptr){
+                delete table_list;
+            }
+        }
+
+        
 
         virtual antlrcpp::Any visitProgram(
             MYSQLParser::ProgramContext *ctx) override {
@@ -35,26 +55,15 @@ namespace dbtrain_mysql {
         virtual antlrcpp::Any visitShow_indexes(MYSQLParser::Show_indexesContext *ctx) override;
         virtual antlrcpp::Any visitLoad_data(MYSQLParser::Load_dataContext *ctx) override;
         virtual antlrcpp::Any visitDump_data(MYSQLParser::Dump_dataContext *ctx) override;
-
-        virtual antlrcpp::Any visitCreate_table(
-            MYSQLParser::Create_tableContext *ctx) override {
-            return visitChildren(ctx);
-        }
-
-        virtual antlrcpp::Any visitDrop_table(
-            MYSQLParser::Drop_tableContext *ctx) override {
-            return visitChildren(ctx);
-        }
+        virtual antlrcpp::Any visitCreate_table(MYSQLParser::Create_tableContext *ctx) override;
+        virtual antlrcpp::Any visitDrop_table(MYSQLParser::Drop_tableContext *ctx) override;
 
         virtual antlrcpp::Any visitDescribe_table(
             MYSQLParser::Describe_tableContext *ctx) override {
             return visitChildren(ctx);
         }
 
-        virtual antlrcpp::Any visitInsert_into_table(
-            MYSQLParser::Insert_into_tableContext *ctx) override {
-            return visitChildren(ctx);
-        }
+        virtual antlrcpp::Any visitInsert_into_table(MYSQLParser::Insert_into_tableContext *ctx) override;
 
         virtual antlrcpp::Any visitDelete_from_table(
             MYSQLParser::Delete_from_tableContext *ctx) override {
@@ -113,10 +122,7 @@ namespace dbtrain_mysql {
 
         virtual antlrcpp::Any visitField_list(MYSQLParser::Field_listContext *ctx) override;
 
-        virtual antlrcpp::Any visitNormal_field(
-            MYSQLParser::Normal_fieldContext *ctx) override {
-            return visitChildren(ctx);
-        }
+        virtual antlrcpp::Any visitNormal_field(MYSQLParser::Normal_fieldContext *ctx) override;
 
         virtual antlrcpp::Any visitPrimary_key_field(
             MYSQLParser::Primary_key_fieldContext *ctx) override {
@@ -146,15 +152,8 @@ namespace dbtrain_mysql {
             return visitChildren(ctx);
         }
 
-        virtual antlrcpp::Any visitWhere_and_clause(
-            MYSQLParser::Where_and_clauseContext *ctx) override {
-            return visitChildren(ctx);
-        }
-
-        virtual antlrcpp::Any visitWhere_operator_expression(
-            MYSQLParser::Where_operator_expressionContext *ctx) override {
-            return visitChildren(ctx);
-        }
+        virtual antlrcpp::Any visitWhere_and_clause(MYSQLParser::Where_and_clauseContext *ctx) override;
+        virtual antlrcpp::Any visitWhere_operator_expression(MYSQLParser::Where_operator_expressionContext *ctx) override;
 
         virtual antlrcpp::Any visitWhere_operator_select(
             MYSQLParser::Where_operator_selectContext *ctx) override {
