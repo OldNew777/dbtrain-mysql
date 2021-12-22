@@ -1,5 +1,5 @@
-#ifndef DBTRAIN_MYSQL_MINIOS_PAGE_H
-#define DBTRAIN_MYSQL_MINIOS_PAGE_H
+#ifndef DBTRAIN_MYSQL_OS_PAGE_H
+#define DBTRAIN_MYSQL_OS_PAGE_H
 
 #include "defines.h"
 
@@ -19,4 +19,4 @@ class RawPage {
 
 }  // namespace dbtrain_mysql
 
-#endif  // DBTRAIN_MYSQL_MINIOS_PAGE_H
+#endif  // DBTRAIN_MYSQL_OS_PAGE_H

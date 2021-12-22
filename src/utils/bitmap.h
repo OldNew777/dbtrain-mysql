@@ -31,4 +31,4 @@ class Bitmap {
 
 }  // namespace dbtrain_mysql
 
-#endif  // MINIOS_BITMAP_H_
+#endif  // DBTRAIN_MYSQL_BITMAP_H

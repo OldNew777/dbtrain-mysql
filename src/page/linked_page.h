@@ -62,4 +62,4 @@ class LinkedPage : public Page {
 
 }  // namespace dbtrain_mysql
 
-#endif  // META_PAGE_OBJECT_H_
+#endif  // DBTRAIN_MYSQL_LINKED_PAGE_H
