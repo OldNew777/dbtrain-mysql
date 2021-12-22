@@ -14,7 +14,7 @@ Column::Column(const String& sName, FieldType iType)
       _nSize = 4;
       break;
     case FieldType::FLOAT_TYPE:
-      _nSize = 8;
+      _nSize = 4;
       break;
     default:
       throw RecordTypeException("Column type error");

@@ -10,12 +10,12 @@ namespace dbtrain_mysql {
 FloatField::FloatField(const float& floatData) : floatData(floatData) {}
 
 void FloatField::SetData(const uint8_t* src, Size nSize) {
-  assert(nSize == 8);
+  assert(nSize == 4);
   memcpy((uint8_t*)&floatData, src, nSize);
 }
 
 void FloatField::GetData(uint8_t* dst, Size nSize) const {
-  assert(nSize == 8);
+  assert(nSize == 4);
   memcpy(dst, (uint8_t*)&floatData, nSize);
 }
 
@@ -44,7 +44,6 @@ void FloatField::Add() {
 uint32_t FloatField::Hash() const { return *(uint32_t*)(&floatData); }
 
 bool FloatField::operator==(const FloatField& b) const {
-  // TODO : balance between Add() and precisely equal function
   return this->floatData == b.floatData;
 }
 
