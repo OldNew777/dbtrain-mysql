@@ -19,8 +19,6 @@ class Field {
 
   virtual FieldType GetType() const = 0;
   virtual Size GetSize() const = 0;
-  void SetNull(bool isNull);
-  bool Null() const;
 
   virtual String ToString() const = 0;
 
@@ -33,9 +31,6 @@ class Field {
   virtual void Add() = 0;
 
   virtual ~Field() = default;
-
- private:
-  bool isNull = false;
 };
 
 String toString(FieldType iType);

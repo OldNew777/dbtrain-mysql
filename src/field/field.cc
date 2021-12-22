@@ -4,9 +4,6 @@
 
 namespace dbtrain_mysql {
 
-void Field::SetNull(bool isNull) { this->isNull = isNull; }
-bool Field::Null() const { return isNull; }
-
 String toString(FieldType iType) {
   switch (iType) {
     case FieldType::NULL_TYPE:

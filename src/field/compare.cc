@@ -5,7 +5,8 @@
 namespace dbtrain_mysql {
 
 bool Less(Field *pA, Field *pB, FieldType iType) {
-  if (pA->Null() || pB->Null()) return false;
+  if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
+    return false;
   if (iType == FieldType::INT_TYPE) {
     IntField *pIntA = dynamic_cast<IntField *>(pA);
     IntField *pIntB = dynamic_cast<IntField *>(pB);
@@ -24,7 +25,8 @@ bool Less(Field *pA, Field *pB, FieldType iType) {
 }
 
 bool Equal(Field *pA, Field *pB, FieldType iType) {
-  if (pA->Null() || pB->Null()) return false;
+  if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
+    return false;
   if (iType == FieldType::INT_TYPE) {
     IntField *pIntA = dynamic_cast<IntField *>(pA);
     IntField *pIntB = dynamic_cast<IntField *>(pB);
@@ -43,7 +45,8 @@ bool Equal(Field *pA, Field *pB, FieldType iType) {
 }
 
 bool Greater(Field *pA, Field *pB, FieldType iType) {
-  if (pA->Null() || pB->Null()) return false;
+  if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
+    return false;
   if (iType == FieldType::INT_TYPE) {
     IntField *pIntA = dynamic_cast<IntField *>(pA);
     IntField *pIntB = dynamic_cast<IntField *>(pB);
