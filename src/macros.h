@@ -8,6 +8,8 @@ namespace dbtrain_mysql {
 #define DB_BITMAP_NAME "DB_BITMAP.dat"
 #define DB_PAGE_NAME "DB_PAGE.dat"
 
+#define BIG_PRIME 100003U
+
 const PageOffset PAGE_SIZE = 4096;
 const PageOffset HEADER_SIZE = 64;
 const PageOffset DATA_SIZE = PAGE_SIZE - HEADER_SIZE;

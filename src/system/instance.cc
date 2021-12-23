@@ -196,7 +196,7 @@ PageSlotID Instance::Insert(const String& sTableName,
   if (txn != nullptr) {
     // add transaction_id to record
     std::vector<String> iRawVec_Txn = iRawVec;
-    iRawVec_Txn.push_back(to_string(txn->GetTxnID()));
+    iRawVec_Txn.push_back(std::to_string(txn->GetTxnID()));
     pRecord->Build(iRawVec_Txn);
   } else {
     pRecord->Build(iRawVec);
@@ -318,12 +318,10 @@ std::vector<Record*> Instance::GetTableInfos(const String& sTableName) const {
   std::vector<Record*> iVec{};
   for (const auto& sName : GetColumnNames(sTableName)) {
     FixedRecord* pDesc = new FixedRecord(
-        3,
-        {FieldType::STRING_TYPE, FieldType::STRING_TYPE, FieldType::INT_TYPE},
+        3, {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::INT_TYPE},
         {COLUMN_NAME_SIZE, 10, 4});
-    pDesc->SetField(0, new StringField(sName));
-    pDesc->SetField(1,
-                    new StringField(toString(GetColType(sTableName, sName))));
+    pDesc->SetField(0, new CharField(sName));
+    pDesc->SetField(1, new CharField(toString(GetColType(sTableName, sName))));
     pDesc->SetField(2, new IntField(GetColSize(sTableName, sName)));
     iVec.push_back(pDesc);
   }
@@ -350,13 +348,13 @@ std::vector<Record*> Instance::GetIndexInfos() const {
   for (const auto& iPair : _pIndexManager->GetIndexInfos()) {
     FixedRecord* pInfo =
         new FixedRecord(4,
-                        {FieldType::STRING_TYPE, FieldType::STRING_TYPE,
-                         FieldType::STRING_TYPE, FieldType::INT_TYPE},
+                        {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE,
+                         FieldType::CHAR_TYPE, FieldType::INT_TYPE},
                         {TABLE_NAME_SIZE, COLUMN_NAME_SIZE, 10, 4});
-    pInfo->SetField(0, new StringField(iPair.first));
-    pInfo->SetField(1, new StringField(iPair.second));
+    pInfo->SetField(0, new CharField(iPair.first));
+    pInfo->SetField(1, new CharField(iPair.second));
     pInfo->SetField(
-        2, new StringField(toString(GetColType(iPair.first, iPair.second))));
+        2, new CharField(toString(GetColType(iPair.first, iPair.second))));
     pInfo->SetField(3, new IntField(GetColSize(iPair.first, iPair.second)));
     iVec.push_back(pInfo);
   }
@@ -396,46 +394,23 @@ bool Instance::DropIndex(const String& sTableName, const String& sColName) {
 std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(
     std::map<String, std::vector<PageSlotID>>& iResultMap,
     std::vector<Condition*>& iJoinConds) {
-// LAB3 BEGIN
-// TODO:实现正确且高效的表之间JOIN过程
+  // 表之间JOIN过程
 
-//
-ALERT:
-  由于实现临时表存储具有一定难度，所以允许JOIN过程中将中间结果保留在内存中，不需要存入临时表
-// ALERT:一定要注意，存在JOIN字段值相同的情况，需要特别重视
-//
-ALERT:
-  针对于不同的JOIN情况（此处只需要考虑数据量和是否为索引列），可以选择使用不同的JOIN算法
-// ALERT:JOIN前已经经过了Filter过程
-// ALERT:建议不要使用不经过优化的NestedLoopJoin算法
+  // 由于实现临时表存储具有一定难度，所以JOIN过程中将中间结果保留在内存中，不存入临时表
+  // 存在JOIN字段值相同的情况，需要特别重视
+  // 针对于不同的JOIN情况（此处只需要考虑数据量和是否为索引列），可以选择使用不同的JOIN算法
+  // JOIN前已经经过了Filter过程
 
-// TIPS:JoinCondition中保存了JOIN两方的表名和列名
-//
-TIPS:
-  利用GetTable(TableName) 的方式可以获得Table*
-      指针，之后利用lab1中的Table::GetRecord获得初始Record* 数据
-          //
-          TIPs
-      : 利用Table::GetColumnNames可以获得Table初始的列名，与初始Record* 顺序一致
-            //
-            TIPS
-      : Record对象添加了Copy,
-        Sub,
-        Add,
-        Remove函数，方便同学们对于Record进行处理
-            // TIPS:利用GetColID/Type/Size三个函数可以基于表名和列名获得列的信息
-            // TIPS:利用IsIndex可以判断列是否存在索引
-            // TIPS:利用GetIndex可以获得索引Index*指针
+  // JoinCondition中保存了JOIN两方的表名和列名
+  // 利用GetTable(TableName)的方式可以获得Table*指针，之后利用Table::GetRecord获得初始Record*数据
+  // 利用Table::GetColumnNames可以获得Table初始的列名，与初始Record*顺序一致
+  // Record对象添加了Copy,Sub,Add,Remove函数，方便同学们对于Record进行处理
+  // 利用GetColID/Type/Size三个函数可以基于表名和列名获得列的信息
+  // 利用IsIndex可以判断列是否存在索引
+  // 利用GetIndex可以获得索引Index*指针
 
-            //
-            EXTRA
-      : JOIN的表的数量超过2时，所以需要先计算一个JOIN执行计划（不要求复杂算法）,
-        有兴趣的同学可以自行实现
-            // EXTRA:在多表JOIN时，可以采用并查集或执行树来确定执行JOIN的数据内容
-
-            // 预先获取各record
-            std::map<String, std::vector<Record*>>
-                iRecordMap;
+  // 预先获取各record
+  std::map<String, std::vector<Record*>> iRecordMap;
 
   std::pair<std::vector<String>, std::vector<Record*>> ans;
   if (iResultMap.size() == 0) return ans;
@@ -444,8 +419,7 @@ TIPS:
 
   //   //   Index Join
   //   if (!processed && iJoinConds.size() == 1) {
-  //     JoinCondition* condition =
-  dynamic_cast<JoinCondition*>(iJoinConds[0]);
+  //     JoinCondition* condition = dynamic_cast<JoinCondition*>(iJoinConds[0]);
   //     // B若有Index，将其调整到A的位置
   //     if (!IsIndex(condition->sTableA, condition->sColA) &&
   //         IsIndex(condition->sTableB, condition->sColB)) {
@@ -493,8 +467,7 @@ TIPS:
   //           auto rangeAns = indexA->Range(fieldB, fieldB_right);
   //           for (Size i = 0; i < rangeAns.size(); ++i) {
   //             Record* recordA =
-  //                 tableA->GetRecord(rangeAns[i].first,
-  rangeAns[i].second);
+  //                 tableA->GetRecord(rangeAns[i].first, rangeAns[i].second);
   //             recordA->Add(recordB);
   //             ans.second.push_back(recordA);
   //           }
@@ -541,7 +514,7 @@ TIPS:
 
     // 拼接Record
     Size filedID_base;
-    vector<Record*> recordVec;
+    std::vector<Record*> recordVec;
     // 并查集
     std::set<String> tableJoint;
 
@@ -561,7 +534,7 @@ TIPS:
       filedID_base = columeNames.size();
       ans.first = columeNames;
       for (auto iter = dataA.begin(); iter != dataA.end(); ++iter) {
-        recordVec.push_back((*iter)->Copy());
+        recordVec.push_back((*iter)->Clone());
       }
 
 #ifdef JOIN_DEBUG
@@ -671,13 +644,11 @@ TIPS:
         auto columeNames = tableB->GetColumnNames();
 
 #ifdef JOIN_DEBUG
-        std::cout << ans.first.size() << " + " << columeNames.size()
-                  << " =
-                     ";
+        std::cout << ans.first.size() << " + " << columeNames.size() << " = ";
 #endif
 
-                     ans.first.insert(ans.first.end(), columeNames.begin(),
-                                      columeNames.end());
+        ans.first.insert(ans.first.end(), columeNames.begin(),
+                         columeNames.end());
 
 #ifdef JOIN_DEBUG
         std::cout << ans.first.size() << "\n";
@@ -697,8 +668,7 @@ TIPS:
           Record* recordB = *iter;
           Field* fieldB = recordB->GetField(fieldID_B);
           uint32_t hash = fieldB->Hash();
-          std::vector<dbtrain_mysql::Record*> hashEntryVec =
-              hashMapping->Get(hash);
+          std::vector<Record*> hashEntryVec = hashMapping->Get(hash);
 
           for (Size i = 0; i < hashEntryVec.size(); ++i) {
             Record* recordA = hashEntryVec[i];
@@ -706,7 +676,7 @@ TIPS:
             // 对每个recordB，遍历相等的recordA，并join起来
             // 对应duplicate实现的功能
             if (Equal(fieldA, fieldB, fieldType)) {
-              Record* recordNew = recordA->Copy();
+              Record* recordNew = recordA->Clone();
               if (joinFlag) recordNew->Add(recordB);
               recordVec.push_back(recordNew);
             }
@@ -750,8 +720,6 @@ TIPS:
   for (auto iter = iRecordMap.begin(); iter != iRecordMap.end(); ++iter)
     for (Size i = 0; i < iter->second.size(); ++i) delete iter->second[i];
   return ans;
-
-  // LAB3 END
 }
 
 void Instance::DeleteForce(const String& sTableName,
