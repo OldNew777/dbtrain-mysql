@@ -1,7 +1,7 @@
 .vs/
 build/
-DB_BITMAP
-DB_PAGE
+DB_BITMAP.dat
+DB_PAGE.dat
 
 # report bin files
 *.pdf

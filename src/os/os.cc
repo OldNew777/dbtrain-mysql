@@ -76,7 +76,7 @@ void OS::WritePage(PageID pid, const uint8_t* src, PageOffset nSize,
 }
 
 void OS::LoadBitmap() {
-  std::ifstream fin("DB_BITMAP", std::ios::binary);
+  std::ifstream fin(DB_BITMAP_NAME, std::ios::binary);
   if (!fin) return;
   uint8_t pTemp[MEM_PAGES / 8];
   fin.read((char*)pTemp, MEM_PAGES / 8);
@@ -85,7 +85,7 @@ void OS::LoadBitmap() {
 }
 
 void OS::LoadPages() {
-  std::ifstream fin("DB_PAGE", std::ios::binary);
+  std::ifstream fin(DB_PAGE_NAME, std::ios::binary);
   if (!fin) return;
   uint8_t pTemp[PAGE_SIZE];
   for (uint32_t i = 0; i < MEM_PAGES; ++i) {
@@ -99,7 +99,7 @@ void OS::LoadPages() {
 }
 
 void OS::StoreBitmap() {
-  std::ofstream fout("DB_BITMAP", std::ios::binary);
+  std::ofstream fout(DB_BITMAP_NAME, std::ios::binary);
   if (!fout) return;
   uint8_t pTemp[MEM_PAGES / 8];
   _pUsed->Store(pTemp);
@@ -108,7 +108,7 @@ void OS::StoreBitmap() {
 }
 
 void OS::StorePages() {
-  std::ofstream fout("DB_PAGE", std::ios::binary);
+  std::ofstream fout(DB_PAGE_NAME, std::ios::binary);
   if (!fout) return;
   uint8_t pTemp[PAGE_SIZE];
   for (uint32_t i = 0; i < MEM_PAGES; ++i) {
