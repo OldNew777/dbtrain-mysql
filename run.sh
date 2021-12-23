@@ -1,5 +1,5 @@
-./build/bin/db_clear
-./build/bin/db_init
+./build/bin/dbtrain_mysql_clear
+./build/bin/dbtrain_mysql_init
 mkdir build
 cd build
 cmake ..
