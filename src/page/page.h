@@ -53,9 +53,7 @@ class Page {
 
  protected:
   PageID _nPageID;
-
- private:
-  bool _bModified;
+  bool _bModified = false;
 };
 
 }  // namespace dbtrain_mysql

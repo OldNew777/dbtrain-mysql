@@ -56,8 +56,6 @@ class LinkedPage : public Page {
  protected:
   PageID _nNextID;
   PageID _nPrevID;
-
-  bool _bModified;
 };
 
 }  // namespace dbtrain_mysql
