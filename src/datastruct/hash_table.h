@@ -26,17 +26,17 @@ class HashTable : public HashMapping<T> {
     data = new vector<T>[bucket_num];
     this->bucket_num = bucket_num;
   }
-  ~HashTable() { delete[] data; }
+  virtual ~HashTable() { delete[] data; }
 
-  void Insert(uint32_t hash, const T& t) override {
+  virtual void Insert(uint32_t hash, const T& t) override {
     hash = hash % bucket_num;
     data[hash].push_back(t);
   };
-  void Updata(uint32_t hash, uint32_t index, const T& t) override {
+  virtual void Updata(uint32_t hash, uint32_t index, const T& t) override {
     hash = hash % bucket_num;
     data[hash][index] = t;
   }
-  vector<T> Get(uint32_t hash) const override {
+  virtual vector<T> Get(uint32_t hash) const override {
     hash = hash % bucket_num;
     return data[hash];
   };

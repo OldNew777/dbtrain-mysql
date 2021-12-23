@@ -13,7 +13,7 @@ class SystemVisitor : public MYSQLBaseVisitor {
 
  public:
   SystemVisitor(Instance* pDB);
-}
+};
 
 }  // namespace dbtrain_mysql
 

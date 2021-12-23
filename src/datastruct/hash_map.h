@@ -17,20 +17,21 @@ class HashMap : public HashMapping<T> {
   unordered_map<uint32_t, vector<T>> data;
 
  public:
-  void Insert(uint32_t hash, const T& t) override {
+  virtual void Insert(uint32_t hash, const T& t) override {
     hash = hash % BIG_PRIME;
     data[hash].push_back(t);
   };
-  void Updata(uint32_t hash, uint32_t index, const T& t) override {
+  virtual void Updata(uint32_t hash, uint32_t index, const T& t) override {
     hash = hash % BIG_PRIME;
     data[hash][index] = t;
   }
-  vector<T> Get(uint32_t hash) const override {
+  virtual vector<T> Get(uint32_t hash) const override {
     hash = hash % BIG_PRIME;
     auto iter = data.find(hash);
     if (iter == data.end()) return vector<T>();
     return iter->second;
   };
+  virtual ~HashMap() = default;
 };
 
 #endif
