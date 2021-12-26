@@ -7,6 +7,7 @@ namespace dbtrain_mysql{
     void Parser::init(const std::string & filename){
         this->afs_ = new ANTLRFileStream(filename);
         printf("init done\n");
+        
     }
 
     void Parser::parse(){

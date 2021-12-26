@@ -15,7 +15,30 @@ using namespace antlr4;
 namespace dbtrain_mysql {
     class MyVisitor : public MYSQLVisitor {
     private:
-    std::vector<TableHead>* _current_table_head;
+    std::vector<TableHead>* _current_table_head = nullptr;
+    std::vector<std::vector<Data*>*>* _current_value_lists = nullptr; 
+    std::vector<Data*>* _tmp_value_list = nullptr;
+    
+    int _load_form_db_list(std::list<std::string>* v){
+        std::ifstream in(DB_LIST_PATH);
+        std::string line;
+        if(in){
+            while(std::getline (in, line)){
+                v->push_back(line);
+            }
+        }
+
+        // char tmpbuffer[1000] = {0};
+        // FILE* f = fopen(DB_LIST_PATH.data(), "r");
+        // while(!feof(f)){
+        //     fgets(tmpbuffer, sizeof(tmpbuffer) - 1, f);
+
+        //     v->push_back(tmpbuffer);
+        //     printf("%s\n", tmpbuffer);
+        // }
+        // fclose(f);
+    }
+
     public:
         std::string current_db_name = "";
         std::list<std::string>* db_list;
@@ -143,14 +166,8 @@ namespace dbtrain_mysql {
             return visitChildren(ctx);
         }
 
-        virtual antlrcpp::Any visitValue_list(
-            MYSQLParser::Value_listContext *ctx) override {
-            return visitChildren(ctx);
-        }
-
-        virtual antlrcpp::Any visitValue(MYSQLParser::ValueContext *ctx) override {
-            return visitChildren(ctx);
-        }
+        virtual antlrcpp::Any visitValue_list(MYSQLParser::Value_listContext *ctx);
+        virtual antlrcpp::Any visitValue(MYSQLParser::ValueContext *ctx) override;
 
         virtual antlrcpp::Any visitWhere_and_clause(MYSQLParser::Where_and_clauseContext *ctx) override;
         virtual antlrcpp::Any visitWhere_operator_expression(MYSQLParser::Where_operator_expressionContext *ctx) override;

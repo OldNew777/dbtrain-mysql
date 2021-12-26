@@ -3,7 +3,8 @@ using namespace dbtrain_mysql;
 void MyVisitor::init(){
     //get the dblist
     this->db_list = new std::list<std::string>();
-    this->db_list->push_back("test");
+    //TODO: load db list
+    this->_load_form_db_list(this->db_list);
 }
 
 bool MyVisitor::current_db_null(){
@@ -85,13 +86,13 @@ antlrcpp::Any MyVisitor::visitDrop_db(MYSQLParser::Drop_dbContext *ctx) {
 
 antlrcpp::Any MyVisitor::visitShow_dbs(MYSQLParser::Show_dbsContext *ctx){
     //TODO: ask for a list from backend
-    printf("\ttable list:\n");
+    printf("\n\tdatabase list:\n");
     auto it = db_list->begin();
     while(it != db_list->end()){
-        printf("\t%s\n", &(*it));
+        std::cout << "\t" << *it << std::endl;
         it ++;
     }
-    std::cout << "show dbs" << std::endl;
+    // std::cout << "show dbs" << std::endl;
     return 1;
 }
 antlrcpp::Any MyVisitor::visitUse_db(MYSQLParser::Use_dbContext *ctx) {
@@ -119,15 +120,16 @@ antlrcpp::Any MyVisitor::visitUse_db(MYSQLParser::Use_dbContext *ctx) {
         delete table_list;
     }
     table_list = new std::list<std::string>();
+    //TODO: load table list
 
     std::cout << "USE_DATABASE(" << dbname << ");" << std::endl;    
     return 1;
 }
 antlrcpp::Any MyVisitor::visitShow_tables(MYSQLParser::Show_tablesContext *ctx) {
-    printf("\ttable list\n");
+    std::cout << "table list\n";
     auto it = this->table_list->begin();
     while(it != this->table_list->end()){
-        printf("\t%s\n", &(*it));
+        std::cout << *it << std::endl;
         it ++;
     }
     //get table list
@@ -198,7 +200,7 @@ antlrcpp::Any MyVisitor::visitCreate_table(MYSQLParser::Create_tableContext *ctx
     std::string table_name = ctx->Identifier()->toString();
 
     auto it = this->_current_table_head->begin();
-    printf("create table\n");
+    std::cout << "create table" <<  table_name << " has heading of:" << std::endl;
     while(it != this->_current_table_head->end()){
         std::cout << it->headName << std::endl;
         it ++;
@@ -249,7 +251,48 @@ antlrcpp::Any MyVisitor::visitInsert_into_table(MYSQLParser::Insert_into_tableCo
     }
     std::string table_name;
     //open table
+    this->_current_value_lists = new std::vector<std::vector<Data*> *>();
+
+    ctx->value_lists()->accept(this);
+
+    //TODO: insert into table 
+
+    for(int i = 0; i < this->_current_value_lists->size(); i ++){
+        if((*_current_value_lists)[i] != nullptr){
+            delete (*_current_value_lists)[i];
+        }
+    }
+    delete _current_value_lists;
+    _current_value_lists = nullptr;
+
+    return 1;
+}
+
+antlrcpp::Any MyVisitor::visitValue_list(MYSQLParser::Value_listContext *ctx) {
+    //
+    _tmp_value_list = new std::vector<Data*>();
+    _current_value_lists->push_back(_tmp_value_list);
+
     visitChildren(ctx);
+
+
+
+    return 1;
+}
+
+antlrcpp::Any MyVisitor::visitValue(MYSQLParser::ValueContext *ctx){
+    if(ctx->String() != nullptr){
+        _tmp_value_list->push_back(new String(ctx->String()->toString()));
+    }
+    else if(ctx->Integer() != nullptr){
+        _tmp_value_list->push_back(new Int(atoi(ctx->Integer()->toString().data())));
+    }
+    else if(ctx->Float() != nullptr){
+        _tmp_value_list->push_back(new Int(atof(ctx->Float()->toString().data())));
+    }
+    else{
+        _tmp_value_list->push_back(new Null());
+    }
     return 1;
 }
 
