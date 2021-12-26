@@ -133,7 +133,7 @@ namespace std {
     }
   };
 
-  template <> struct hash<std::vector<Ref<ATNConfig>>>
+  template <> struct hash<std::vector<Ref<ATNConfig>> >
   {
     size_t operator() (const std::vector<Ref<ATNConfig>> &vector) const
     {
