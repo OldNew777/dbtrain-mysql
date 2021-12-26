@@ -257,6 +257,7 @@ antlrcpp::Any MyVisitor::visitInsert_into_table(MYSQLParser::Insert_into_tableCo
 
     //TODO: insert into table 
 
+    //delete the _currerny value list
     for(int i = 0; i < this->_current_value_lists->size(); i ++){
         if((*_current_value_lists)[i] != nullptr){
             delete (*_current_value_lists)[i];
@@ -288,7 +289,7 @@ antlrcpp::Any MyVisitor::visitValue(MYSQLParser::ValueContext *ctx){
         _tmp_value_list->push_back(new Int(atoi(ctx->Integer()->toString().data())));
     }
     else if(ctx->Float() != nullptr){
-        _tmp_value_list->push_back(new Int(atof(ctx->Float()->toString().data())));
+        _tmp_value_list->push_back(new Float(atof(ctx->Float()->toString().data())));
     }
     else{
         _tmp_value_list->push_back(new Null());
@@ -301,5 +302,16 @@ antlrcpp::Any MyVisitor::visitWhere_and_clause(MYSQLParser::Where_and_clauseCont
 }
 antlrcpp::Any MyVisitor::visitWhere_operator_expression(MYSQLParser::Where_operator_expressionContext *ctx){
     
+    return visitChildren(ctx);
+}
+
+antlrcpp::Any MyVisitor::visitDescribe_table(MYSQLParser::Describe_tableContext *ctx) {
+    std::string tableName = ctx->Identifier()->toString();
+    //TODO: describe_table function
+    return visitChildren(ctx);
+}
+
+antlrcpp::Any MyVisitor::visitDelete_from_table(MYSQLParser::Delete_from_tableContext *ctx) {
+    std::string tableName = ctx->Identifier()->toString();
     return visitChildren(ctx);
 }

@@ -37,6 +37,7 @@ namespace dbtrain_mysql{
     };
     class Float:public Data{
     public:
+        Float(const float& s):val(s){}
         float val;
     };
     class Null:public Data{

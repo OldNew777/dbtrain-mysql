@@ -19,6 +19,7 @@ namespace dbtrain_mysql {
     std::vector<std::vector<Data*>*>* _current_value_lists = nullptr; 
     std::vector<Data*>* _tmp_value_list = nullptr;
     
+    
     int _load_form_db_list(std::list<std::string>* v){
         std::ifstream in(DB_LIST_PATH);
         std::string line;
@@ -78,20 +79,14 @@ namespace dbtrain_mysql {
         virtual antlrcpp::Any visitShow_indexes(MYSQLParser::Show_indexesContext *ctx) override;
         virtual antlrcpp::Any visitLoad_data(MYSQLParser::Load_dataContext *ctx) override;
         virtual antlrcpp::Any visitDump_data(MYSQLParser::Dump_dataContext *ctx) override;
+
         virtual antlrcpp::Any visitCreate_table(MYSQLParser::Create_tableContext *ctx) override;
         virtual antlrcpp::Any visitDrop_table(MYSQLParser::Drop_tableContext *ctx) override;
-
-        virtual antlrcpp::Any visitDescribe_table(
-            MYSQLParser::Describe_tableContext *ctx) override {
-            return visitChildren(ctx);
-        }
+        virtual antlrcpp::Any visitDescribe_table(MYSQLParser::Describe_tableContext *ctx) override;
 
         virtual antlrcpp::Any visitInsert_into_table(MYSQLParser::Insert_into_tableContext *ctx) override;
 
-        virtual antlrcpp::Any visitDelete_from_table(
-            MYSQLParser::Delete_from_tableContext *ctx) override {
-            return visitChildren(ctx);
-        }
+        virtual antlrcpp::Any visitDelete_from_table(MYSQLParser::Delete_from_tableContext *ctx) override;
 
         virtual antlrcpp::Any visitUpdate_table(
             MYSQLParser::Update_tableContext *ctx) override {
