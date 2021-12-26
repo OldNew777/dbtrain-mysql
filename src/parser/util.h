@@ -30,10 +30,10 @@ namespace dbtrain_mysql{
         int val;
         Int(const int& i):val(i){}
     };
-    class String:public Data{
+    class Str:public Data{
     public:
         std::string val;
-        String(const std::string& s):val(s){}
+        Str(const std::string& s):val(s){}
     };
     class Float:public Data{
     public:

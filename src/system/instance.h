@@ -17,6 +17,9 @@ namespace dbtrain_mysql {
 class Instance {
  public:
   Instance();
+  Instance(const std::string& dbname){
+    this->_dbname = dbname;
+  }
   ~Instance();
 
   friend class TransactionManager;
@@ -100,6 +103,8 @@ class Instance {
   IndexManager *_pIndexManager;
   TransactionManager *_pTransactionManager;
   RecoveryManager *_pRecoveryManager;
+
+  std::string _dbname;
 
   void DeleteForce(const String &sTableName, const PageSlotID &pageSlotID);
 };

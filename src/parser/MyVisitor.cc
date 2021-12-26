@@ -2,26 +2,20 @@
 using namespace dbtrain_mysql;
 void MyVisitor::init(){
     //get the dblist
-    this->db_list = new std::list<std::string>();
     //TODO: load db list
-    this->_load_form_db_list(this->db_list);
+}
+
+void MyVisitor::cast_db_list(){
+    FILE* f = fopen(DB_LIST_PATH.data(), "w");
+    for(auto it = _dbs.begin(); it != _dbs.end(); it ++){
+        fputs(it->first.data(), f);
+        fputs("\n", f);
+    }
+    fclose(f);
 }
 
 bool MyVisitor::current_db_null(){
     return (this->current_db_name == "");
-}
-bool MyVisitor::db_available(const std::string& s){
-    if(db_list == nullptr){
-        assert(0);
-    }
-    auto it = db_list->begin();
-    while(it != db_list->end()){
-        if((*it) == s){
-            return true;
-        }
-        it ++;
-    }
-    return false;
 }
 bool MyVisitor::table_available(const std::string& s){
     if(table_list == nullptr){
@@ -43,13 +37,14 @@ antlrcpp::Any MyVisitor::visitCreate_db(MYSQLParser::Create_dbContext *ctx){
     }
 
     std::string dbname = ctx->Identifier()->toString();
-    //TODO: check identifier is unique or not
 
-    // create_db(db_name)
+    if(_dbs.find(dbname) != _dbs.end()){//not unique
+        assert(0);
+    }
 
     std::cout << "CREATE_DATABASE(" << dbname << ");" << std::endl;   
     //add to local list
-    db_list->push_back(dbname); 
+    _dbs[dbname] = new Instance(); 
 
     return 1;
 }
@@ -61,7 +56,10 @@ antlrcpp::Any MyVisitor::visitDrop_db(MYSQLParser::Drop_dbContext *ctx) {
 
     std::string dbname = ctx->Identifier()->toString();
 
-    // drop_db(db_name)
+    auto tmp = _dbs.find(dbname);
+    if(tmp == _dbs.end()){//db not exist
+        assert(0);
+    }
 
     std::cout << "DROP_DATABASE(" << dbname << ");" << std::endl;    
 
@@ -73,26 +71,21 @@ antlrcpp::Any MyVisitor::visitDrop_db(MYSQLParser::Drop_dbContext *ctx) {
         this->table_list = nullptr;
     }
     //delete from local list
-    auto it = db_list->begin(); 
-    while(it != db_list->end()){
-        if((*it) == dbname){
-            db_list->erase(it);
-            break;
-        }
-        it ++;
-    }
+    delete (*tmp).second;
+    _dbs.erase(tmp);
     return 1;
 }
 
 antlrcpp::Any MyVisitor::visitShow_dbs(MYSQLParser::Show_dbsContext *ctx){
     //TODO: ask for a list from backend
-    printf("\n\tdatabase list:\n");
-    auto it = db_list->begin();
-    while(it != db_list->end()){
-        std::cout << "\t" << *it << std::endl;
+    printf("******database list******\n");
+    auto it = _dbs.begin();
+    
+    while(it != _dbs.end()){
+        std::cout  << "\t" <<(*it).first << std::endl;
         it ++;
     }
-    // std::cout << "show dbs" << std::endl;
+    std::cout << "*****************" << std::endl;
     return 1;
 }
 antlrcpp::Any MyVisitor::visitUse_db(MYSQLParser::Use_dbContext *ctx) {
@@ -101,26 +94,15 @@ antlrcpp::Any MyVisitor::visitUse_db(MYSQLParser::Use_dbContext *ctx) {
     }
     std::string dbname = ctx->Identifier()->toString();
 
-    auto it = this->db_list->begin();
-    bool flag = false;
-    while(it != db_list->end()){
-        if((*it) == dbname){
-            flag = true;
-        }
-        it ++;
-    }
-    if(!flag){//no such db
-        assert(0);
-    }
+    
+    
 
     this->current_db_name = dbname;
-    
-    //update table list
-    if(this->table_list != nullptr){
-        delete table_list;
+
+    auto tmp = _dbs.find(dbname);
+    if(tmp == _dbs.end()){//db not exist
+        assert(0);
     }
-    table_list = new std::list<std::string>();
-    //TODO: load table list
 
     std::cout << "USE_DATABASE(" << dbname << ");" << std::endl;    
     return 1;
@@ -283,7 +265,7 @@ antlrcpp::Any MyVisitor::visitValue_list(MYSQLParser::Value_listContext *ctx) {
 
 antlrcpp::Any MyVisitor::visitValue(MYSQLParser::ValueContext *ctx){
     if(ctx->String() != nullptr){
-        _tmp_value_list->push_back(new String(ctx->String()->toString()));
+        _tmp_value_list->push_back(new Str(ctx->String()->toString()));
     }
     else if(ctx->Integer() != nullptr){
         _tmp_value_list->push_back(new Int(atoi(ctx->Integer()->toString().data())));

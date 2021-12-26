@@ -8,7 +8,7 @@
 #include <vector>
 #include <list>
 #include "util.h"
-
+#include "../system/instance.h"
 #include "MYSQLVisitor.h"
 using namespace antlr4;
 
@@ -18,6 +18,7 @@ namespace dbtrain_mysql {
     std::vector<TableHead>* _current_table_head = nullptr;
     std::vector<std::vector<Data*>*>* _current_value_lists = nullptr; 
     std::vector<Data*>* _tmp_value_list = nullptr;
+    std::map<std::string, Instance*> _dbs;
     
     
     int _load_form_db_list(std::list<std::string>* v){
@@ -48,6 +49,7 @@ namespace dbtrain_mysql {
         bool current_db_null();
         bool db_available(const std::string&);
         bool table_available(const std::string&);
+        void cast_db_list();
 
         void init();
         ~MyVisitor(){
