@@ -10,7 +10,12 @@ int main(){
     std::ifstream f;
     f.open("test.sql", std::ios::in);
     while (getline(f, sSQL)) {
+        sSQL.erase(0, sSQL.find_first_not_of(" "));
+        if (sSQL.substr(0,2) == "--"){
+            continue;
+        }
         std::cout << "> " << sSQL << std::endl;
+        
         try {
             std::vector<Result *> iResVec = Execute(pDB, sSQL);
             PrintTable(iResVec);

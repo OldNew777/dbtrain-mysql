@@ -295,10 +295,20 @@ antlrcpp::Any SystemVisitor::visitSelectors(MYSQLParser::SelectorsContext *ctx) 
         _current_selectors.push_back("*");
         return 1;
     }
-    
-    for(int i = 0; i < ctx->selector().size(); i ++){
-        _current_selectors.push_back(ctx->selector()[i]->getText());
+    else{
+        for(int i = 0; i < ctx->selector().size(); i ++){
+            if(ctx->selector()[i]->aggregator() != nullptr){
+                std::string col =  ctx->selector()[i]->column()->accept(this);
+                _current_selectors.push_back(ctx->selector()[i]->aggregator()->getText() + " " + col) ;
+                std::cout << _current_selectors.back() << std::endl;
+            }
+            else if (ctx->selector()[i]->Count() != nullptr){
+                _current_selectors.push_back("countstar");
+            }
+        }
     }
+    
+    
     return 1;
 }
 antlrcpp::Any SystemVisitor::visitIdentifiers(MYSQLParser::IdentifiersContext *ctx){
@@ -306,6 +316,9 @@ antlrcpp::Any SystemVisitor::visitIdentifiers(MYSQLParser::IdentifiersContext *c
         _current_table_names.push_back(ctx->Identifier()[i]->toString());
     }
     return 1;
+}
+antlrcpp::Any SystemVisitor::visitColumn(MYSQLParser::ColumnContext *ctx){
+    return ctx->Identifier()[0]->toString() + " " + ctx->Identifier()[1]->toString();
 }
 
 }  // namespace dbtrain_mysql

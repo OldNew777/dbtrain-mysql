@@ -54,6 +54,7 @@ class SystemVisitor : public MYSQLBaseVisitor {
   virtual antlrcpp::Any visitSelect_table(MYSQLParser::Select_tableContext *ctx) override;
   virtual antlrcpp::Any visitSelectors(MYSQLParser::SelectorsContext *ctx) override;
   virtual antlrcpp::Any visitIdentifiers(MYSQLParser::IdentifiersContext *ctx) override;
+  virtual antlrcpp::Any visitColumn(MYSQLParser::ColumnContext *ctx) override;
 };
 
 }  // namespace dbtrain_mysql
