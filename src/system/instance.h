@@ -17,9 +17,6 @@ namespace dbtrain_mysql {
 class Instance {
  public:
   Instance();
-  Instance(const std::string& dbname){
-    this->_dbname = dbname;
-  }
   ~Instance();
 
   friend class TransactionManager;

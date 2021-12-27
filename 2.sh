@@ -1,6 +1,3 @@
-cd build
-sudo cmake ..
-sudo make
-cd bin
-./dbtrain_mysql_main
-cd ..
+sudo bash run.sh
+# sudo bash console.sh
+sudo bash main.sh

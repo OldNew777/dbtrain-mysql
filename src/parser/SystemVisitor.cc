@@ -115,13 +115,8 @@ antlrcpp::Any SystemVisitor::visitUse_db(MYSQLParser::Use_dbContext *ctx) {
 }
 antlrcpp::Any SystemVisitor::visitShow_tables(MYSQLParser::Show_tablesContext *ctx) {
     std::cout << "table list\n";
-    auto it = this->table_list->begin();
-    while(it != this->table_list->end()){
-        std::cout << *it << std::endl;
-        it ++;
-    }
     //get table list
-    return 1;
+    return _pDB->GetTableNames();
 }
 
 antlrcpp::Any SystemVisitor::visitShow_indexes(MYSQLParser::Show_indexesContext *ctx) {
@@ -177,44 +172,39 @@ antlrcpp::Any SystemVisitor::visitDump_data(MYSQLParser::Dump_dataContext *ctx) 
 }
 
 antlrcpp::Any SystemVisitor::visitCreate_table(MYSQLParser::Create_tableContext *ctx){
-    this->_current_table_head = new std::vector<TableHead>();
-
     ctx->field_list()->accept(this);
-
-    if(this->_current_table_head == nullptr){
-        assert(0);
-    }
-
     std::string table_name = ctx->Identifier()->toString();
-
-    auto it = this->_current_table_head->begin();
-    std::cout << "create table" <<  table_name << " has heading of:" << std::endl;
-    while(it != this->_current_table_head->end()){
-        std::cout << it->headName << std::endl;
-        it ++;
-    }
-    this->table_list->push_back(table_name);
-    //TODO: update backend
-
-    delete this->_current_table_head;
-    this->_current_table_head = nullptr;
+    std::cout << table_name << " ";
+    bool flag = _pDB->CreateTable(table_name, Schema(_current_field_list));
+    //reset _current_field_list
+    std::cout << flag << std::endl;
+    _current_field_list.clear();
     //add to table list
-    
-    return 1;
+    return flag;
 }
 
-antlrcpp::Any SystemVisitor::visitField_list(MYSQLParser::Field_listContext *ctx) {
-    return visitChildren(ctx);
-}
 antlrcpp::Any SystemVisitor::visitNormal_field(MYSQLParser::Normal_fieldContext *ctx) {
     if(ctx->Identifier() == nullptr){
         assert(0);
     }
     std::string field_name = ctx->Identifier()->toString();
+    std::string type = ctx->type_()->accept(this);
     //TODO: cha chong
-    this->_current_table_head->push_back(TableHead(field_name, TYPE::INT));
+    FieldType tmp = FieldType::NULL_TYPE;
+    std::cout << type << " ";
+    if(type == "INT"){
+        _current_field_list.push_back(Column(field_name, FieldType::INT_TYPE));    
+    }
+    else if(type == "FLOAT"){
+        _current_field_list.push_back(Column(field_name, FieldType::FLOAT_TYPE));    
+    }
+    else{
+        _current_field_list.push_back(Column(field_name, FieldType::CHAR_TYPE, stoi(ctx->type_()->Integer()->toString())));    
+    }
     return 1;
-    // return visitChildren(ctx);
+}
+antlrcpp::Any SystemVisitor::visitType_(MYSQLParser::Type_Context *ctx){
+    return ctx->getText();
 }
 antlrcpp::Any SystemVisitor::visitDrop_table(MYSQLParser::Drop_tableContext *ctx){
     if(ctx->Identifier() == nullptr){
@@ -222,66 +212,33 @@ antlrcpp::Any SystemVisitor::visitDrop_table(MYSQLParser::Drop_tableContext *ctx
     }
     std::string table_name = ctx->Identifier()->toString();
     //drop table
-
-    //delete from local list
-    auto it = this->table_list->begin();
-    while(it != this->table_list->end()){
-        if ((*it) == table_name){
-            this->table_list->erase(it);
-            break;
-        } 
-    }
-    return 1;
+    return _pDB->DropTable(table_name);
 }
 antlrcpp::Any SystemVisitor::visitInsert_into_table(MYSQLParser::Insert_into_tableContext *ctx){
     if(ctx->Identifier() == nullptr){
         assert(0);
     }
-    std::string table_name;
+    std::string table_name = ctx->Identifier()->toString();
     //open table
-    this->_current_value_lists = new std::vector<std::vector<Data*> *>();
-
     ctx->value_lists()->accept(this);
-
-    //TODO: insert into table 
-
-    //delete the _currerny value list
-    for(int i = 0; i < this->_current_value_lists->size(); i ++){
-        if((*_current_value_lists)[i] != nullptr){
-            delete (*_current_value_lists)[i];
-        }
+    for(auto it = _current_value_lists.begin(); it != _current_value_lists.end(); it ++){
+        std::cout << (*it)[0] << " " << (*it)[1] <<  std::endl;
+        _pDB->Insert(table_name, (*it));
     }
-    delete _current_value_lists;
-    _current_value_lists = nullptr;
+
+    _current_value_lists.clear();
 
     return 1;
 }
 
 antlrcpp::Any SystemVisitor::visitValue_list(MYSQLParser::Value_listContext *ctx) {
-    //
-    _tmp_value_list = new std::vector<Data*>();
-    _current_value_lists->push_back(_tmp_value_list);
-
+    _current_value_lists.push_back(std::vector<String>());
     visitChildren(ctx);
-
-
-
     return 1;
 }
 
 antlrcpp::Any SystemVisitor::visitValue(MYSQLParser::ValueContext *ctx){
-    if(ctx->String() != nullptr){
-        _tmp_value_list->push_back(new Str(ctx->String()->toString()));
-    }
-    else if(ctx->Integer() != nullptr){
-        _tmp_value_list->push_back(new Int(atoi(ctx->Integer()->toString().data())));
-    }
-    else if(ctx->Float() != nullptr){
-        _tmp_value_list->push_back(new Float(atof(ctx->Float()->toString().data())));
-    }
-    else{
-        _tmp_value_list->push_back(new Null());
-    }
+    _current_value_lists[_current_value_lists.size() - 1].push_back(ctx->getText());
     return 1;
 }
 
@@ -302,6 +259,53 @@ antlrcpp::Any SystemVisitor::visitDescribe_table(MYSQLParser::Describe_tableCont
 antlrcpp::Any SystemVisitor::visitDelete_from_table(MYSQLParser::Delete_from_tableContext *ctx) {
     std::string tableName = ctx->Identifier()->toString();
     return visitChildren(ctx);
+}
+
+antlrcpp::Any SystemVisitor::visitSelect_table(MYSQLParser::Select_tableContext *ctx){
+    ctx->identifiers()->accept(this);
+    ctx->selectors()->accept(this);
+    std::vector<Record*> records;
+    for(auto table_name_it = _current_table_names.begin(); table_name_it != _current_table_names.end(); table_name_it ++){
+        std::vector<PageSlotID> pageSlotID;
+        std::cout << "selecting from " << *table_name_it << std::endl;
+        for(auto selector_it = _current_selectors.begin(); selector_it != _current_selectors.end(); selector_it ++){
+            Condition* cond = nullptr;
+            std::vector<Condition*> iCond;
+            std::cout << "using selector: " << *selector_it <<std::endl;
+            if((*selector_it) == "*"){
+                cond = new AllCondition();
+            }
+            for(auto it = _pDB->Search((*table_name_it), cond, iCond).begin(); it != _pDB->Search((*table_name_it), cond, iCond).end(); it ++){
+                std::cout << (*it).first << " " << (*it).second << std::endl;
+                records.push_back(_pDB->GetRecord((*table_name_it), (*it)));
+            }
+            if(cond != nullptr){
+                delete cond;
+                cond = nullptr;
+            }
+        }
+    }
+    _current_selectors.clear();
+    _current_table_names.clear();
+    return records;
+}
+antlrcpp::Any SystemVisitor::visitSelectors(MYSQLParser::SelectorsContext *ctx) {
+    std::string text = ctx->getText();
+    if(text == "*"){
+        _current_selectors.push_back("*");
+        return 1;
+    }
+    
+    for(int i = 0; i < ctx->selector().size(); i ++){
+        _current_selectors.push_back(ctx->selector()[i]->getText());
+    }
+    return 1;
+}
+antlrcpp::Any SystemVisitor::visitIdentifiers(MYSQLParser::IdentifiersContext *ctx){
+    for(int i = 0; i < ctx->Identifier().size(); i ++){
+        _current_table_names.push_back(ctx->Identifier()[i]->toString());
+    }
+    return 1;
 }
 
 }  // namespace dbtrain_mysql
