@@ -89,6 +89,9 @@ public:
   virtual void enterAlter_table_add_unique(MYSQLParser::Alter_table_add_uniqueContext *ctx) = 0;
   virtual void exitAlter_table_add_unique(MYSQLParser::Alter_table_add_uniqueContext *ctx) = 0;
 
+  virtual void enterAlter_table_rename(MYSQLParser::Alter_table_renameContext *ctx) = 0;
+  virtual void exitAlter_table_rename(MYSQLParser::Alter_table_renameContext *ctx) = 0;
+
   virtual void enterField_list(MYSQLParser::Field_listContext *ctx) = 0;
   virtual void exitField_list(MYSQLParser::Field_listContext *ctx) = 0;
 

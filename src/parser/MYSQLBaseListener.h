@@ -91,6 +91,9 @@ public:
   virtual void enterAlter_table_add_unique(MYSQLParser::Alter_table_add_uniqueContext * /*ctx*/) override { }
   virtual void exitAlter_table_add_unique(MYSQLParser::Alter_table_add_uniqueContext * /*ctx*/) override { }
 
+  virtual void enterAlter_table_rename(MYSQLParser::Alter_table_renameContext * /*ctx*/) override { }
+  virtual void exitAlter_table_rename(MYSQLParser::Alter_table_renameContext * /*ctx*/) override { }
+
   virtual void enterField_list(MYSQLParser::Field_listContext * /*ctx*/) override { }
   virtual void exitField_list(MYSQLParser::Field_listContext * /*ctx*/) override { }
 

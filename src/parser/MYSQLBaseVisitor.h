@@ -115,6 +115,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitAlter_table_rename(MYSQLParser::Alter_table_renameContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitField_list(MYSQLParser::Field_listContext *ctx) override {
     return visitChildren(ctx);
   }

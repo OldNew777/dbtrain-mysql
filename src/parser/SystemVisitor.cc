@@ -175,12 +175,13 @@ antlrcpp::Any SystemVisitor::visitCreate_table(MYSQLParser::Create_tableContext 
     ctx->field_list()->accept(this);
     std::string table_name = ctx->Identifier()->toString();
     std::cout << table_name << " ";
-    bool flag = _pDB->CreateTable(table_name, Schema(_current_field_list));
-    //reset _current_field_list
-    std::cout << flag << std::endl;
+
+    // bool flag = _pDB->CreateTable(table_name, Schema(_current_field_list));
+
+
     _current_field_list.clear();
     //add to table list
-    return flag;
+    return 1;
 }
 
 antlrcpp::Any SystemVisitor::visitNormal_field(MYSQLParser::Normal_fieldContext *ctx) {
@@ -192,6 +193,8 @@ antlrcpp::Any SystemVisitor::visitNormal_field(MYSQLParser::Normal_fieldContext 
     //TODO: cha chong
     FieldType tmp = FieldType::NULL_TYPE;
     std::cout << type << " ";
+    bool flag = (ctx->Null() != nullptr);
+    // TODO: column need a null flag
     if(type == "INT"){
         _current_field_list.push_back(Column(field_name, FieldType::INT_TYPE));    
     }
@@ -201,7 +204,20 @@ antlrcpp::Any SystemVisitor::visitNormal_field(MYSQLParser::Normal_fieldContext 
     else{
         _current_field_list.push_back(Column(field_name, FieldType::CHAR_TYPE, stoi(ctx->type_()->Integer()->toString())));    
     }
+    
     return 1;
+}
+antlrcpp::Any SystemVisitor::visitPrimary_key_field(MYSQLParser::Primary_key_fieldContext* ctx){
+    std::vector<std::string> tmp = ctx->identifiers()->accept(this);
+    for(int i = 0; i < tmp.size(); i ++){
+        std::cout << tmp[i];
+    }
+    std::cout << std::endl;
+    //TODO: set primary keys;
+    return true;
+}
+antlrcpp::Any SystemVisitor::visitForeign_key_field(MYSQLParser::Foreign_key_fieldContext* ctx){
+
 }
 antlrcpp::Any SystemVisitor::visitType_(MYSQLParser::Type_Context *ctx){
     return ctx->getText();
@@ -257,13 +273,13 @@ antlrcpp::Any SystemVisitor::visitDelete_from_table(MYSQLParser::Delete_from_tab
 }
 
 antlrcpp::Any SystemVisitor::visitSelect_table(MYSQLParser::Select_tableContext *ctx){
-    ctx->identifiers()->accept(this);
+    std::vector<String> current_table_names = ctx->identifiers()->accept(this);
     ctx->selectors()->accept(this);
-    if(ctx->where_and_clause() != nullptr){
-        ctx->where_and_clause()->accept(this);
-    }
+    // if(ctx->where_and_clause() != nullptr){
+    //     ctx->where_and_clause()->accept(this);
+    // }
     std::vector<Record*> records;
-    for(auto table_name_it = _current_table_names.begin(); table_name_it != _current_table_names.end(); table_name_it ++){
+    for(auto table_name_it = current_table_names.begin(); table_name_it != current_table_names.end(); table_name_it ++){
         std::vector<PageSlotID> pageSlotID;
         for(auto selector_it = _current_selectors.begin(); selector_it != _current_selectors.end(); selector_it ++){
             Condition* cond = nullptr;
@@ -285,7 +301,6 @@ antlrcpp::Any SystemVisitor::visitSelect_table(MYSQLParser::Select_tableContext 
         }
     }
     _current_selectors.clear();
-    _current_table_names.clear();
     return records;
 }
 antlrcpp::Any SystemVisitor::visitSelectors(MYSQLParser::SelectorsContext *ctx) {
@@ -309,10 +324,11 @@ antlrcpp::Any SystemVisitor::visitSelectors(MYSQLParser::SelectorsContext *ctx) 
     return 1;
 }
 antlrcpp::Any SystemVisitor::visitIdentifiers(MYSQLParser::IdentifiersContext *ctx){
+    std::vector<String> ids;
     for(int i = 0; i < ctx->Identifier().size(); i ++){
-        _current_table_names.push_back(ctx->Identifier()[i]->toString());
+        ids.push_back(ctx->Identifier()[i]->toString());
     }
-    return 1;
+    return ids;
 }
 antlrcpp::Any SystemVisitor::visitColumn(MYSQLParser::ColumnContext *ctx){
     return Col(ctx->Identifier()[0]->toString(), ctx->Identifier()[1]->toString());
@@ -384,5 +400,31 @@ antlrcpp::Any SystemVisitor::visitWhere_like_string(MYSQLParser::Where_like_stri
     Col column = ctx->column()->accept(this);
     return std::make_pair(column, "like " + ctx->String()->getText());
 }
+
+antlrcpp::Any SystemVisitor::visitAlter_table_rename(MYSQLParser::Alter_table_renameContext* ctx){
+    std::string oldName = ctx->Identifier()[0]->getText();
+    std::string newName = ctx->Identifier()[1]->getText();
+    //TODO: rename
+}
+antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(MYSQLParser::Alter_table_add_pkContext* ctx){
+    std::string tablename = ctx->Identifier()[0]->getText();
+    std::vector<std::string> pks = ctx->identifiers()->accept(this);
+}
+antlrcpp::Any SystemVisitor::visitAlter_table_drop_pk(MYSQLParser::Alter_table_drop_pkContext* ctx){
+    std::string tablename = ctx->Identifier()[0]->getText();
+    std::vector<std::string> pks = ctx->identifiers()->accept(this);
+}
+antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(MYSQLParser::Alter_table_add_foreign_keyContext* ctx){
+    std::string tablename = ctx->Identifier()[0]->getText();
+    std::string constriantName = ctx->Identifier()[1]->getText();
+    std::string refTableName = ctx->Identifier()[2]->getText();
+    std::vector<std::string> pks = ctx->identifiers()[0]->accept(this);
+    std::vector<std::string> refpks = ctx->identifiers()[1]->accept(this);
+}
+antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(MYSQLParser::Alter_table_drop_foreign_keyContext* ctx){
+    std::string tablename = ctx->Identifier()[0]->getText();
+    std::string reftableName = ctx->Identifier()[1]->getText();
+}
+
 
 }  // namespace dbtrain_mysql

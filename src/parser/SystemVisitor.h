@@ -20,7 +20,6 @@ class SystemVisitor : public MYSQLBaseVisitor {
   Instance* _pDB;
   std::vector<Column> _current_field_list;
   std::map<std::string, Instance*> _dbs;
-  std::vector<String> _current_table_names;
   std::vector<String> _current_selectors;
   String _current_type;
 
@@ -46,6 +45,8 @@ class SystemVisitor : public MYSQLBaseVisitor {
   virtual antlrcpp::Any visitInsert_into_table(MYSQLParser::Insert_into_tableContext *ctx) override;
   virtual antlrcpp::Any visitDelete_from_table(MYSQLParser::Delete_from_tableContext *ctx) override;
   virtual antlrcpp::Any visitNormal_field(MYSQLParser::Normal_fieldContext *ctx) override;
+  virtual antlrcpp::Any visitPrimary_key_field(MYSQLParser::Primary_key_fieldContext* ctx) override;
+  virtual antlrcpp::Any visitForeign_key_field(MYSQLParser::Foreign_key_fieldContext* ctx) override;
   virtual antlrcpp::Any visitValue_lists(MYSQLParser::Value_listsContext *ctx);
   virtual antlrcpp::Any visitValue_list(MYSQLParser::Value_listContext *ctx);
 
@@ -61,7 +62,12 @@ class SystemVisitor : public MYSQLBaseVisitor {
   virtual antlrcpp::Any visitSelectors(MYSQLParser::SelectorsContext *ctx) override;
   virtual antlrcpp::Any visitIdentifiers(MYSQLParser::IdentifiersContext *ctx) override;
   virtual antlrcpp::Any visitColumn(MYSQLParser::ColumnContext *ctx) override;
-  
+
+  virtual antlrcpp::Any visitAlter_table_rename(MYSQLParser::Alter_table_renameContext* ctx) override;
+  virtual antlrcpp::Any visitAlter_table_drop_pk(MYSQLParser::Alter_table_drop_pkContext* ctx) override;
+  virtual antlrcpp::Any visitAlter_table_add_pk(MYSQLParser::Alter_table_add_pkContext* ctx) override;
+  virtual antlrcpp::Any visitAlter_table_add_foreign_key(MYSQLParser::Alter_table_add_foreign_keyContext* ctx) override;
+  virtual antlrcpp::Any visitAlter_table_drop_foreign_key(MYSQLParser::Alter_table_drop_foreign_keyContext* ctx) override;
 };
 
 }  // namespace dbtrain_mysql

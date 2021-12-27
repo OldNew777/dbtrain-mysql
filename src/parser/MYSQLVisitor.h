@@ -69,6 +69,8 @@ public:
 
     virtual antlrcpp::Any visitAlter_table_add_unique(MYSQLParser::Alter_table_add_uniqueContext *context) = 0;
 
+    virtual antlrcpp::Any visitAlter_table_rename(MYSQLParser::Alter_table_renameContext *context) = 0;
+
     virtual antlrcpp::Any visitField_list(MYSQLParser::Field_listContext *context) = 0;
 
     virtual antlrcpp::Any visitNormal_field(MYSQLParser::Normal_fieldContext *context) = 0;
