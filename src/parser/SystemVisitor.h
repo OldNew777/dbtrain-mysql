@@ -19,7 +19,6 @@ class SystemVisitor : public MYSQLBaseVisitor {
  private:
   Instance* _pDB;
   std::vector<Column> _current_field_list;
-  std::vector<std::vector<String>> _current_value_lists; 
   std::map<std::string, Instance*> _dbs;
   std::vector<String> _current_table_names;
   std::vector<String> _current_selectors;
@@ -28,7 +27,7 @@ class SystemVisitor : public MYSQLBaseVisitor {
  public:
   std::string current_db_name = "";
   std::list<std::string>* db_list;
-  std::list<std::string>* table_list = nullptr;
+  std::list<std::string>* table_list = nullptr; 
 
   SystemVisitor(Instance* pDB);
   
@@ -47,14 +46,22 @@ class SystemVisitor : public MYSQLBaseVisitor {
   virtual antlrcpp::Any visitInsert_into_table(MYSQLParser::Insert_into_tableContext *ctx) override;
   virtual antlrcpp::Any visitDelete_from_table(MYSQLParser::Delete_from_tableContext *ctx) override;
   virtual antlrcpp::Any visitNormal_field(MYSQLParser::Normal_fieldContext *ctx) override;
+  virtual antlrcpp::Any visitValue_lists(MYSQLParser::Value_listsContext *ctx);
   virtual antlrcpp::Any visitValue_list(MYSQLParser::Value_listContext *ctx);
-  virtual antlrcpp::Any visitValue(MYSQLParser::ValueContext *ctx) override;
+
   virtual antlrcpp::Any visitWhere_and_clause(MYSQLParser::Where_and_clauseContext *ctx) override;
   virtual antlrcpp::Any visitWhere_operator_expression(MYSQLParser::Where_operator_expressionContext *ctx) override;
+  virtual antlrcpp::Any visitWhere_operator_select(MYSQLParser::Where_operator_selectContext *ctx) override;
+  virtual antlrcpp::Any visitWhere_null(MYSQLParser::Where_nullContext *ctx) override;
+  virtual antlrcpp::Any visitWhere_in_list(MYSQLParser::Where_in_listContext *ctx) override;
+  virtual antlrcpp::Any visitWhere_in_select(MYSQLParser::Where_in_selectContext *ctx) override;
+  virtual antlrcpp::Any visitWhere_like_string(MYSQLParser::Where_like_stringContext *ctx) override;
+
   virtual antlrcpp::Any visitSelect_table(MYSQLParser::Select_tableContext *ctx) override;
   virtual antlrcpp::Any visitSelectors(MYSQLParser::SelectorsContext *ctx) override;
   virtual antlrcpp::Any visitIdentifiers(MYSQLParser::IdentifiersContext *ctx) override;
   virtual antlrcpp::Any visitColumn(MYSQLParser::ColumnContext *ctx) override;
+  
 };
 
 }  // namespace dbtrain_mysql

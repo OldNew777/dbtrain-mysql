@@ -221,34 +221,29 @@ antlrcpp::Any SystemVisitor::visitInsert_into_table(MYSQLParser::Insert_into_tab
     std::string table_name = ctx->Identifier()->toString();
     //open table
     ctx->value_lists()->accept(this);
-    for(auto it = _current_value_lists.begin(); it != _current_value_lists.end(); it ++){
+    std::vector<std::vector<String>> current_value_lists = ctx->accept(this);
+    for(auto it = current_value_lists.begin(); it != current_value_lists.end(); it ++){
         std::cout << (*it)[0] << " " << (*it)[1] <<  std::endl;
         _pDB->Insert(table_name, (*it));
     }
 
-    _current_value_lists.clear();
-
     return 1;
 }
-
+antlrcpp::Any SystemVisitor::visitValue_lists(MYSQLParser::Value_listsContext *ctx){
+    std::vector<std::vector<String>> tmp;
+    for(auto it = ctx->value_list().begin(); it != ctx->value_list().end(); it ++){
+        tmp.push_back((*it)->accept(this));
+    }
+    return tmp;
+}
 antlrcpp::Any SystemVisitor::visitValue_list(MYSQLParser::Value_listContext *ctx) {
-    _current_value_lists.push_back(std::vector<String>());
-    visitChildren(ctx);
-    return 1;
+    std::vector<String> tmp;
+    for(auto it = ctx->value().begin(); it != ctx->value().end(); it ++){
+        tmp.push_back((*it)->getText());
+    }
+    return tmp;
 }
 
-antlrcpp::Any SystemVisitor::visitValue(MYSQLParser::ValueContext *ctx){
-    _current_value_lists[_current_value_lists.size() - 1].push_back(ctx->getText());
-    return 1;
-}
-
-antlrcpp::Any SystemVisitor::visitWhere_and_clause(MYSQLParser::Where_and_clauseContext *ctx)  {
-    return visitChildren(ctx);
-}
-antlrcpp::Any SystemVisitor::visitWhere_operator_expression(MYSQLParser::Where_operator_expressionContext *ctx){
-    
-    return visitChildren(ctx);
-}
 
 antlrcpp::Any SystemVisitor::visitDescribe_table(MYSQLParser::Describe_tableContext *ctx) {
     std::string tableName = ctx->Identifier()->toString();
@@ -264,21 +259,25 @@ antlrcpp::Any SystemVisitor::visitDelete_from_table(MYSQLParser::Delete_from_tab
 antlrcpp::Any SystemVisitor::visitSelect_table(MYSQLParser::Select_tableContext *ctx){
     ctx->identifiers()->accept(this);
     ctx->selectors()->accept(this);
+    if(ctx->where_and_clause() != nullptr){
+        ctx->where_and_clause()->accept(this);
+    }
     std::vector<Record*> records;
     for(auto table_name_it = _current_table_names.begin(); table_name_it != _current_table_names.end(); table_name_it ++){
         std::vector<PageSlotID> pageSlotID;
-        std::cout << "selecting from " << *table_name_it << std::endl;
         for(auto selector_it = _current_selectors.begin(); selector_it != _current_selectors.end(); selector_it ++){
             Condition* cond = nullptr;
             std::vector<Condition*> iCond;
-            std::cout << "using selector: " << *selector_it <<std::endl;
             if((*selector_it) == "*"){
                 cond = new AllCondition();
             }
-            for(auto it = _pDB->Search((*table_name_it), cond, iCond).begin(); it != _pDB->Search((*table_name_it), cond, iCond).end(); it ++){
-                std::cout << (*it).first << " " << (*it).second << std::endl;
-                records.push_back(_pDB->GetRecord((*table_name_it), (*it)));
-            }
+            //TODO: wait for backend
+
+            // for(auto it = _pDB->Search((*table_name_it), cond, iCond).begin(); it != _pDB->Search((*table_name_it), cond, iCond).end(); it ++){
+            //     std::cout << (*it).first << " " << (*it).second << std::endl;
+                
+            //      records.push_back(_pDB->GetRecord((*table_name_it), (*it)));
+            // }
             if(cond != nullptr){
                 delete cond;
                 cond = nullptr;
@@ -298,8 +297,8 @@ antlrcpp::Any SystemVisitor::visitSelectors(MYSQLParser::SelectorsContext *ctx) 
     else{
         for(int i = 0; i < ctx->selector().size(); i ++){
             if(ctx->selector()[i]->aggregator() != nullptr){
-                std::string col =  ctx->selector()[i]->column()->accept(this);
-                _current_selectors.push_back(ctx->selector()[i]->aggregator()->getText() + " " + col) ;
+                Col col = ctx->selector()[i]->column()->accept(this);
+                _current_selectors.push_back(ctx->selector()[i]->aggregator()->getText() + " " + col.first + " " + col.second) ;
                 std::cout << _current_selectors.back() << std::endl;
             }
             else if (ctx->selector()[i]->Count() != nullptr){
@@ -307,8 +306,6 @@ antlrcpp::Any SystemVisitor::visitSelectors(MYSQLParser::SelectorsContext *ctx) 
             }
         }
     }
-    
-    
     return 1;
 }
 antlrcpp::Any SystemVisitor::visitIdentifiers(MYSQLParser::IdentifiersContext *ctx){
@@ -318,7 +315,74 @@ antlrcpp::Any SystemVisitor::visitIdentifiers(MYSQLParser::IdentifiersContext *c
     return 1;
 }
 antlrcpp::Any SystemVisitor::visitColumn(MYSQLParser::ColumnContext *ctx){
-    return ctx->Identifier()[0]->toString() + " " + ctx->Identifier()[1]->toString();
+    return Col(ctx->Identifier()[0]->toString(), ctx->Identifier()[1]->toString());
+}
+
+antlrcpp::Any SystemVisitor::visitWhere_and_clause(MYSQLParser::Where_and_clauseContext *ctx){
+    std::cout << "1" << std::endl;
+    std::map<Col, std::vector<String>> where_clauses;
+    for(auto it = ctx->where_clause().begin(); it != ctx->where_clause().end(); it++){
+        std::cout << "2" << std::endl;
+        std::pair<Col, std::string> p = (*it)->accept(this);
+        std::cout << p.first.first + " " + p.first.second << " : " << p.second << std::endl;
+        Col column = p.first;
+        if(where_clauses.find(column) == where_clauses.end()){
+            where_clauses[column] = std::vector<std::string>();
+        }
+        where_clauses[column].push_back(p.second);
+    }
+    return where_clauses;
+}
+antlrcpp::Any SystemVisitor::visitWhere_operator_expression(MYSQLParser::Where_operator_expressionContext *ctx){
+    std::cout << "where op exp" << std::endl;
+    Col column = ctx->column()->accept(this);
+    //TODO: 
+    return std::make_pair(column, ctx->operator_()->getText() + " " + ctx->expression()->getText());
+}
+
+antlrcpp::Any SystemVisitor::visitWhere_operator_select(MYSQLParser::Where_operator_selectContext *ctx) {
+    std::cout << "where op sel" << std::endl;
+    //TODO: WAIT BACKEND
+    // std::vector<Record*> select_record = ctx->select_table()->accept(this);//return vector of record deriectly
+    //process the records and get to an accurate value
+    Col column = ctx->column()->accept(this);
+    return std::make_pair(column, "op state table");
+}
+
+antlrcpp::Any SystemVisitor::visitWhere_null(MYSQLParser::Where_nullContext *ctx) {
+    std::cout << "where null" << std::endl;
+    Col column = ctx->column()->accept(this);
+    if(!ctx->getText().find("IS NOT")){// should use npos. maybe
+        return std::make_pair(column, "IS NOT NULL");
+    }
+    else{
+        return std::make_pair(column, "IS NULL");
+    }
+    
+}
+
+antlrcpp::Any SystemVisitor::visitWhere_in_list(MYSQLParser::Where_in_listContext *ctx) {
+    std::cout << "where in list" << std::endl;
+    Col column = ctx->column()->accept(this);
+    std::vector<String> value_list = ctx->value_list()->accept(this);
+    std::string s = "in ";
+    for(std::string str : value_list){
+        s += str;
+    }
+    return std::make_pair(column, s);
+}
+
+antlrcpp::Any SystemVisitor::visitWhere_in_select(MYSQLParser::Where_in_selectContext *ctx) {
+    std::cout << "where in select" << std::endl;
+    Col column = ctx->column()->accept(this);
+    std::vector<Record*> select_record = ctx->select_table()->accept(this);//return vector of record deriectly
+    return std::make_pair(column, "in state table");
+}
+
+antlrcpp::Any SystemVisitor::visitWhere_like_string(MYSQLParser::Where_like_stringContext *ctx) {
+    std::cout << "where like" << std::endl;
+    Col column = ctx->column()->accept(this);
+    return std::make_pair(column, "like " + ctx->String()->getText());
 }
 
 }  // namespace dbtrain_mysql
