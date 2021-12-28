@@ -4,9 +4,9 @@ CREATE TABLE tmp(name VARCHAR(128), id INT, PRIMARY KEY (id, name));
 --SELECT AVG(tmp.name),MAX(tmp.id),COUNT(*) FROM tmp WHERE tmp.name < 30 AND tmp.name < (SELECT * FROM tmp) AND tmp.name IS NULL;
 
 
-CREATE TABLE tmp(name VARCHAR(128), id INT);
-INSERT INTO tmp VALUES('Jack',20);
-INSERT INTO tmp VALUES('Mike',NULL);
-INSERT INTO tmp VALUES('Mike', NULL);
-SELECT * FROM tmp;
-SELECT * FROM tmp WHERE tmp.id > 10;
+CREATE TABLE student(name VARCHAR(128), id INT);
+INSERT INTO student VALUES('Jack',20);
+INSERT INTO student VALUES('Mike',NULL);
+INSERT INTO student VALUES('Mike', NULL);
+SELECT * FROM student;
+SELECT * FROM student WHERE student.id > 10;
