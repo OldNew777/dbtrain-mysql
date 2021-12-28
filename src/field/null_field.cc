@@ -4,9 +4,13 @@
 
 namespace dbtrain_mysql {
 
-void NullField::SetData(const uint8_t* src, Size nSize) { assert(nSize == 0); }
+void NullField::SetData(const uint8_t* src, Size nSize) {
+  // assert(nSize == 0);
+}
 
-void NullField::GetData(uint8_t* dst, Size nSize) const { assert(nSize == 0); }
+void NullField::GetData(uint8_t* dst, Size nSize) const {
+  // assert(nSize == 0);
+}
 
 FieldType NullField::GetType() const { return FieldType::NULL_TYPE; }
 

@@ -10,6 +10,7 @@
 #include "result/result.h"
 #include "table/schema.h"
 #include "table/table.h"
+#include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
 
@@ -38,7 +39,7 @@ antlrcpp::Any SystemVisitor::visitStatement(
     res = ctx->alter_statement()->accept(this);
   else {
     printf("%s\n", ctx->getText().c_str());
-    throw Exception("Statement type error");
+    throw CaseException();
   }
   return res;
 }
@@ -436,7 +437,7 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
                                   iPairB.second));
   }
   if (_pDB->IsIndex(iPair.first, iPair.second)) {
-    double fValue = stod(ctx->expression()->value()->getText());
+    float fValue = stod(ctx->expression()->value()->getText());
     FieldType iType = _pDB->GetColType(iPair.first, iPair.second);
     if (ctx->children[1]->getText() == "<") {
       return std::pair<String, Condition *>(
@@ -445,15 +446,15 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
     } else if (ctx->children[1]->getText() == ">") {
       return std::pair<String, Condition *>(
           iPair.first, new IndexCondition(iPair.first, iPair.second,
-                                          fValue + EPOSILO, DBL_MAX, iType));
+                                          floatNext(fValue), DBL_MAX, iType));
     } else if (ctx->children[1]->getText() == "=") {
       return std::pair<String, Condition *>(
           iPair.first, new IndexCondition(iPair.first, iPair.second, fValue,
-                                          fValue + EPOSILO, iType));
+                                          floatNext(fValue), iType));
     } else if (ctx->children[1]->getText() == "<=") {
       return std::pair<String, Condition *>(
           iPair.first, new IndexCondition(iPair.first, iPair.second, DBL_MIN,
-                                          fValue + EPOSILO, iType));
+                                          floatNext(fValue), iType));
     } else if (ctx->children[1]->getText() == ">=") {
       return std::pair<String, Condition *>(
           iPair.first, new IndexCondition(iPair.first, iPair.second, fValue,
@@ -461,35 +462,36 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
     } else if (ctx->children[1]->getText() == "<>") {
       return std::pair<String, Condition *>(
           iPair.first, new NotCondition(new RangeCondition(nColIndex, fValue,
-                                                           fValue + EPOSILO)));
+                                                           floatNext(fValue))));
     } else {
-      throw Exception();
+      throw CaseException();
     }
   } else {
-    double fValue = stod(ctx->expression()->value()->getText());
+    float fValue = stod(ctx->expression()->value()->getText());
     if (ctx->children[1]->getText() == "<") {
       return std::pair<String, Condition *>(
           iPair.first, new RangeCondition(nColIndex, DBL_MIN, fValue));
     } else if (ctx->children[1]->getText() == ">") {
       return std::pair<String, Condition *>(
           iPair.first,
-          new RangeCondition(nColIndex, fValue + EPOSILO, DBL_MAX));
+          new RangeCondition(nColIndex, floatNext(fValue), DBL_MAX));
     } else if (ctx->children[1]->getText() == "=") {
       return std::pair<String, Condition *>(
-          iPair.first, new RangeCondition(nColIndex, fValue, fValue + EPOSILO));
+          iPair.first,
+          new RangeCondition(nColIndex, fValue, floatNext(fValue)));
     } else if (ctx->children[1]->getText() == "<=") {
       return std::pair<String, Condition *>(
           iPair.first,
-          new RangeCondition(nColIndex, DBL_MIN, fValue + EPOSILO));
+          new RangeCondition(nColIndex, DBL_MIN, floatNext(fValue)));
     } else if (ctx->children[1]->getText() == ">=") {
       return std::pair<String, Condition *>(
           iPair.first, new RangeCondition(nColIndex, fValue, DBL_MAX));
     } else if (ctx->children[1]->getText() == "<>") {
       return std::pair<String, Condition *>(
           iPair.first, new NotCondition(new RangeCondition(nColIndex, fValue,
-                                                           fValue + EPOSILO)));
+                                                           floatNext(fValue))));
     } else {
-      throw SpecialException();
+      throw CaseException();
     }
   }
 }
@@ -520,22 +522,28 @@ antlrcpp::Any SystemVisitor::visitWhere_like_string(
 }
 
 antlrcpp::Any SystemVisitor::visitColumn(MYSQLParser::ColumnContext *ctx) {
-  throw UncompletedException();
+  String sTableName = ctx->Identifier(0)->getText();
+  String sColumnName = ctx->Identifier(1)->getText();
+  return std::pair<String, String>(sTableName, sColumnName);
 }
 
 antlrcpp::Any SystemVisitor::visitExpression(
     MYSQLParser::ExpressionContext *ctx) {
-  throw UncompletedException();
+  return visitChildren(ctx);
 }
 
 antlrcpp::Any SystemVisitor::visitSet_clause(
     MYSQLParser::Set_clauseContext *ctx) {
-  throw UncompletedException();
+  std::vector<std::pair<String, String>> iVec;
+  for (Size i = 0; i < ctx->Identifier().size(); ++i) {
+    iVec.push_back({ctx->Identifier(i)->getText(), ctx->value(i)->getText()});
+  }
+  return iVec;
 }
 
 antlrcpp::Any SystemVisitor::visitSelectors(
     MYSQLParser::SelectorsContext *ctx) {
-  throw UncompletedException();
+  return visitChildren(ctx);
 }
 
 antlrcpp::Any SystemVisitor::visitSelector(MYSQLParser::SelectorContext *ctx) {
@@ -544,17 +552,21 @@ antlrcpp::Any SystemVisitor::visitSelector(MYSQLParser::SelectorContext *ctx) {
 
 antlrcpp::Any SystemVisitor::visitIdentifiers(
     MYSQLParser::IdentifiersContext *ctx) {
-  throw UncompletedException();
+  std::vector<String> iStringVec;
+  for (const auto &it : ctx->Identifier()) {
+    iStringVec.push_back(it->getText());
+  }
+  return iStringVec;
 }
 
 antlrcpp::Any SystemVisitor::visitOperator_(
     MYSQLParser::Operator_Context *ctx) {
-  throw UncompletedException();
+  return visitChildren(ctx);
 }
 
 antlrcpp::Any SystemVisitor::visitAggregator(
     MYSQLParser::AggregatorContext *ctx) {
-  throw UncompletedException();
+  return visitChildren(ctx);
 }
 
 }  // namespace dbtrain_mysql

@@ -2,6 +2,7 @@
 #include "exception.h"
 
 // children class
+#include "case_exception.h"
 #include "compare_exception.h"
 #include "index_exception.h"
 #include "nullptr_exception.h"

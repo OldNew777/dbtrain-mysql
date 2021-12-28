@@ -5,6 +5,8 @@
 #include <cstring>
 #include <sstream>
 
+#include "utils/basic_function.h"
+
 namespace dbtrain_mysql {
 
 FloatField::FloatField(const float& floatData) : floatData(floatData) {}
@@ -33,13 +35,7 @@ float FloatField::GetFloatData() const { return floatData; }
 
 Field* FloatField::Clone() const { return new FloatField(floatData); }
 
-void FloatField::Add() {
-  // TODO : whether should here divided by 2?
-  if (fabs(floatData) < __FLT_MIN__ / __FLT_EPSILON__)
-    floatData += __FLT_MIN__;
-  else
-    floatData += fabs(floatData) * __FLT_EPSILON__;
-}
+void FloatField::Add() { floatData = floatNext(floatData); }
 
 uint32_t FloatField::Hash() const { return *(uint32_t*)(&floatData); }
 
