@@ -192,14 +192,21 @@ PageSlotID Instance::Insert(const String& sTableName,
                             Transaction* txn) {
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) throw TableNotExistException(sTableName);
+
   Record* pRecord = pTable->EmptyRecord();
-  if (txn != nullptr) {
-    // add transaction_id to record
-    std::vector<String> iRawVec_Txn = iRawVec;
-    iRawVec_Txn.push_back(std::to_string(txn->GetTxnID()));
-    pRecord->Build(iRawVec_Txn);
-  } else {
-    pRecord->Build(iRawVec);
+
+  try {
+    if (txn != nullptr) {
+      // add transaction_id to record
+      std::vector<String> iRawVec_Txn = iRawVec;
+      iRawVec_Txn.push_back(std::to_string(txn->GetTxnID()));
+      pRecord->Build(iRawVec_Txn);
+    } else {
+      pRecord->Build(iRawVec);
+    }
+  } catch (const std::exception& e) {
+    delete pRecord;
+    throw e;
   }
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);

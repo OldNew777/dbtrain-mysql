@@ -104,6 +104,7 @@ antlrcpp::Any SystemVisitor::visitCreate_table(
     _pDB->CreateTable(sTableName, iSchema);
     nSize = 1;
   } catch (const std::exception &e) {
+    // TODO
     std::cerr << e.what() << '\n';
   }
   Result *res = new MemResult({"Create Table"});
@@ -121,6 +122,7 @@ antlrcpp::Any SystemVisitor::visitDrop_table(
     _pDB->DropTable(sTableName);
     nSize = 1;
   } catch (const std::exception &e) {
+    // TODO
     std::cerr << e.what() << '\n';
   }
   Result *res = new MemResult({"Drop Table"});
@@ -291,6 +293,7 @@ antlrcpp::Any SystemVisitor::visitAlter_add_index(
       _pDB->CreateIndex(sTableName, sColName, iType);
       ++nSize;
     } catch (const std::exception &e) {
+      // TODO
       std::cerr << e.what() << '\n';
     }
   }
@@ -311,6 +314,7 @@ antlrcpp::Any SystemVisitor::visitAlter_drop_index(
       _pDB->DropIndex(sTableName, sColName);
       ++nSize;
     } catch (const std::exception &e) {
+      // TODO
       std::cerr << e.what() << '\n';
     }
   }

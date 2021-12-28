@@ -94,13 +94,28 @@ void FixedRecord::Build(const std::vector<String>& iRawVec) {
     } else {
       if (iType == FieldType::NULL_TYPE) {
         SetField(i, new NullField());
-      }
-      if (iType == FieldType::INT_TYPE) {
-        int nVal = std::stoi(iRawVec[i]);
-        SetField(i, new IntField(nVal));
+      } else if (iType == FieldType::INT_TYPE) {
+        try {
+          int nVal = std::stoi(iRawVec[i]);
+          SetField(i, new IntField(nVal));
+        } catch (const std::invalid_argument& e) {
+          printf("INT format error\n");
+          throw e;
+        } catch (const std::out_of_range& e) {
+          printf("INT out of range\n");
+          throw e;
+        }
       } else if (iType == FieldType::FLOAT_TYPE) {
-        double fVal = std::stod(iRawVec[i]);
-        SetField(i, new FloatField(fVal));
+        try {
+          double fVal = std::stod(iRawVec[i]);
+          SetField(i, new FloatField(fVal));
+        } catch (const std::invalid_argument& e) {
+          printf("FLOAT format error\n");
+          throw e;
+        } catch (const std::out_of_range& e) {
+          printf("FLOAT out of range\n");
+          throw e;
+        }
       } else if (iType == FieldType::CHAR_TYPE) {
         // erase \' and \"
         SetField(i, new CharField(iRawVec[i].substr(1, iRawVec[i].size() - 2)));
