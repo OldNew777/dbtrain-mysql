@@ -9,3 +9,4 @@
 #include "page_exception.h"
 #include "parser_exception.h"
 #include "table_exception.h"
+#include "uncompleted_exception.h"

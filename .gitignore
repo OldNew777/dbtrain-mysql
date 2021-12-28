@@ -3,6 +3,17 @@ build/
 DB_BITMAP.dat
 DB_PAGE.dat
 
+Makefile
+compile_commands.json
+CMakeCache.txt
+cmake_install.cmake
+bin/
+CMakeFiles/
+googletest-build/
+googletest-download/
+googletest-src/
+lib/
+
 # report bin files
 *.pdf
 
