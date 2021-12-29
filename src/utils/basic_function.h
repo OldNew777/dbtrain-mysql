@@ -11,7 +11,9 @@ void PrintPageSlotID(const PageSlotID& nPageSlotID);
 
 String toUpper(const String& str);
 
-float floatNext(const float& floatData);
+float floatNext(const float& data);
+int intNext(const int& data);
+String stringNext(const String& data);
 
 }  // namespace dbtrain_mysql
 

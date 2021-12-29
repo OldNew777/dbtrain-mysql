@@ -3,6 +3,8 @@
 #include <cassert>
 #include <cstring>
 
+#include "utils/basic_function.h"
+
 namespace dbtrain_mysql {
 
 IntField::IntField(const int& dataInt) : dataInt(dataInt) {}
@@ -27,10 +29,7 @@ int IntField::GetIntData() const { return dataInt; }
 
 Field* IntField::Clone() const { return new IntField(dataInt); }
 
-void IntField::Add() {
-  // TODO : how to deal with INT32_MAX?
-  if (dataInt != INT32_MAX) dataInt += 1;
-}
+void IntField::Add() { dataInt = intNext(dataInt); }
 
 uint32_t IntField::Hash() const { return dataInt; }
 

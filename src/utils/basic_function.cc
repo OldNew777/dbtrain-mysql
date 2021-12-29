@@ -15,12 +15,27 @@ String toUpper(const String& str) {
   return ans;
 }
 
-float floatNext(const float& floatData) {
+float floatNext(const float& data) {
   // TODO : whether should here divided by 2?
-  if (fabs(floatData) < __FLT_MIN__ / __FLT_EPSILON__)
-    return floatData + __FLT_MIN__;
+  if (fabs(data) < __FLT_MIN__ / __FLT_EPSILON__)
+    return data + __FLT_MIN__;
   else
-    return floatData + fabs(floatData) * __FLT_EPSILON__;
+    return data + fabs(data) * __FLT_EPSILON__;
+}
+int intNext(const int& data) {
+  if (data != INT32_MAX)
+    return data + 1;
+  else
+    // TODO : how to deal with INT32_MAX?
+    return INT32_MAX;
+}
+String stringNext(const String& data) {
+  // visiable char problem?
+  String ans = data;
+  if (data.length() == 0 || data[data.length() - 1] >= 126)
+    ans += ' ';
+  else
+    ans[data.length() - 1] += 1;
 }
 
 }  // namespace dbtrain_mysql

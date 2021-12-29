@@ -1,5 +1,7 @@
 #include "char_field.h"
 
+#include "utils/basic_function.h"
+
 namespace dbtrain_mysql {
 
 CharField::CharField() : len(0) { charData = String("\0", 0); }
@@ -36,12 +38,7 @@ FieldType CharField::GetType() const { return FieldType::CHAR_TYPE; }
 
 Size CharField::GetSize() const { return len; }
 
-void CharField::Add() {
-  if (charData.length() == 0 || charData[charData.length() - 1] >= 126)
-    charData += ' ';
-  else
-    charData[charData.length() - 1] += 1;
-}
+void CharField::Add() { charData = stringNext(charData); }
 
 String CharField::ToString() const { return charData; }
 
