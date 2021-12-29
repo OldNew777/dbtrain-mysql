@@ -7,6 +7,8 @@
 
 namespace dbtrain_mysql {
 
+class Entity;
+
 enum class ManagerPageType {
   DATABASE_PAGE_TYPE = 0,
   TABLE_PAGE_TYPE = 1,
@@ -18,26 +20,28 @@ class ManagerPage : public Page {
   ManagerPage(PageID nPageID);
   virtual ~ManagerPage();
 
-  virtual PageID GetHeadID() const;
-  virtual PageID GetTailID() const;
-  virtual void SetHeadID(PageID nHeadID);
-  virtual void SetTailID(PageID nTailID);
+  PageID GetHeadID() const;
+  PageID GetTailID() const;
+  void SetHeadID(PageID nHeadID);
+  void SetTailID(PageID nTailID);
 
-  virtual Size GetFieldSize() const;
-  virtual std::vector<FieldType> GetTypeVec() const;
-  virtual std::vector<Size> GetSizeVec() const;
-  virtual Size GetTotalSize() const;
+  Size GetFieldSize() const;
+  std::vector<FieldType> GetTypeVec() const;
+  std::vector<Size> GetSizeVec() const;
+  Size GetTotalSize() const;
 
   virtual ManagerPageType GetManagerPageType() const = 0;
 
  protected:
-  virtual void Store();
-  virtual void Load();
+  void Store();
+  void Load();
 
   std::map<String, FieldID> _iColMap;
   std::vector<FieldType> _iTypeVec;
   std::vector<Size> _iSizeVec;
   PageID _nHeadID, _nTailID;
+
+  friend class Entity;
 };
 
 }  // namespace dbtrain_mysql

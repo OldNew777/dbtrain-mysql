@@ -5,6 +5,7 @@
 #include "exception/exceptions.h"
 #include "macros.h"
 #include "page/record_page.h"
+#include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
 
@@ -55,16 +56,11 @@ std::vector<FieldType> ManagerPage::GetTypeVec() const { return _iTypeVec; }
 
 std::vector<Size> ManagerPage::GetSizeVec() const { return _iSizeVec; }
 
-bool CmpByValue(const std::pair<String, FieldID>& a,
-                const std::pair<String, FieldID>& b) {
-  return a.second < b.second;
-}
-
 String BuildColumnsString(const std::map<String, FieldID>& iColMap) {
   if (iColMap.size() == 0) return "";
   std::vector<std::pair<String, FieldID>> iTempVec{iColMap.begin(),
                                                    iColMap.end()};
-  std::sort(iTempVec.begin(), iTempVec.end(), CmpByValue);
+  std::sort(iTempVec.begin(), iTempVec.end(), lessCmpBySecond<String, FieldID>);
   String sColumnsName = "";
   for (const auto& iPair : iTempVec) {
     sColumnsName += iPair.first;

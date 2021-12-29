@@ -1,43 +1,96 @@
 #include "database.h"
 
+#include "exception/exceptions.h"
 #include "macros.h"
 #include "os/os.h"
 #include "page/record_page.h"
-#include "record/fixed_record.h"
+#include "page/table_page.h"
 
 namespace dbtrain_mysql {
 
-Database::Database(PageID nDatabaseID) {
-  pDatabase = new DatabasePage(nDatabaseID);
+Database::Database(DatabasePage* pDatabasePage)
+    : EntityManager(pDatabasePage) {}
 
-  _nHeadID = pDatabase->GetHeadID();
-  _nTailID = pDatabase->GetTailID();
-  _nNotFull = _nHeadID;
-  FindNextNotFull();
+Database::Database(PageID nDatabaseID) : EntityManager() {
+  pManagerPage = new DatabasePage(nDatabaseID);
+  Init();
 }
 
-Database::~Database() { delete pDatabase; }
+Database::~Database() {
+  for (auto iter = _iEntityMap.begin(); iter != _iEntityMap.end(); ++iter)
+    if (iter->second) {
+      delete iter->second;
+      iter->second = nullptr;
+    }
+}
 
-PageID Database::GetTable(const String& sTableName) {}
+Table* Database::GetTable(const String& sTableName) {
+  if (_iEntityMap.find(sTableName) == _iEntityMap.end()) {
+    if (_iEntityPageIDMap.find(sTableName) == _iEntityPageIDMap.end())
+      // no table named as it
+      return nullptr;
+    else {
+      // not cached
+      _iEntityMap[sTableName] = new Table(_iEntityPageIDMap[sTableName]);
+      return dynamic_cast<Table*>(_iEntityMap[sTableName]);
+    }
+  }
+  // cached
+  return dynamic_cast<Table*>(_iEntityMap[sTableName]);
+}
 
-PageID Database::InsertTable(const String& sTableName) {}
+Table* Database::CreateTable(const String& sTableName, const Schema& iSchema) {
+  // Table existed before
+  if (GetTable(sTableName) != nullptr) throw TableExistException(sTableName);
 
-void Database::DeleteTable(const String& sTableName) {}
+  // Create table and cache it
+  TablePage* pPage = new TablePage(iSchema);
+  Table* pTable = new Table(pPage);
+  _iEntityMap[sTableName] = pTable;
+  _iEntityPageIDMap[sTableName] = pPage->GetPageID();
+
+  // insert entity to page
+  InsertEntity(sTableName);
+
+  return pTable;
+}
+
+void Database::DropTable(const String& sTableName) {
+  Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) throw TableNotExistException(sTableName);
+  pTable->Clear();
+  delete pTable;
+  OS::GetOS()->DeletePage(_iEntityPageIDMap[sTableName]);
+  _iEntityMap.erase(sTableName);
+  _iEntityPageIDMap.erase(sTableName);
+
+  DeleteEntity(sTableName, _iEntityPageSlotIDMap[sTableName]);
+}
 
 void Database::RenameTable(const String& sOldTableName,
-                           const String& sNewTableName) {}
+                           const String& sNewTableName) {
+  Table* pTable = GetTable(sOldTableName);
+  if (pTable == nullptr) throw TableNotExistException(sOldTableName);
+  if (GetTable(sNewTableName) != nullptr)
+    throw TableExistException(sNewTableName);
 
-void Database::Clear() { _iTableMap.clear(); }
+  DeleteEntity(sOldTableName, _iEntityPageSlotIDMap[sOldTableName]);
+  InsertEntity(sNewTableName);
 
-std::vector<String> Database::GetColumnNames() {}
-
-Record* Database::EmptyRecord() const {
-  return new FixedRecord(pDatabase->GetFieldSize(), pDatabase->GetTypeVec(),
-                         pDatabase->GetSizeVec());
+  _iEntityMap[sNewTableName] = pTable;
+  _iEntityPageIDMap[sNewTableName] = _iEntityPageIDMap[sOldTableName];
+  _iEntityMap.erase(sOldTableName);
+  _iEntityPageIDMap.erase(sOldTableName);
 }
 
-void Database::FindNextNotFull() {}
+void Database::Clear() {
+  _iEntityMap.clear();
+  _iEntityPageIDMap.clear();
+  Entity::Clear();
+}
 
-bool Database::NextNotFullUntil(PageID target) {}
+std::vector<String> Database::GetTableNames() {}
+
+EntityType Database::GetEntityType() const { return EntityType::DATABASE_TYPE; }
 
 }  // namespace dbtrain_mysql

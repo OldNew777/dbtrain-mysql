@@ -38,4 +38,10 @@ String stringNext(const String& data) {
     ans[data.length() - 1] += 1;
 }
 
+template <class First, class Second>
+bool lessCmpBySecond(const std::pair<First, Second>& a,
+                     const std::pair<First, Second>& b) {
+  return a.second < b.second;
+}
+
 }  // namespace dbtrain_mysql

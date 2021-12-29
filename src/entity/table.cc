@@ -5,9 +5,8 @@
 #include <algorithm>
 
 #include "macros.h"
-#include "os/os.h"
 #include "page/record_page.h"
-#include "record/fixed_record.h"
+#include "utils/basic_function.h"
 
 // setting
 // especially for debug
@@ -15,23 +14,15 @@
 
 namespace dbtrain_mysql {
 
-PageID NextPageID(PageID nCur) {
-  LinkedPage* pPage = new LinkedPage(nCur);
-  PageID nNext = pPage->GetNextID();
-  delete pPage;
-  return nNext;
+Table::Table(TablePage* pTablePage) {
+  pManagerPage = pTablePage;
+  Init();
 }
 
-Table::Table(PageID nTableID) {
-  pTable = new TablePage(nTableID);
-
-  _nHeadID = pTable->GetHeadID();
-  _nTailID = pTable->GetTailID();
-  _nNotFull = _nHeadID;
-  FindNextNotFull();
+Table::Table(PageID nTableID) : Entity() {
+  pManagerPage = new TablePage(nTableID);
+  Init();
 }
-
-Table::~Table() { delete pTable; }
 
 Record* Table::GetRecord(PageID nPageID, SlotID nSlotID) {
   Record* record = EmptyRecord();
@@ -52,7 +43,7 @@ PageSlotID Table::InsertRecord(Record* pRecord) {
 
   RecordPage page(nPageID);
 
-  uint8_t* data = new uint8_t[pTable->GetTotalSize()];
+  uint8_t* data = new uint8_t[pManagerPage->GetTotalSize()];
   pRecord->Store(data);
 
   // 利用RecordPage::InsertRecord插入数据
@@ -85,7 +76,7 @@ void Table::UpdateRecord(PageID nPageID, SlotID nSlotID,
   }
 
   // 将新的记录序列化
-  uint8_t* data = new uint8_t[pTable->GetTotalSize()];
+  uint8_t* data = new uint8_t[pManagerPage->GetTotalSize()];
   record->Store(data);
   // 利用RecordPage::UpdateRecord更新一条数据
   RecordPage page(nPageID);
@@ -100,7 +91,7 @@ std::vector<PageSlotID> Table::SearchRecord(Condition* pCond) {
   std::vector<PageSlotID> ans;
 
   bool unStop = true;
-  PageID nPageID = pTable->GetHeadID();
+  PageID nPageID = pManagerPage->GetHeadID();
   Record* record = EmptyRecord();
   while (unStop) {
     RecordPage page(nPageID);
@@ -117,7 +108,7 @@ std::vector<PageSlotID> Table::SearchRecord(Condition* pCond) {
         }
       }
     }
-    if (nPageID == pTable->GetTailID()) unStop = false;
+    if (nPageID == pManagerPage->GetTailID()) unStop = false;
     nPageID = page.GetNextID();
   }
   delete record;
@@ -139,74 +130,28 @@ void Table::SearchRecord(std::vector<PageSlotID>& iPairs, Condition* pCond) {
   }
 }
 
-void Table::Clear() {
-  PageID nBegin = _nHeadID;
-  while (nBegin != NULL_PAGE) {
-    PageID nTemp = nBegin;
-    nBegin = NextPageID(nBegin);
-    OS::GetOS()->DeletePage(nTemp);
-  }
+FieldID Table::GetPos(const String& sCol) const {
+  return dynamic_cast<TablePage*>(pManagerPage)->GetPos(sCol);
 }
-
-void Table::FindNextNotFull() {
-  // 快速查找非满记录页面算法
-  // 不要同时建立两个指向相同磁盘位置的且可变对象，否则会出现一致性问题
-  //   充分利用链表性质，注意全满时需要在结尾_pTable
-  //       ->GetTailID对应结点后插入新的结点，并更新_pTable的TailID
-  // 只需要保证均摊复杂度较低即可
-
-  PageID searchFlag = _nNotFull;
-  if (NextNotFullUntil(pTable->GetTailID())) return;
-  _nNotFull = pTable->GetHeadID();
-  // searchFlag会重复搜索一次
-  if (NextNotFullUntil(searchFlag)) return;
-
-  // 需要插入新的page
-  RecordPage newPage(pTable->GetTotalSize(), true);
-  LinkedPage tailPageBefore(pTable->GetTailID());
-  _nNotFull = newPage.GetPageID();
-  tailPageBefore.PushBack(&newPage);
-  pTable->SetTailID(newPage.GetPageID());
-}
-
-bool Table::NextNotFullUntil(PageID target) {
-  bool unStop = _nNotFull != NULL_PAGE;
-  // 顺序往链表后面查找
-  // 沿用了record_page的思想
-  while (unStop) {
-    RecordPage page(_nNotFull);
-    if (!page.Full()) return true;
-    unStop = _nNotFull != target;
-    _nNotFull = page.GetNextID();
-  }
-  return false;
-}
-
-FieldID Table::GetPos(const String& sCol) const { return pTable->GetPos(sCol); }
 
 FieldType Table::GetType(const String& sCol) const {
-  return pTable->GetType(sCol);
+  return dynamic_cast<TablePage*>(pManagerPage)->GetType(sCol);
 }
 
-Size Table::GetSize(const String& sCol) const { return pTable->GetSize(sCol); }
-
-Record* Table::EmptyRecord() const {
-  return new FixedRecord(pTable->GetFieldSize(), pTable->GetTypeVec(),
-                         pTable->GetSizeVec());
-}
-
-bool CmpByFieldID(const std::pair<String, FieldID>& a,
-                  const std::pair<String, FieldID>& b) {
-  return a.second < b.second;
+Size Table::GetSize(const String& sCol) const {
+  return dynamic_cast<TablePage*>(pManagerPage)->GetSize(sCol);
 }
 
 std::vector<String> Table::GetColumnNames() const {
   std::vector<String> iVec{};
-  std::vector<std::pair<String, FieldID>> iPairVec(pTable->_iColMap.begin(),
-                                                   pTable->_iColMap.end());
-  std::sort(iPairVec.begin(), iPairVec.end(), CmpByFieldID);
+  std::vector<std::pair<String, FieldID>> iPairVec(
+      dynamic_cast<TablePage*>(pManagerPage)->_iColMap.begin(),
+      dynamic_cast<TablePage*>(pManagerPage)->_iColMap.end());
+  std::sort(iPairVec.begin(), iPairVec.end(), lessCmpBySecond<String, Field>);
   for (const auto& it : iPairVec) iVec.push_back(it.first);
   return iVec;
 }
+
+EntityType Table::GetEntityType() const { return EntityType::TABLE_TYPE; }
 
 }  // namespace dbtrain_mysql

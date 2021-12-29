@@ -87,7 +87,7 @@ void FixedRecord::Build(const std::vector<String>& iRawVec) {
   for (FieldID i = 0; i < _iFields.size(); ++i) {
     FieldType iType = _iTypeVec[i];
 
-    // TODO : after add NULL data, code here should change
+    // TODO : check NOT NULL
 
     if (toUpper(iRawVec[i]) == "NULL") {
       SetField(i, new NullField());

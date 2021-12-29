@@ -8,6 +8,7 @@
 #include "field/fields.h"
 #include "os/os.h"
 #include "page/record_page.h"
+#include "page/table_page.h"
 #include "record/fixed_record.h"
 #include "settings.h"
 
@@ -52,13 +53,12 @@ void TableManager::DropTable(const String& sTableName) {
   if (pTable == nullptr) throw TableNotExistException(sTableName);
   pTable->Clear();
   delete pTable;
-  PageID nTableID = _iTableIDMap[sTableName];
-  OS::GetOS()->DeletePage(nTableID);
+  OS::GetOS()->DeletePage(_iTableIDMap[sTableName]);
   _iTableIDMap.erase(sTableName);
   _iTableMap.erase(sTableName);
 }
 
-void TableManager::Store() {
+void TableManager::Store() const {
   RecordPage* pPage = new RecordPage(TABLE_MANAGER_PAGEID);
   pPage->Clear();
   FixedRecord* pRecord = new FixedRecord(

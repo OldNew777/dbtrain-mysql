@@ -24,7 +24,7 @@ class TableManager {
   std::map<String, Table*> _iTableMap;
   std::map<String, PageID> _iTableIDMap;
 
-  void Store();
+  void Store() const;
   void Load();
 };
 

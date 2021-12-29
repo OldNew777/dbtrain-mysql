@@ -15,6 +15,10 @@ float floatNext(const float& data);
 int intNext(const int& data);
 String stringNext(const String& data);
 
+template <class First, class Second>
+bool lessCmpBySecond(const std::pair<First, Second>& a,
+                     const std::pair<First, Second>& b);
+
 }  // namespace dbtrain_mysql
 
 #endif

@@ -3,17 +3,18 @@
 
 #include "condition/condition.h"
 #include "defines.h"
-#include "entity/schema.h"
+#include "entity.h"
 #include "page/table_page.h"
 #include "record/record.h"
 #include "record/transform.h"
 
 namespace dbtrain_mysql {
 
-class Table {
+class Table : public Entity {
  public:
+  Table(TablePage* pTablePage);
   Table(PageID nTableID);
-  ~Table();
+  virtual ~Table() = default;
 
   /**
    * @brief 获取一个指定位置的记录
@@ -55,46 +56,14 @@ class Table {
   std::vector<PageSlotID> SearchRecord(Condition* pCond);
 
   void SearchRecord(std::vector<PageSlotID>& iPairs, Condition* pCond);
-  /**
-   * @brief 清空页面所有存储记录
-   *
-   */
-  void Clear();
 
   FieldID GetPos(const String& sCol) const;
   FieldType GetType(const String& sCol) const;
   Size GetSize(const String& sCol) const;
-  /**
-   * @brief 生成一个未填充数据的空记录体
-   *
-   * @return Record* 生成的空记录体
-   */
-  Record* EmptyRecord() const;
 
   std::vector<String> GetColumnNames() const;
 
- private:
-  TablePage* pTable;
-  PageID _nHeadID;
-  PageID _nTailID;
-  /**
-   * @brief 表示一个非满页编号，可用于构建一个时空高效的记录插入算法。
-   */
-  PageID _nNotFull;
-
-  /**
-   * @brief 查找一个可用于插入新记录的页面，不存在时自动添加一个新的页面
-   *
-   */
-  void FindNextNotFull();
-
-  /**
-   * @brief 往后查找一个可用于插入新记录的页面，直到target停止（包括）
-   *
-   * @return 是否查找到可插入的页面
-   *
-   */
-  bool NextNotFullUntil(PageID target);
+  virtual EntityType GetEntityType() const;
 };
 
 }  // namespace dbtrain_mysql
