@@ -2,7 +2,6 @@
 #define DBTRAIN_MYSQL_DATABASE_PAGE_H
 
 #include "defines.h"
-#include "entity/database.h"
 #include "field/field.h"
 #include "page/manager_page.h"
 

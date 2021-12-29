@@ -9,10 +9,10 @@
 
 namespace dbtrain_mysql {
 
-const PageOffset COLUMN_LEN_OFFSET = 16;
-const PageOffset COLUMN_NAME_LEN_OFFSET = 20;
-const PageOffset HEAD_PAGE_OFFSET = 24;
-const PageOffset TAIL_PAGE_OFFSET = 28;
+const PageOffset HEAD_PAGE_OFFSET = 16;
+const PageOffset TAIL_PAGE_OFFSET = 20;
+const PageOffset COLUMN_LEN_OFFSET = 24;
+const PageOffset COLUMN_NAME_LEN_OFFSET = 28;
 
 const PageOffset COLUMN_TYPE_OFFSET = 0;
 const PageOffset COLUMN_SIZE_OFFSET = 64;
@@ -55,33 +55,6 @@ Size ManagerPage::GetFieldSize() const { return _iTypeVec.size(); }
 std::vector<FieldType> ManagerPage::GetTypeVec() const { return _iTypeVec; }
 
 std::vector<Size> ManagerPage::GetSizeVec() const { return _iSizeVec; }
-
-String BuildColumnsString(const std::map<String, FieldID>& iColMap) {
-  if (iColMap.size() == 0) return "";
-  std::vector<std::pair<String, FieldID>> iTempVec{iColMap.begin(),
-                                                   iColMap.end()};
-  std::sort(iTempVec.begin(), iTempVec.end(), lessCmpBySecond<String, FieldID>);
-  String sColumnsName = "";
-  for (const auto& iPair : iTempVec) {
-    sColumnsName += iPair.first;
-    sColumnsName += "%";
-  }
-  return sColumnsName.substr(0, sColumnsName.size());
-}
-
-std::map<String, FieldID> LoadColumnsString(const String& sName) {
-  std::map<String, FieldID> iColMap;
-  size_t nBegin = 0, nEnd = 0;
-  Size nPos = 0;
-  nEnd = sName.find('%', nBegin);
-  while (nEnd != std::string::npos) {
-    String sKey = sName.substr(nBegin, nEnd - nBegin);
-    iColMap[sKey] = nPos++;
-    nBegin = nEnd + 1;
-    nEnd = sName.find('%', nBegin);
-  }
-  return iColMap;
-}
 
 void ManagerPage::Store() {
   SetHeader((uint8_t*)&_nHeadID, 4, HEAD_PAGE_OFFSET);

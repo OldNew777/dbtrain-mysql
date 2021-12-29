@@ -3,8 +3,6 @@
 
 #include "defines.h"
 #include "entity_manager.h"
-#include "page/database_page.h"
-#include "table.h"
 
 namespace dbtrain_mysql {
 

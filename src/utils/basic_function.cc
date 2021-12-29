@@ -38,4 +38,31 @@ String stringNext(const String& data) {
     ans[data.length() - 1] += 1;
 }
 
+String BuildColumnsString(const std::map<String, FieldID>& iColMap) {
+  if (iColMap.size() == 0) return "";
+  std::vector<std::pair<String, FieldID>> iTempVec{iColMap.begin(),
+                                                   iColMap.end()};
+  std::sort(iTempVec.begin(), iTempVec.end(), lessCmpBySecond<String, FieldID>);
+  String sColumnsName = "";
+  for (const auto& iPair : iTempVec) {
+    sColumnsName += iPair.first;
+    sColumnsName += "%";
+  }
+  return sColumnsName.substr(0, sColumnsName.size());
+}
+
+std::map<String, FieldID> LoadColumnsString(const String& sName) {
+  std::map<String, FieldID> iColMap;
+  size_t nBegin = 0, nEnd = 0;
+  Size nPos = 0;
+  nEnd = sName.find('%', nBegin);
+  while (nEnd != std::string::npos) {
+    String sKey = sName.substr(nBegin, nEnd - nBegin);
+    iColMap[sKey] = nPos++;
+    nBegin = nEnd + 1;
+    nEnd = sName.find('%', nBegin);
+  }
+  return iColMap;
+}
+
 }  // namespace dbtrain_mysql

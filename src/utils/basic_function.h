@@ -21,6 +21,9 @@ bool lessCmpBySecond(const std::pair<First, Second>& a,
   return a.second < b.second;
 }
 
+String BuildColumnsString(const std::map<String, FieldID>& iColMap);
+std::map<String, FieldID> LoadColumnsString(const String& sName);
+
 }  // namespace dbtrain_mysql
 
 #endif
