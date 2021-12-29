@@ -48,9 +48,9 @@ bool Instance::CreateTable(const String& sTableName, const Schema& iSchema,
     Column txnColumn("TransactionID", FieldType::INT_TYPE);
     columns.push_back(txnColumn);
     Schema iSchemaTxn(columns);
-    _pTableManager->AddTable(sTableName, iSchemaTxn);
+    _pTableManager->CreateTable(sTableName, iSchemaTxn);
   } else {
-    _pTableManager->AddTable(sTableName, iSchema);
+    _pTableManager->CreateTable(sTableName, iSchema);
   }
   return true;
 }

@@ -14,8 +14,8 @@
 
 namespace dbtrain_mysql {
 
-Table::Table(TablePage* pTablePage) {
-  pManagerPage = pTablePage;
+Table::Table(TablePage* nTablePageID) {
+  pManagerPage = nTablePageID;
   Init();
 }
 
@@ -147,7 +147,7 @@ std::vector<String> Table::GetColumnNames() const {
   std::vector<std::pair<String, FieldID>> iPairVec(
       dynamic_cast<TablePage*>(pManagerPage)->_iColMap.begin(),
       dynamic_cast<TablePage*>(pManagerPage)->_iColMap.end());
-  std::sort(iPairVec.begin(), iPairVec.end(), lessCmpBySecond<String, Field>);
+  std::sort(iPairVec.begin(), iPairVec.end(), lessCmpBySecond<String, FieldID>);
   for (const auto& it : iPairVec) iVec.push_back(it.first);
   return iVec;
 }

@@ -13,7 +13,7 @@ namespace dbtrain_mysql {
 class Table : public Entity {
  public:
   Table(TablePage* pTablePage);
-  Table(PageID nTableID);
+  Table(PageID nTablePageID);
   virtual ~Table() = default;
 
   /**

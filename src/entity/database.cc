@@ -11,8 +11,8 @@ namespace dbtrain_mysql {
 Database::Database(DatabasePage* pDatabasePage)
     : EntityManager(pDatabasePage) {}
 
-Database::Database(PageID nDatabaseID) : EntityManager() {
-  pManagerPage = new DatabasePage(nDatabaseID);
+Database::Database(PageID nDatabasePageID) : EntityManager() {
+  pManagerPage = new DatabasePage(nDatabasePageID);
   Init();
 }
 
@@ -87,6 +87,12 @@ std::vector<String> Database::GetTableNames() {
        iter != _iEntityPageSlotIDMap.end(); ++iter)
     names.push_back(iter->first);
   return names;
+}
+
+std::vector<String> Database::GetColumnNames(const String& sTableName) {
+  Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) throw TableNotExistException(sTableName);
+  return pTable->GetColumnNames();
 }
 
 EntityType Database::GetEntityType() const { return EntityType::DATABASE_TYPE; }

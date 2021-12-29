@@ -12,6 +12,9 @@
 #include "record/transform.h"
 #include "result/results.h"
 
+// debug
+#include "entity/database.h"
+
 namespace dbtrain_mysql {
 
 class Instance {

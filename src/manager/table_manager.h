@@ -14,7 +14,7 @@ class TableManager {
   ~TableManager();
 
   Table* GetTable(const String& sTableName);
-  Table* AddTable(const String& sTableName, const Schema& iSchema);
+  Table* CreateTable(const String& sTableName, const Schema& iSchema);
   void DropTable(const String& sTableName);
 
   std::vector<String> GetTableNames() const;

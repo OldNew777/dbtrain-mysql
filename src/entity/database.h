@@ -1,10 +1,7 @@
 #ifndef DBTRAIN_MYSQL_DATABASE_H
 #define DBTRAIN_MYSQL_DATABASE_H
 
-#include <map>
-
 #include "defines.h"
-#include "entity/schema.h"
 #include "entity_manager.h"
 #include "page/database_page.h"
 #include "table.h"
@@ -14,7 +11,7 @@ namespace dbtrain_mysql {
 class Database : public EntityManager {
  public:
   Database(DatabasePage* pDatabasePage);
-  Database(PageID nDatabaseID);
+  Database(PageID nDatabasePageID);
   virtual ~Database() = default;
 
   /**
@@ -56,6 +53,12 @@ class Database : public EntityManager {
    * @return std::vector<String> 数据库内所有表的名称
    */
   std::vector<String> GetTableNames();
+  /**
+   * @brief 获取表的列信息
+   *
+   * @return std::vector<String> 表的列信息
+   */
+  std::vector<String> GetColumnNames(const String& sTableName);
 
   virtual EntityType GetEntityType() const;
 

@@ -37,7 +37,7 @@ Table* TableManager::GetTable(const String& sTableName) {
   return _iTableMap[sTableName];
 }
 
-Table* TableManager::AddTable(const String& sTableName, const Schema& iSchema) {
+Table* TableManager::CreateTable(const String& sTableName, const Schema& iSchema) {
   if (GetTable(sTableName) != nullptr) throw TableExistException(sTableName);
   TablePage* pPage = new TablePage(iSchema);
   PageID nTableID = pPage->GetPageID();
