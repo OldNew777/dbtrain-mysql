@@ -46,19 +46,19 @@ antlrcpp::Any SystemVisitor::visitStatement(
 
 antlrcpp::Any SystemVisitor::visitCreate_db(
     MYSQLParser::Create_dbContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitDrop_db(MYSQLParser::Drop_dbContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitShow_dbs(MYSQLParser::Show_dbsContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitUse_db(MYSQLParser::Use_dbContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitShow_tables(
@@ -87,12 +87,12 @@ antlrcpp::Any SystemVisitor::visitShow_indexes(
 
 antlrcpp::Any SystemVisitor::visitLoad_data(
     MYSQLParser::Load_dataContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitDump_data(
     MYSQLParser::Dump_dataContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitCreate_table(
@@ -327,32 +327,32 @@ antlrcpp::Any SystemVisitor::visitAlter_drop_index(
 
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_pk(
     MYSQLParser::Alter_table_drop_pkContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
     MYSQLParser::Alter_table_drop_foreign_keyContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
     MYSQLParser::Alter_table_add_pkContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
     MYSQLParser::Alter_table_add_foreign_keyContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_unique(
     MYSQLParser::Alter_table_add_uniqueContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_rename(
     MYSQLParser::Alter_table_renameContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitField_list(
@@ -380,12 +380,12 @@ antlrcpp::Any SystemVisitor::visitNormal_field(
 
 antlrcpp::Any SystemVisitor::visitPrimary_key_field(
     MYSQLParser::Primary_key_fieldContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitForeign_key_field(
     MYSQLParser::Foreign_key_fieldContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitType_(MYSQLParser::Type_Context *ctx) {
@@ -502,27 +502,27 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
 
 antlrcpp::Any SystemVisitor::visitWhere_operator_select(
     MYSQLParser::Where_operator_selectContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_null(
     MYSQLParser::Where_nullContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_in_list(
     MYSQLParser::Where_in_listContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_in_select(
     MYSQLParser::Where_in_selectContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_like_string(
     MYSQLParser::Where_like_stringContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitColumn(MYSQLParser::ColumnContext *ctx) {
@@ -551,7 +551,7 @@ antlrcpp::Any SystemVisitor::visitSelectors(
 }
 
 antlrcpp::Any SystemVisitor::visitSelector(MYSQLParser::SelectorContext *ctx) {
-  throw UncompletedException();
+  throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitIdentifiers(

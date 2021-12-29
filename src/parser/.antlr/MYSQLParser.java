@@ -1,4 +1,4 @@
-// Generated from /home/parallels/code/db/dbtrain-mysql/src/parser/MYSQL.g4 by ANTLR 4.8
+// Generated from /home/kasumi/Documents/4thYear1/DatabaseIntro/dbtrain-mysql/src/parser/MYSQL.g4 by ANTLR 4.8
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
