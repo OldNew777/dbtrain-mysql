@@ -15,7 +15,7 @@ class Database : public EntityManager {
  public:
   Database(DatabasePage* pDatabasePage);
   Database(PageID nDatabaseID);
-  virtual ~Database();
+  virtual ~Database() = default;
 
   /**
    * @brief 获取表的指针
@@ -58,6 +58,9 @@ class Database : public EntityManager {
   std::vector<String> GetTableNames();
 
   virtual EntityType GetEntityType() const;
+
+ protected:
+  virtual void Init() override;
 };
 
 }  // namespace dbtrain_mysql

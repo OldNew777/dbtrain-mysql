@@ -19,15 +19,12 @@ class EntityManager : public Entity {
    * @brief 清空EntityManger内的所有Entity
    *
    */
-  virtual void Clear();
+  void Clear();
 
  protected:
   std::map<String, Entity*> _iEntityMap;
   std::map<String, PageID> _iEntityPageIDMap;
   std::map<String, PageSlotID> _iEntityPageSlotIDMap;
-
-  void Store() const;
-  void Load() const;
 
   void InsertEntity(const String& sEntityName);
   void DeleteEntity(const String& sEntityName, PageSlotID nPageSlotID);

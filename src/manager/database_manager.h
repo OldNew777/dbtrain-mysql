@@ -13,11 +13,12 @@ class DatabaseManager {
   ~DatabaseManager();
 
   Database* GetDatabase(const String& sDatabaseName);
-  Database* AddDatabase(const String& sDatabaseName);
+  Database* CreateDatabase(const String& sDatabaseName);
   void DropDatabase(const String& sDatabaseName);
+  void RenameDatabase(const String& sOldDatabaseName,
+                      const String& sNewDatabaseName);
 
   std::vector<String> GetDatabaseNames() const;
-  std::vector<String> GetColumnNames(const String& sDatabaseName);
 
  private:
   std::map<String, Database*> _iDatabaseMap;

@@ -127,4 +127,26 @@ void ManagerPage::Load() {
   delete[] pTemp;
 }
 
+std::vector<std::pair<PageSlotID, Record*>> ManagerPage::GetAllRecords() const {
+  std::vector<std::pair<PageSlotID, Record*>> records;
+  PageID curPageID = GetHeadID();
+  while (curPageID != NULL_PAGE) {
+    RecordPage* pPage = new RecordPage(curPageID);
+    for (Size i = 0, num = 0; i < pPage->GetCap() && num < pPage->GetUsed();
+         ++i) {
+      if (!pPage->HasRecord(i)) continue;
+      ++num;
+      FixedRecord* pRecord =
+          new FixedRecord(GetSizeVec().size(), GetTypeVec(), GetSizeVec());
+      uint8_t* pData = pPage->GetRecord(i);
+      pRecord->Load(pData);
+      records.push_back({{curPageID, i}, std::move(pRecord)});
+      delete[] pData;
+    }
+    curPageID = pPage->GetNextID();
+    delete pPage;
+  }
+  return records;
+}
+
 }  // namespace dbtrain_mysql

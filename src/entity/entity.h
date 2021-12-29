@@ -19,17 +19,17 @@ class Entity {
   virtual ~Entity();
 
   /**
-   * @brief 清空页面所有存储记录
-   *
-   */
-  virtual void Clear();
-
-  /**
    * @brief 生成一个未填充数据的空记录体
    *
    * @return Record* 生成的空记录体
    */
   Record* EmptyRecord() const;
+
+  /**
+   * @brief 清空页面所有存储记录
+   *
+   */
+  virtual void Clear();
 
   virtual EntityType GetEntityType() const = 0;
 
@@ -56,7 +56,7 @@ class Entity {
    */
   bool NextNotFullUntil(PageID target);
 
-  void Init();
+  virtual void Init();
 };
 
 }  // namespace dbtrain_mysql

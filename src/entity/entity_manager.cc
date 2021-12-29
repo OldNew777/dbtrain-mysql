@@ -20,8 +20,11 @@ EntityManager::EntityManager(ManagerPage* pManagerPage) {
 }
 
 EntityManager::~EntityManager() {
-  // TODO
-  throw UnimplementedException("~EntityManager()");
+  for (auto iter = _iEntityMap.begin(); iter != _iEntityMap.end(); ++iter)
+    if (iter->second) {
+      delete iter->second;
+      iter->second = nullptr;
+    }
 }
 
 void EntityManager::InsertEntity(const String& sEntityName) {

@@ -16,20 +16,12 @@ Database::Database(PageID nDatabaseID) : EntityManager() {
   Init();
 }
 
-Database::~Database() {
-  for (auto iter = _iEntityMap.begin(); iter != _iEntityMap.end(); ++iter)
-    if (iter->second) {
-      delete iter->second;
-      iter->second = nullptr;
-    }
-}
-
 Table* Database::GetTable(const String& sTableName) {
   if (_iEntityMap.find(sTableName) == _iEntityMap.end()) {
-    if (_iEntityPageIDMap.find(sTableName) == _iEntityPageIDMap.end())
-      // no table named as it
+    if (_iEntityPageIDMap.find(sTableName) == _iEntityPageIDMap.end()) {
+      // no table named as it / not loaded
       return nullptr;
-    else {
+    } else {
       // not cached
       _iEntityMap[sTableName] = new Table(_iEntityPageIDMap[sTableName]);
       return dynamic_cast<Table*>(_iEntityMap[sTableName]);
@@ -89,8 +81,27 @@ void Database::Clear() {
   Entity::Clear();
 }
 
-std::vector<String> Database::GetTableNames() {}
+std::vector<String> Database::GetTableNames() {
+  std::vector<String> names;
+  for (auto iter = _iEntityPageSlotIDMap.begin();
+       iter != _iEntityPageSlotIDMap.end(); ++iter)
+    names.push_back(iter->first);
+  return names;
+}
 
 EntityType Database::GetEntityType() const { return EntityType::DATABASE_TYPE; }
+
+void Database::Init() {
+  EntityManager::Init();
+  std::vector<std::pair<PageSlotID, Record*>> records =
+      pManagerPage->GetAllRecords();
+  for (auto pRecord : records) {
+    String sTableName = pRecord.second->GetField(0)->ToString();
+    _iEntityPageSlotIDMap[sTableName] = pRecord.first;
+    _iEntityPageIDMap[sTableName] =
+        dynamic_cast<IntField*>(pRecord.second->GetField(1))->GetIntData();
+    delete pRecord.second;
+  }
+}
 
 }  // namespace dbtrain_mysql

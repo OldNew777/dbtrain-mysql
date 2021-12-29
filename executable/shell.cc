@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "backend/backend.h"
+#include "utils/basic_function.h"
 #include "utils/display.h"
 
 using namespace dbtrain_mysql;
@@ -10,7 +11,8 @@ int main() {
   String sSQL;
   std::cout << "> ";
   while (getline(std::cin, sSQL)) {
-    if (sSQL == "\\q" || sSQL == "quit" || sSQL == "exit") {
+    if (toUpper(sSQL) == "\\Q" || toUpper(sSQL) == "QUIT" ||
+        toUpper(sSQL) == "EXIT") {
       break;
     } else {
       try {

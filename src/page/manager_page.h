@@ -4,10 +4,12 @@
 #include "defines.h"
 #include "field/field.h"
 #include "page/page.h"
+#include "record/fixed_record.h"
 
 namespace dbtrain_mysql {
 
 class Entity;
+class Database;
 
 enum class ManagerPageType {
   DATABASE_PAGE_TYPE = 0,
@@ -35,6 +37,7 @@ class ManagerPage : public Page {
  protected:
   void Store();
   void Load();
+  std::vector<std::pair<PageSlotID, Record*>> GetAllRecords() const;
 
   std::map<String, FieldID> _iColMap;
   std::vector<FieldType> _iTypeVec;
@@ -42,6 +45,7 @@ class ManagerPage : public Page {
   PageID _nHeadID, _nTailID;
 
   friend class Entity;
+  friend class Database;
 };
 
 }  // namespace dbtrain_mysql
