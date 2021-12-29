@@ -2,7 +2,7 @@
 #define DBTRAIN_MYSQL_WRITE_RECORD_H
 
 #include "defines.h"
-#include "table/table.h"
+#include "entity/table.h"
 
 namespace dbtrain_mysql {
 

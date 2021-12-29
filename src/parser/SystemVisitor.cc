@@ -4,12 +4,12 @@
 #include <stdlib.h>
 
 #include "condition/conditions.h"
+#include "entity/schema.h"
+#include "entity/table.h"
 #include "exception/exceptions.h"
 #include "record/fixed_record.h"
 #include "record/transform.h"
 #include "result/result.h"
-#include "table/schema.h"
-#include "table/table.h"
 #include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
@@ -105,7 +105,6 @@ antlrcpp::Any SystemVisitor::visitCreate_table(
     nSize = 1;
   } catch (const std::exception &e) {
     // TODO
-    std::cerr << e.what() << '\n';
   }
   Result *res = new MemResult({"Create Table"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
@@ -123,7 +122,6 @@ antlrcpp::Any SystemVisitor::visitDrop_table(
     nSize = 1;
   } catch (const std::exception &e) {
     // TODO
-    std::cerr << e.what() << '\n';
   }
   Result *res = new MemResult({"Drop Table"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
@@ -294,7 +292,6 @@ antlrcpp::Any SystemVisitor::visitAlter_add_index(
       ++nSize;
     } catch (const std::exception &e) {
       // TODO
-      std::cerr << e.what() << '\n';
     }
   }
   Result *res = new MemResult({"Create Index"});
@@ -315,7 +312,6 @@ antlrcpp::Any SystemVisitor::visitAlter_drop_index(
       ++nSize;
     } catch (const std::exception &e) {
       // TODO
-      std::cerr << e.what() << '\n';
     }
   }
   Result *res = new MemResult({"Drop Index"});

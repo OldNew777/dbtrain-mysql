@@ -2,9 +2,9 @@
 #define DBTRAIN_MYSQL_TABLE_MANAGER_H
 
 #include "defines.h"
+#include "entity/schema.h"
+#include "entity/table.h"
 #include "macros.h"
-#include "table/schema.h"
-#include "table/table.h"
 
 namespace dbtrain_mysql {
 

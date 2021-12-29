@@ -3,10 +3,10 @@
 
 #include "condition/condition.h"
 #include "defines.h"
+#include "entity/schema.h"
 #include "page/table_page.h"
 #include "record/record.h"
 #include "record/transform.h"
-#include "table/schema.h"
 
 namespace dbtrain_mysql {
 

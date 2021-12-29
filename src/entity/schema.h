@@ -2,7 +2,7 @@
 #define DBTRAIN_MYSQL_SCHEMA_H
 
 #include "defines.h"
-#include "table/column.h"
+#include "entity/column.h"
 
 namespace dbtrain_mysql {
 

@@ -24,7 +24,8 @@ const PageID TABLE_MANAGER_PAGEID = 2;
 const PageID INDEX_MANAGER_PAGEID = 3;
 const PageID RECOVERY_MANAGER_PAGEID = 4;
 
-const PageOffset TABLE_NAME_SIZE = 60;
+const PageOffset DATABASE_NAME_SIZE = 64;
+const PageOffset TABLE_NAME_SIZE = 64;
 const PageOffset INDEX_NAME_SIZE = 124;
 const PageOffset COLUMN_NAME_SIZE = 60;
 

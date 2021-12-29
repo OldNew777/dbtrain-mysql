@@ -1,8 +1,8 @@
 #include "manager/transaction_manager.h"
 
+#include "entity/table.h"
 #include "manager/recovery_manager.h"
 #include "settings.h"
-#include "table/table.h"
 
 namespace dbtrain_mysql {
 

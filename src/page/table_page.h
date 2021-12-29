@@ -2,44 +2,29 @@
 #define DBTRAIN_MYSQL_TABLE_PAGE_H
 
 #include "defines.h"
+#include "entity/schema.h"
 #include "field/field.h"
-#include "page/page.h"
-#include "table/schema.h"
+#include "page/manager_page.h"
 
 namespace dbtrain_mysql {
 
 class Table;
 
-class TablePage : public Page {
+class TablePage : public ManagerPage {
  public:
   TablePage(const Schema& iSchema);
   TablePage(PageID nPageID);
-  ~TablePage();
+  virtual ~TablePage() = default;
 
-  Size GetFieldSize() const;
   FieldID GetFieldID(const String& sColName) const;
-  std::vector<FieldType> GetTypeVec() const;
-  std::vector<Size> GetSizeVec() const;
-  Size GetTotalSize() const;
-
-  PageID GetHeadID() const;
-  PageID GetTailID() const;
-  void SetHeadID(PageID nHeadID);
-  void SetTailID(PageID nTailID);
 
   FieldID GetPos(const String& sCol);
   FieldType GetType(const String& sCol);
   Size GetSize(const String& sCol);
 
- private:
-  void Store();
-  void Load();
+  virtual ManagerPageType GetManagerPageType() const;
 
-  std::map<String, FieldID> _iColMap;
-  std::vector<FieldType> _iTypeVec;
-  std::vector<Size> _iSizeVec;
-  PageID _nHeadID, _nTailID;
-
+ protected:
   friend class Table;
 };
 

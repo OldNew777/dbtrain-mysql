@@ -1,4 +1,4 @@
-#include "table/table.h"
+#include "entity/table.h"
 
 #include <assert.h>
 
@@ -191,9 +191,8 @@ FieldType Table::GetType(const String& sCol) const {
 Size Table::GetSize(const String& sCol) const { return pTable->GetSize(sCol); }
 
 Record* Table::EmptyRecord() const {
-  FixedRecord* pRecord = new FixedRecord(
-      pTable->GetFieldSize(), pTable->GetTypeVec(), pTable->GetSizeVec());
-  return pRecord;
+  return new FixedRecord(pTable->GetFieldSize(), pTable->GetTypeVec(),
+                         pTable->GetSizeVec());
 }
 
 bool CmpByFieldID(const std::pair<String, FieldID>& a,

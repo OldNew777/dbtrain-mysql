@@ -2,6 +2,7 @@
 #define DBTRAIN_MYSQL_INSTANCE_H
 
 #include "defines.h"
+#include "entity/schema.h"
 #include "field/fields.h"
 #include "index/index.h"
 #include "manager/index_manager.h"
@@ -10,7 +11,6 @@
 #include "manager/transaction_manager.h"
 #include "record/transform.h"
 #include "result/results.h"
-#include "table/schema.h"
 
 namespace dbtrain_mysql {
 
