@@ -36,6 +36,7 @@ String stringNext(const String& data) {
     ans += ' ';
   else
     ans[data.length() - 1] += 1;
+  return ans;
 }
 
 String BuildColumnsString(const std::map<String, FieldID>& iColMap) {
