@@ -43,11 +43,6 @@ class Database : public EntityManager {
    */
   void RenameTable(const String& sOldTableName, const String& sNewTableName);
   /**
-   * @brief 清空数据库内的所有表
-   *
-   */
-  virtual void Clear();
-  /**
    * @brief 获取数据库内所有表的名称
    *
    * @return std::vector<String> 数据库内所有表的名称

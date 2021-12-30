@@ -18,6 +18,8 @@ const PageOffset COLUMN_TYPE_OFFSET = 0;
 const PageOffset COLUMN_SIZE_OFFSET = 64;
 const PageOffset COLUMN_NAME_OFFSET = 192;
 
+ManagerPage::ManagerPage() : Page() {}
+
 ManagerPage::ManagerPage(PageID nPageID) : Page(nPageID) {
   Load();
   _bModified = false;

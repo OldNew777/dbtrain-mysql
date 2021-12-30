@@ -5,12 +5,18 @@
 #include "macros.h"
 #include "page/record_page.h"
 #include "string.h"
+#include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
 
 void EntityManager::Clear() {
+  for (auto iter : _iEntityMap)
+    if (iter.second) {
+      delete iter.second;
+    }
   _iEntityMap.clear();
   _iEntityPageIDMap.clear();
+  _iEntityPageSlotIDMap.clear();
   Entity::Clear();
 }
 
@@ -20,10 +26,9 @@ EntityManager::EntityManager(ManagerPage* pManagerPage) {
 }
 
 EntityManager::~EntityManager() {
-  for (auto iter = _iEntityMap.begin(); iter != _iEntityMap.end(); ++iter)
-    if (iter->second) {
-      delete iter->second;
-      iter->second = nullptr;
+  for (auto iter : _iEntityMap)
+    if (iter.second) {
+      delete iter.second;
     }
 }
 
@@ -37,7 +42,8 @@ void EntityManager::InsertEntity(const String& sEntityName) {
   memset(data, 0, pManagerPage->GetTotalSize());
   memcpy(data, sEntityName.c_str(), sEntityName.size());
   memcpy(data + TABLE_NAME_SIZE, &pageID, 4);
-  _iEntityPageSlotIDMap[sEntityName] = {nPageID, page.InsertRecord(data)};
+  SlotID nSlotID = page.InsertRecord(data);
+  _iEntityPageSlotIDMap[sEntityName] = {nPageID, nSlotID};
 
   delete[] data;
 }

@@ -4,6 +4,7 @@
 #include "os/os.h"
 #include "page/record_page.h"
 #include "record/fixed_record.h"
+#include "settings.h"
 
 namespace dbtrain_mysql {
 
@@ -12,6 +13,14 @@ Entity::~Entity() { delete pManagerPage; }
 void Entity::Init() {
   _nHeadID = pManagerPage->GetHeadID();
   _nTailID = pManagerPage->GetTailID();
+
+#ifdef DATABASE_DEBUG
+  printf("pManagerPage->GetPageID() = %d\n", int(pManagerPage->GetPageID()));
+  printf("_nHeadID = %d\n", int(_nHeadID));
+  printf("_nTailID = %d\n", int(_nTailID));
+  printf("\n");
+#endif
+
   _nNotFull = _nHeadID;
   FindNextNotFull();
 }

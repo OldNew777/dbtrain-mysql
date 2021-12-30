@@ -18,7 +18,8 @@
 namespace dbtrain_mysql {
 
 Instance::Instance() {
-  _pTableManager = new TableManager();
+  _pTableManager = new Database(TABLE_MANAGER_PAGEID);
+  // _pTableManager = new TableManager();
   _pIndexManager = new IndexManager();
   _pTransactionManager = new TransactionManager();
   _pRecoveryManager = new RecoveryManager();

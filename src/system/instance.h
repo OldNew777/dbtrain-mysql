@@ -99,7 +99,7 @@ class Instance {
       std::vector<Condition *> &iJoinConds);
 
  private:
-  TableManager *_pTableManager;
+  Database *_pTableManager;
   IndexManager *_pIndexManager;
   TransactionManager *_pTransactionManager;
   RecoveryManager *_pRecoveryManager;

@@ -8,8 +8,9 @@
 
 namespace dbtrain_mysql {
 
-Database::Database(DatabasePage* pDatabasePage)
-    : EntityManager(pDatabasePage) {}
+Database::Database(DatabasePage* pDatabasePage) : EntityManager(pDatabasePage) {
+  Init();
+}
 
 Database::Database(PageID nDatabasePageID) : EntityManager() {
   pManagerPage = new DatabasePage(nDatabasePageID);
@@ -73,12 +74,6 @@ void Database::RenameTable(const String& sOldTableName,
   _iEntityPageIDMap[sNewTableName] = _iEntityPageIDMap[sOldTableName];
   _iEntityMap.erase(sOldTableName);
   _iEntityPageIDMap.erase(sOldTableName);
-}
-
-void Database::Clear() {
-  _iEntityMap.clear();
-  _iEntityPageIDMap.clear();
-  Entity::Clear();
 }
 
 std::vector<String> Database::GetTableNames() {

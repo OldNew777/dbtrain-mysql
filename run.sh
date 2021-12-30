@@ -6,3 +6,4 @@ cd ..
 ./build/bin/dbtrain_mysql_clear
 ./build/bin/dbtrain_mysql_init
 ./build/test/test1_test
+./build/test/test2_test

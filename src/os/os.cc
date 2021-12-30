@@ -78,8 +78,8 @@ void OS::WritePage(PageID pid, const uint8_t* src, PageOffset nSize,
 void OS::LoadBitmap() {
   std::ifstream fin(DB_BITMAP_NAME, std::ios::binary);
   if (!fin) return;
-  uint8_t pTemp[MEM_PAGES / 8];
-  fin.read((char*)pTemp, MEM_PAGES / 8);
+  uint8_t pTemp[MEM_PAGES >> 3];
+  fin.read((char*)pTemp, MEM_PAGES >> 3);
   fin.close();
   _pUsed->Load(pTemp);
 }
@@ -101,9 +101,9 @@ void OS::LoadPages() {
 void OS::StoreBitmap() {
   std::ofstream fout(DB_BITMAP_NAME, std::ios::binary);
   if (!fout) return;
-  uint8_t pTemp[MEM_PAGES / 8];
+  uint8_t pTemp[MEM_PAGES >> 3];
   _pUsed->Store(pTemp);
-  fout.write((char*)pTemp, MEM_PAGES / 8);
+  fout.write((char*)pTemp, MEM_PAGES >> 3);
   fout.close();
 }
 

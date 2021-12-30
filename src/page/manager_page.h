@@ -18,7 +18,7 @@ enum class ManagerPageType {
 
 class ManagerPage : public Page {
  public:
-  ManagerPage() = default;
+  ManagerPage();
   ManagerPage(PageID nPageID);
   virtual ~ManagerPage();
 
