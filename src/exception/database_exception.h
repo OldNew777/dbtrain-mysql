@@ -41,6 +41,13 @@ class DatabaseExistException : public DatabaseException {
   }
 };
 
+class DatabaseUnusedException : public DatabaseException {
+ public:
+  DatabaseUnusedException() : DatabaseException() {
+    _className = "DatabaseUnusedException";
+  }
+};
+
 }  // namespace dbtrain_mysql
 
 #endif

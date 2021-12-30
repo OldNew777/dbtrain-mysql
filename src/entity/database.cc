@@ -32,7 +32,7 @@ Table* Database::GetTable(const String& sTableName) {
   return dynamic_cast<Table*>(_iEntityMap[sTableName]);
 }
 
-Table* Database::CreateTable(const String& sTableName, const Schema& iSchema) {
+void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   // Table existed before
   if (GetTable(sTableName) != nullptr) throw TableExistException(sTableName);
 
@@ -44,8 +44,6 @@ Table* Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
   // insert entity to page
   InsertEntity(sTableName);
-
-  return pTable;
 }
 
 void Database::DropTable(const String& sTableName) {

@@ -31,7 +31,7 @@ Database* Whole::GetDatabase(const String& sDatabaseName) {
   return dynamic_cast<Database*>(_iEntityMap[sDatabaseName]);
 }
 
-Database* Whole::CreateDatabase(const String& sDatabaseName) {
+void Whole::CreateDatabase(const String& sDatabaseName) {
   // Database existed before
   if (GetDatabase(sDatabaseName) != nullptr)
     throw DatabaseExistException(sDatabaseName);
@@ -44,8 +44,6 @@ Database* Whole::CreateDatabase(const String& sDatabaseName) {
 
   // insert entity to page
   InsertEntity(sDatabaseName);
-
-  return pDatabase;
 }
 
 void Whole::DropDatabase(const String& sDatabaseName) {

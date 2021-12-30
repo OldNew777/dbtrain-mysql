@@ -15,41 +15,40 @@ class Whole : public EntityManager {
   virtual ~Whole() = default;
 
   /**
-   * @brief 获取表的指针
+   * @brief 获取数据库的指针
    *
-   * @param sTableName 表名
-   * @return Table* 表的指针
+   * @param sDatabaseName 数据库名
+   * @return Database* 数据库的指针
    */
   Database* GetDatabase(const String& sDatabaseName);
   /**
-   * @brief 创建一张表
+   * @brief 创建一个数据库
    *
-   * @param sTableName 表名
-   * @param iSchema 列参数
-   * @return Table* 表的指针
+   * @param sDatabaseName 数据库名
    */
-  Database* CreateDatabase(const String& sDatabaseName);
+  void CreateDatabase(const String& sDatabaseName);
   /**
-   * @brief 删除一张表
+   * @brief 删除一个数据库
    *
-   * @param sTableName 表名
+   * @param sDatabaseName 数据库名
    */
   void DropDatabase(const String& sDatabaseName);
   /**
-   * @brief 重命名一张表
+   * @brief 重命名一个数据库
    *
-   * @param sOldTableName 表的原名称
-   * @param sNewTableName 表的新名称
+   * @param sOldTableName 数据库的原名称
+   * @param sNewTableName 数据库的新名称
    */
   void RenameDatabase(const String& sOldDatabaseName,
                       const String& sNewDatabaseName);
   /**
-   * @brief 获取数据库内所有表的名称
+   * @brief 获取所有数据库的名称
    *
-   * @return std::vector<String> 数据库内所有表的名称
+   * @return std::vector<String> 所有数据库的名称
    */
   std::vector<String> GetDatabaseNames() const;
 
+ protected:
   virtual EntityType GetEntityType() const;
 };
 
