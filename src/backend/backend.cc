@@ -32,7 +32,6 @@ void Init() {
   RecordPage* pNotUsed1 = new RecordPage(256, true);
   RecordPage* pNotUsed2 = new RecordPage(256, true);
   RecordPage* pIndexManagerPage = new RecordPage(INDEX_NAME_SIZE + 4 + 1, true);
-  RecordPage* pRecoveryManagerPage = new RecordPage(4 + 4 + 1, true);
   WholePage* pDataManagerPage = new WholePage();
 
   printf("Build Finish.\n");
@@ -40,7 +39,6 @@ void Init() {
   delete pNotUsed1;
   delete pNotUsed2;
   delete pIndexManagerPage;
-  delete pRecoveryManagerPage;
   delete pDataManagerPage;
 
   OS::WriteBack();

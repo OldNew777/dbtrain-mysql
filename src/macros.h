@@ -21,8 +21,7 @@ const Size TABLE_CAPTION = 128;
 
 const PageID SYSTEM_PAGES = 32;
 const PageID INDEX_MANAGER_PAGEID = 2;
-const PageID RECOVERY_MANAGER_PAGEID = 3;
-const PageID MYSQL_MANAGER_PAGEID = 4;
+const PageID MYSQL_MANAGER_PAGEID = 3;
 
 const PageOffset DATABASE_NAME_SIZE = 64;
 const PageOffset TABLE_NAME_SIZE = 64;

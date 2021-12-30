@@ -6,15 +6,11 @@
 
 namespace dbtrain_mysql {
 
-class RecoveryManager;
-
 /**
  * @brief 链表结点页面。
  *
  */
 class LinkedPage : public Page {
-  friend class RecoveryManager;
-
  public:
   LinkedPage();
   LinkedPage(PageID nPageID);

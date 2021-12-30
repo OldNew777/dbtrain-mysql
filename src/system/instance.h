@@ -7,8 +7,6 @@
 #include "index/index.h"
 #include "manager/data_manager.h"
 #include "manager/index_manager.h"
-#include "manager/recovery_manager.h"
-#include "manager/transaction_manager.h"
 #include "record/transform.h"
 #include "result/results.h"
 
@@ -19,12 +17,7 @@ class Instance {
   Instance();
   ~Instance();
 
-  friend class TransactionManager;
-  friend class RecoveryManager;
-  friend class WriteRecord;
-
-  bool CreateTable(const String &sTableName, const Schema &iSchema,
-                   bool useTxn = false);
+  bool CreateTable(const String &sTableName, const Schema &iSchema);
   bool DropTable(const String &sTableName);
   /**
    * @brief 获得列在表中的位置信息
@@ -40,21 +33,16 @@ class Instance {
   Size GetColSize(const String &sTableName, const String &sColName) const;
 
   std::vector<PageSlotID> Search(const String &sTableName, Condition *pCond,
-                                 const std::vector<Condition *> &iIndexCond,
-                                 Transaction *txn = nullptr);
+                                 const std::vector<Condition *> &iIndexCond);
   uint32_t Delete(const String &sTableName, Condition *pCond,
-                  const std::vector<Condition *> &iIndexCond,
-                  Transaction *txn = nullptr);
+                  const std::vector<Condition *> &iIndexCond);
   uint32_t Update(const String &sTableName, Condition *pCond,
                   const std::vector<Condition *> &iIndexCond,
-                  const std::vector<Transform> &iTrans,
-                  Transaction *txn = nullptr);
+                  const std::vector<Transform> &iTrans);
   PageSlotID Insert(const String &sTableName,
-                    const std::vector<String> &iRawVec,
-                    Transaction *txn = nullptr);
+                    const std::vector<String> &iRawVec);
 
-  Record *GetRecord(const String &sTableName, const PageSlotID &iPair,
-                    Transaction *txn = nullptr) const;
+  Record *GetRecord(const String &sTableName, const PageSlotID &iPair) const;
   std::vector<Record *> GetTableInfos(const String &sTableName) const;
   std::vector<String> GetTableNames() const;
   std::vector<String> GetColumnNames(const String &sTableName) const;
@@ -76,12 +64,6 @@ class Instance {
                    FieldType iType);
   bool DropIndex(const String &sTableName, const String &sColName);
 
-  TransactionManager *GetTransactionManager() const {
-    return _pTransactionManager;
-  }
-
-  RecoveryManager *GetRecoveryManager() const { return _pRecoveryManager; }
-
   /**
    * @brief 实现多个表的JOIN操作
    *
@@ -98,8 +80,6 @@ class Instance {
  private:
   DataManager *_pDataManager;
   IndexManager *_pIndexManager;
-  TransactionManager *_pTransactionManager;
-  RecoveryManager *_pRecoveryManager;
 
   std::string _dbname;
 
