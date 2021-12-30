@@ -92,13 +92,13 @@ Size DataManager::GetColSize(const String& sTableName,
 
 Record* DataManager::GetRecord(const String& sTableName,
                                const PageSlotID& nPageSlotID) const {
-  Record* pRecord =
-      GetTable(sTableName)->GetRecord(nPageSlotID.first, nPageSlotID.second);
-  return pRecord;
+  return GetTable(sTableName)->GetRecord(nPageSlotID.first, nPageSlotID.second);
 }
 
 std::vector<Record*> DataManager::GetTableInfos(
-    const String& sTableName) const {}
+    const String& sTableName) const {
+  return GetTable(sTableName)->GetTableInfos();
+}
 
 void DataManager::CheckDatabaseUsed() const {
   if (_pDatabase == nullptr) {
