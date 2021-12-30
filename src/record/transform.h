@@ -12,7 +12,7 @@ class Transform {
   ~Transform() = default;
 
   Field* GetField() const;
-  FieldID GetPos() const;
+  FieldID GetColPos() const;
 
  private:
   FieldID _nFieldID;

@@ -18,7 +18,7 @@ class TablePage : public ManagerPage {
 
   FieldID GetFieldID(const String& sColName) const;
 
-  FieldID GetPos(const String& sCol);
+  FieldID GetColPos(const String& sCol);
   FieldType GetType(const String& sCol);
   Size GetSize(const String& sCol);
 

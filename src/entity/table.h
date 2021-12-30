@@ -57,12 +57,13 @@ class Table : public Entity {
 
   void SearchRecord(std::vector<PageSlotID>& iPairs, Condition* pCond);
 
-  FieldID GetPos(const String& sCol) const;
+  FieldID GetColPos(const String& sCol) const;
   FieldType GetType(const String& sCol) const;
   Size GetSize(const String& sCol) const;
-
+  std::vector<Record*> GetTableInfos() const;
   std::vector<String> GetColumnNames() const;
 
+ protected:
   virtual EntityType GetEntityType() const;
 };
 

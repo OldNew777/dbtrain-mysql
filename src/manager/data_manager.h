@@ -54,7 +54,7 @@ class DataManager {
    * @param sTableName 表名
    * @return Table* 表的指针
    */
-  Table* GetTable(const String& sTableName);
+  Table* GetTable(const String& sTableName) const;
   /**
    * @brief 创建一张表
    *
@@ -62,37 +62,54 @@ class DataManager {
    * @param iSchema 列参数
    * @return Table* 表的指针
    */
-  void CreateTable(const String& sTableName, const Schema& iSchema);
+  void CreateTable(const String& sTableName, const Schema& iSchema) const;
   /**
    * @brief 删除一张表
    *
    * @param sTableName 表名
    */
-  void DropTable(const String& sTableName);
+  void DropTable(const String& sTableName) const;
   /**
    * @brief 重命名一张表
    *
    * @param sOldTableName 表的原名称
    * @param sNewTableName 表的新名称
    */
-  void RenameTable(const String& sOldTableName, const String& sNewTableName);
+  void RenameTable(const String& sOldTableName,
+                   const String& sNewTableName) const;
   /**
    * @brief 获取数据库内所有表的名称
    *
    * @return std::vector<String> 数据库内所有表的名称
    */
-  std::vector<String> GetTableNames();
+  std::vector<String> GetTableNames() const;
   /**
    * @brief 获取表的列信息
    *
    * @return std::vector<String> 表的列信息
    */
-  std::vector<String> GetColumnNames(const String& sTableName);
+  std::vector<String> GetColumnNames(const String& sTableName) const;
+  /**
+   * @brief 获得列在表中的位置信息
+   */
+  FieldID GetColID(const String& sTableName, const String& sColName) const;
+  /**
+   * @brief 获得列的类型
+   */
+  FieldType GetColType(const String& sTableName, const String& sColName) const;
+  /**
+   * @brief 获得列的长度
+   */
+  Size GetColSize(const String& sTableName, const String& sColName) const;
+  Record* GetRecord(const String& sTableName,
+                    const PageSlotID& nPageSlotID) const;
+  std::vector<Record*> GetTableInfos(const String& sTableName) const;
 
  protected:
-  Whole* whole;
-  Database* database;
+  Whole* _pWhole;
+  Database* _pDatabase;
 
+ private:
   void CheckDatabaseUsed() const;
 };
 

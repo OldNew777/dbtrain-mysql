@@ -72,23 +72,17 @@ void Instance::RenameTable(const String& sOldTableName,
 
 FieldID Instance::GetColID(const String& sTableName,
                            const String& sColName) const {
-  Table* pTable = GetTable(sTableName);
-  if (pTable == nullptr) throw TableNotExistException(sTableName);
-  return pTable->GetPos(sColName);
+  return _pDataManager->GetColID(sTableName, sColName);
 }
 
 FieldType Instance::GetColType(const String& sTableName,
                                const String& sColName) const {
-  Table* pTable = GetTable(sTableName);
-  if (pTable == nullptr) throw TableNotExistException(sTableName);
-  return pTable->GetType(sColName);
+  return _pDataManager->GetColType(sTableName, sColName);
 }
 
 Size Instance::GetColSize(const String& sTableName,
                           const String& sColName) const {
-  Table* pTable = GetTable(sTableName);
-  if (pTable == nullptr) throw TableNotExistException(sTableName);
-  return pTable->GetSize(sColName);
+  return _pDataManager->GetColSize(sTableName, sColName);
 }
 
 std::vector<PageSlotID> Intersection(std::vector<PageSlotID> iA,
@@ -148,7 +142,7 @@ PageSlotID Instance::Insert(const String& sTableName,
   if (_pIndexManager->HasIndex(sTableName)) {
     auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
     for (const auto& sCol : iColNames) {
-      FieldID nPos = pTable->GetPos(sCol);
+      FieldID nPos = pTable->GetColPos(sCol);
       Field* pKey = pRecord->GetField(nPos);
       _pIndexManager->GetIndex(sTableName, sCol)->Insert(pKey, iPair);
     }
@@ -169,7 +163,7 @@ uint32_t Instance::Delete(const String& sTableName, Condition* pCond,
       Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
       auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
       for (const auto& sCol : iColNames) {
-        FieldID nPos = pTable->GetPos(sCol);
+        FieldID nPos = pTable->GetColPos(sCol);
         Field* pKey = pRecord->GetField(nPos);
         _pIndexManager->GetIndex(sTableName, sCol)->Delete(pKey, iPair);
       }
@@ -192,7 +186,7 @@ uint32_t Instance::Update(const String& sTableName, Condition* pCond,
       Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
       auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
       for (const auto& sCol : iColNames) {
-        FieldID nPos = pTable->GetPos(sCol);
+        FieldID nPos = pTable->GetColPos(sCol);
         Field* pKey = pRecord->GetField(nPos);
         _pIndexManager->GetIndex(sTableName, sCol)->Delete(pKey, iPair);
       }
@@ -206,7 +200,7 @@ uint32_t Instance::Update(const String& sTableName, Condition* pCond,
       Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
       auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
       for (const auto& sCol : iColNames) {
-        FieldID nPos = pTable->GetPos(sCol);
+        FieldID nPos = pTable->GetColPos(sCol);
         Field* pKey = pRecord->GetField(nPos);
         _pIndexManager->GetIndex(sTableName, sCol)->Insert(pKey, iPair);
       }
@@ -217,24 +211,12 @@ uint32_t Instance::Update(const String& sTableName, Condition* pCond,
 }
 
 Record* Instance::GetRecord(const String& sTableName,
-                            const PageSlotID& iPair) const {
-  Table* pTable = GetTable(sTableName);
-  Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
-  return pRecord;
+                            const PageSlotID& nPageSlotID) const {
+  return _pDataManager->GetRecord(sTableName, nPageSlotID);
 }
 
 std::vector<Record*> Instance::GetTableInfos(const String& sTableName) const {
-  std::vector<Record*> iVec{};
-  for (const auto& sName : GetColumnNames(sTableName)) {
-    FixedRecord* pDesc = new FixedRecord(
-        3, {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::INT_TYPE},
-        {COLUMN_NAME_SIZE, 10, 4});
-    pDesc->SetField(0, new CharField(sName));
-    pDesc->SetField(1, new CharField(toString(GetColType(sTableName, sName))));
-    pDesc->SetField(2, new IntField(GetColSize(sTableName, sName)));
-    iVec.push_back(pDesc);
-  }
-  return iVec;
+  return _pDataManager->GetTableInfos(sTableName);
 }
 std::vector<String> Instance::GetTableNames() const {
   return _pDataManager->GetTableNames();
@@ -277,7 +259,7 @@ void Instance::CreateIndex(const String& sTableName, const String& sColName,
   Table* pTable = GetTable(sTableName);
   // Handle Exists Data
   for (const auto& iPair : iAll) {
-    FieldID nPos = pTable->GetPos(sColName);
+    FieldID nPos = pTable->GetColPos(sColName);
     Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
     Field* pKey = pRecord->GetField(nPos);
     _pIndexManager->GetIndex(sTableName, sColName)->Insert(pKey, iPair);
@@ -289,7 +271,7 @@ void Instance::DropIndex(const String& sTableName, const String& sColName) {
   auto iAll = Search(sTableName, nullptr, {});
   Table* pTable = GetTable(sTableName);
   for (const auto& iPair : iAll) {
-    FieldID nPos = pTable->GetPos(sColName);
+    FieldID nPos = pTable->GetColPos(sColName);
     Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
     Field* pKey = pRecord->GetField(nPos);
     _pIndexManager->GetIndex(sTableName, sColName)->Delete(pKey, iPair);
@@ -343,8 +325,8 @@ std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(
   //       // 预获取数据
   //       Table* tableA = GetTable(condition->sTableA);
   //       Table* tableB = GetTable(condition->sTableB);
-  //       Size fieldID_A = tableA->GetPos(condition->sColA),
-  //            fieldID_B = tableB->GetPos(condition->sColB);
+  //       Size fieldID_A = tableA->GetColPos(condition->sColA),
+  //            fieldID_B = tableB->GetColPos(condition->sColB);
   //       FieldType fieldType = tableA->GetType(condition->sColA);
   //       assert(fieldType == tableB->GetType(condition->sColB));
 
@@ -501,9 +483,9 @@ std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(
             tableJoint.find(condition->sTableB) != tableJoint.end()) {
           conditionIter = unprocessedConditionIndex.erase(conditionIter);
           fieldID_A = fieldID_base_map[condition->sTableA] +
-                      tableA->GetPos(condition->sColA);
+                      tableA->GetColPos(condition->sColA);
           fieldID_B = fieldID_base_map[condition->sTableB] +
-                      tableB->GetPos(condition->sColB);
+                      tableB->GetColPos(condition->sColB);
           auto recordVecIter = recordVec.begin();
           while (recordVecIter != recordVec.end()) {
             Field *fieldA = (*recordVecIter)->GetField(fieldID_A),
@@ -546,8 +528,8 @@ std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(
         std::vector<Record*>& dataA = iRecordMap[condition->sTableA];
         std::vector<Record*>& dataB = iRecordMap[condition->sTableB];
         fieldID_A = fieldID_base_map[condition->sTableA] +
-                    tableA->GetPos(condition->sColA);
-        fieldID_B = tableB->GetPos(condition->sColB);
+                    tableA->GetColPos(condition->sColA);
+        fieldID_B = tableB->GetColPos(condition->sColB);
         auto columeNames = tableB->GetColumnNames();
 
 #ifdef JOIN_DEBUG

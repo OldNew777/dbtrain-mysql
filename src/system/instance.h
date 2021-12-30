@@ -50,7 +50,8 @@ class Instance {
   PageSlotID Insert(const String &sTableName,
                     const std::vector<String> &iRawVec);
 
-  Record *GetRecord(const String &sTableName, const PageSlotID &iPair) const;
+  Record *GetRecord(const String &sTableName,
+                    const PageSlotID &nPageSlotID) const;
   std::vector<Record *> GetTableInfos(const String &sTableName) const;
   std::vector<String> GetTableNames() const;
   std::vector<String> GetColumnNames(const String &sTableName) const;

@@ -31,13 +31,13 @@ FieldID TablePage::GetFieldID(const String& sColName) const {
   return _iColMap.find(sColName)->second;
 }
 
-FieldID TablePage::GetPos(const String& sCol) { return _iColMap[sCol]; }
+FieldID TablePage::GetColPos(const String& sCol) { return _iColMap[sCol]; }
 
 FieldType TablePage::GetType(const String& sCol) {
-  return _iTypeVec[GetPos(sCol)];
+  return _iTypeVec[GetColPos(sCol)];
 }
 
-Size TablePage::GetSize(const String& sCol) { return _iSizeVec[GetPos(sCol)]; }
+Size TablePage::GetSize(const String& sCol) { return _iSizeVec[GetColPos(sCol)]; }
 
 ManagerPageType TablePage::GetManagerPageType() const {
   return ManagerPageType::TABLE_PAGE_TYPE;

@@ -8,7 +8,7 @@ namespace dbtrain_mysql {
 Transform::Transform(FieldID nFieldID, FieldType iType, const String& sRaw)
     : _nFieldID(nFieldID), _iType(iType), _sRaw(sRaw) {}
 
-FieldID Transform::GetPos() const { return _nFieldID; }
+FieldID Transform::GetColPos() const { return _nFieldID; }
 
 Field* Transform::GetField() const {
   Field* pField = nullptr;

@@ -70,9 +70,9 @@ void Table::UpdateRecord(PageID nPageID, SlotID nSlotID,
   // 仿照InsertRecord从无格式数据导入原始记录
   // 构建Record对象，利用Record::SetField更新Record对象
   Record* record = GetRecord(nPageID, nSlotID);
-  // Trasform::GetPos表示更新位置，GetField表示更新后的字段
+  // Trasform::GetColPos表示更新位置，GetField表示更新后的字段
   for (const auto& iter : iTrans) {
-    record->SetField(iter.GetPos(), iter.GetField());
+    record->SetField(iter.GetColPos(), iter.GetField());
   }
 
   // 将新的记录序列化
@@ -130,8 +130,8 @@ void Table::SearchRecord(std::vector<PageSlotID>& iPairs, Condition* pCond) {
   }
 }
 
-FieldID Table::GetPos(const String& sCol) const {
-  return dynamic_cast<TablePage*>(pManagerPage)->GetPos(sCol);
+FieldID Table::GetColPos(const String& sCol) const {
+  return dynamic_cast<TablePage*>(pManagerPage)->GetColPos(sCol);
 }
 
 FieldType Table::GetType(const String& sCol) const {
@@ -149,6 +149,20 @@ std::vector<String> Table::GetColumnNames() const {
       dynamic_cast<TablePage*>(pManagerPage)->_iColMap.end());
   std::sort(iPairVec.begin(), iPairVec.end(), lessCmpBySecond<String, FieldID>);
   for (const auto& it : iPairVec) iVec.push_back(it.first);
+  return iVec;
+}
+
+std::vector<Record*> Table::GetTableInfos() const {
+  std::vector<Record*> iVec{};
+  for (const auto& sColName : GetColumnNames()) {
+    FixedRecord* pDesc = new FixedRecord(
+        3, {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::INT_TYPE},
+        {COLUMN_NAME_SIZE, 10, 4});
+    pDesc->SetField(0, new CharField(sColName));
+    pDesc->SetField(1, new CharField(toString(GetType(sColName))));
+    pDesc->SetField(2, new IntField(GetSize(sColName)));
+    iVec.push_back(pDesc);
+  }
   return iVec;
 }
 
