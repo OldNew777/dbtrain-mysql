@@ -14,6 +14,7 @@
 #include "os/os.h"
 #include "record/fixed_record.h"
 #include "settings.h"
+#include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
 
@@ -29,20 +30,44 @@ Instance::~Instance() {
   OS::WriteBack();
 }
 
+void Instance::UseDatabase(const String& sDatabaseName) {
+  _pDataManager->UseDatabase(sDatabaseName);
+}
+
+void Instance::CreateDatabase(const String& sDatabaseName) {
+  _pDataManager->CreateDatabase(sDatabaseName);
+}
+
+void Instance::DropDatabase(const String& sDatabaseName) {
+  _pDataManager->DropDatabase(sDatabaseName);
+}
+
+void Instance::RenameDatabase(const String& sOldDatabaseName,
+                              const String& sNewDatabaseName) {
+  _pDataManager->RenameDatabase(sOldDatabaseName, sNewDatabaseName);
+}
+
+std::vector<String> Instance::GetDatabaseNames() const {
+  return _pDataManager->GetDatabaseNames();
+}
+
 Table* Instance::GetTable(const String& sTableName) const {
   return _pDataManager->GetTable(sTableName);
 }
 
-bool Instance::CreateTable(const String& sTableName, const Schema& iSchema) {
-    _pDataManager->CreateTable(sTableName, iSchema);
-  return true;
+void Instance::CreateTable(const String& sTableName, const Schema& iSchema) {
+  _pDataManager->CreateTable(sTableName, iSchema);
 }
 
-bool Instance::DropTable(const String& sTableName) {
+void Instance::DropTable(const String& sTableName) {
   for (const auto& sColName : _pIndexManager->GetTableIndexes(sTableName))
     _pIndexManager->DropIndex(sTableName, sColName);
   _pDataManager->DropTable(sTableName);
-  return true;
+}
+
+void Instance::RenameTable(const String& sOldTableName,
+                           const String& sNewTableName) {
+  _pDataManager->RenameTable(sOldTableName, sNewTableName);
 }
 
 FieldID Instance::GetColID(const String& sTableName,
@@ -64,11 +89,6 @@ Size Instance::GetColSize(const String& sTableName,
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) throw TableNotExistException(sTableName);
   return pTable->GetSize(sColName);
-}
-
-bool CmpPageSlotID(const PageSlotID& iA, const PageSlotID& iB) {
-  if (iA.first == iB.first) return iA.second < iB.second;
-  return iA.first < iB.first;
 }
 
 std::vector<PageSlotID> Intersection(std::vector<PageSlotID> iA,
@@ -250,7 +270,7 @@ std::vector<Record*> Instance::GetIndexInfos() const {
   return iVec;
 }
 
-bool Instance::CreateIndex(const String& sTableName, const String& sColName,
+void Instance::CreateIndex(const String& sTableName, const String& sColName,
                            FieldType iType) {
   auto iAll = Search(sTableName, nullptr, {});
   _pIndexManager->AddIndex(sTableName, sColName, iType);
@@ -263,10 +283,9 @@ bool Instance::CreateIndex(const String& sTableName, const String& sColName,
     _pIndexManager->GetIndex(sTableName, sColName)->Insert(pKey, iPair);
     delete pRecord;
   }
-  return true;
 }
 
-bool Instance::DropIndex(const String& sTableName, const String& sColName) {
+void Instance::DropIndex(const String& sTableName, const String& sColName) {
   auto iAll = Search(sTableName, nullptr, {});
   Table* pTable = GetTable(sTableName);
   for (const auto& iPair : iAll) {
@@ -277,7 +296,6 @@ bool Instance::DropIndex(const String& sTableName, const String& sColName) {
     delete pRecord;
   }
   _pIndexManager->DropIndex(sTableName, sColName);
-  return true;
 }
 
 std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(

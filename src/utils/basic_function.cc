@@ -9,6 +9,11 @@ void PrintPageSlotID(const PageSlotID& nPageSlotID) {
   std::cout << '(' << nPageSlotID.first << ", " << nPageSlotID.second << ')';
 }
 
+bool CmpPageSlotID(const PageSlotID& iA, const PageSlotID& iB) {
+  if (iA.first == iB.first) return iA.second < iB.second;
+  return iA.first < iB.first;
+}
+
 String toUpper(const String& str) {
   String ans = str;
   std::transform(str.begin(), str.end(), ans.begin(), ::toupper);

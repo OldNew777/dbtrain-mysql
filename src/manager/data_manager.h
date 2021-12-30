@@ -62,7 +62,7 @@ class DataManager {
    * @param iSchema 列参数
    * @return Table* 表的指针
    */
-  Table* CreateTable(const String& sTableName, const Schema& iSchema);
+  void CreateTable(const String& sTableName, const Schema& iSchema);
   /**
    * @brief 删除一张表
    *

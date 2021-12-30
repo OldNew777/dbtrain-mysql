@@ -7,6 +7,7 @@
 #include "entity/schema.h"
 #include "entity/table.h"
 #include "exception/exceptions.h"
+#include "macros.h"
 #include "record/fixed_record.h"
 #include "record/transform.h"
 #include "result/result.h"
@@ -46,19 +47,60 @@ antlrcpp::Any SystemVisitor::visitStatement(
 
 antlrcpp::Any SystemVisitor::visitCreate_db(
     MYSQLParser::Create_dbContext *ctx) {
-  throw UnimplementedException();
+  String sDatabaseName = ctx->Identifier()->getText();
+  int nSize = 0;
+  try {
+    _pDB->CreateDatabase(sDatabaseName);
+    nSize = 1;
+  } catch (std::exception &) {
+  }
+  Result *res = new MemResult({"Create Database"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(nSize));
+  res->PushBack(pRes);
+  return res;
 }
 
 antlrcpp::Any SystemVisitor::visitDrop_db(MYSQLParser::Drop_dbContext *ctx) {
-  throw UnimplementedException();
+  String sDatabaseName = ctx->Identifier()->getText();
+  int nSize = 0;
+  try {
+    _pDB->DropDatabase(sDatabaseName);
+    nSize = 1;
+  } catch (std::exception &) {
+  }
+  Result *res = new MemResult({"Drop Database"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(nSize));
+  res->PushBack(pRes);
+  return res;
 }
 
 antlrcpp::Any SystemVisitor::visitShow_dbs(MYSQLParser::Show_dbsContext *ctx) {
-  throw UnimplementedException();
+  Result *res = new MemResult({"Show Databases"});
+  // Add Some info
+  for (const auto &sTableName : _pDB->GetDatabaseNames()) {
+    FixedRecord *pRes =
+        new FixedRecord(1, {FieldType::CHAR_TYPE}, {DATABASE_NAME_SIZE});
+    pRes->SetField(0, new CharField(sTableName));
+    res->PushBack(pRes);
+  }
+  return res;
 }
 
 antlrcpp::Any SystemVisitor::visitUse_db(MYSQLParser::Use_dbContext *ctx) {
-  throw UnimplementedException();
+  String sDatabaseName = ctx->Identifier()->getText();
+  int nSize = 0;
+  try {
+    _pDB->UseDatabase(sDatabaseName);
+    nSize = 1;
+  } catch (std::exception &) {
+  }
+  Result *res = new MemResult({"Use Database"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(nSize));
+  res->PushBack(pRes);
+  return res;
 }
 
 antlrcpp::Any SystemVisitor::visitShow_tables(
@@ -104,7 +146,6 @@ antlrcpp::Any SystemVisitor::visitCreate_table(
     _pDB->CreateTable(sTableName, iSchema);
     nSize = 1;
   } catch (const std::exception &e) {
-    // TODO
   }
   Result *res = new MemResult({"Create Table"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
@@ -115,13 +156,12 @@ antlrcpp::Any SystemVisitor::visitCreate_table(
 
 antlrcpp::Any SystemVisitor::visitDrop_table(
     MYSQLParser::Drop_tableContext *ctx) {
+  String sTableName = ctx->Identifier()->getText();
   Size nSize = 0;
   try {
-    String sTableName = ctx->Identifier()->getText();
     _pDB->DropTable(sTableName);
     nSize = 1;
   } catch (const std::exception &e) {
-    // TODO
   }
   Result *res = new MemResult({"Drop Table"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
@@ -134,8 +174,11 @@ antlrcpp::Any SystemVisitor::visitDescribe_table(
     MYSQLParser::Describe_tableContext *ctx) {
   Result *res = new MemResult({"Column Name", "Column Type", "Column Size"});
   String sTableName = ctx->Identifier()->getText();
-  for (const auto &pRecord : _pDB->GetTableInfos(sTableName))
-    res->PushBack(pRecord);
+  try {
+    for (const auto &pRecord : _pDB->GetTableInfos(sTableName))
+      res->PushBack(pRecord);
+  } catch (const std::exception &e) {
+  }
   return res;
 }
 
@@ -144,12 +187,17 @@ antlrcpp::Any SystemVisitor::visitInsert_into_table(
   std::vector<std::vector<String>> iValueListVec =
       ctx->value_lists()->accept(this);
   String sTableName = ctx->Identifier()->getText();
-  for (const auto &iValueList : iValueListVec) {
-    _pDB->Insert(sTableName, iValueList);
+  int inserted = 0;
+  try {
+    for (const auto &iValueList : iValueListVec) {
+      _pDB->Insert(sTableName, iValueList);
+      ++inserted;
+    }
+  } catch (const std::exception &e) {
   }
   Result *res = new MemResult({"Insert"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
-  pRes->SetField(0, new IntField(iValueListVec.size()));
+  pRes->SetField(0, new IntField(inserted));
   res->PushBack(pRes);
   return res;
 }
@@ -169,7 +217,12 @@ antlrcpp::Any SystemVisitor::visitDelete_from_table(
       iOtherCond.push_back(pCond);
   Condition *pCond = nullptr;
   if (iOtherCond.size() > 0) pCond = new AndCondition(iOtherCond);
-  Size nSize = _pDB->Delete(sTableName, pCond, iIndexCond);
+
+  Size nSize = 0;
+  try {
+    nSize = _pDB->Delete(sTableName, pCond, iIndexCond);
+  } catch (const std::exception &e) {
+  }
   // Clear Condition
   if (pCond) delete pCond;
   for (const auto &it : iIndexCond)
@@ -184,9 +237,9 @@ antlrcpp::Any SystemVisitor::visitDelete_from_table(
 
 antlrcpp::Any SystemVisitor::visitUpdate_table(
     MYSQLParser::Update_tableContext *ctx) {
+  String sTableName = ctx->Identifier()->getText();
   std::vector<std::pair<String, String>> iSetVec =
       ctx->set_clause()->accept(this);
-  String sTableName = ctx->Identifier()->getText();
   std::map<String, std::vector<Condition *>> iMap =
       ctx->where_and_clause()->accept(this);
   assert(iMap.size() == 1);
@@ -220,7 +273,7 @@ antlrcpp::Any SystemVisitor::visitUpdate_table(
 
 antlrcpp::Any SystemVisitor::visitSelect_table_(
     MYSQLParser::Select_table_Context *ctx) {
-  return ctx->select_table()->accept(this);
+  return visitChildren(ctx);
 }
 
 antlrcpp::Any SystemVisitor::visitSelect_table(
@@ -348,7 +401,19 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_unique(
 
 antlrcpp::Any SystemVisitor::visitAlter_table_rename(
     MYSQLParser::Alter_table_renameContext *ctx) {
-  throw UnimplementedException();
+  String sOldTableName = ctx->Identifier()[0]->getText();
+  String sNewTableName = ctx->Identifier()[1]->getText();
+  int nSize = 0;
+  try {
+    _pDB->RenameTable(sOldTableName, sNewTableName);
+    nSize = 1;
+  } catch (std::exception &) {
+  }
+  Result *res = new MemResult({"Rename Table"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(nSize));
+  res->PushBack(pRes);
+  return res;
 }
 
 antlrcpp::Any SystemVisitor::visitField_list(

@@ -8,6 +8,7 @@
 namespace dbtrain_mysql {
 
 void PrintPageSlotID(const PageSlotID& nPageSlotID);
+bool CmpPageSlotID(const PageSlotID& iA, const PageSlotID& iB);
 
 String toUpper(const String& str);
 

@@ -17,8 +17,16 @@ class Instance {
   Instance();
   ~Instance();
 
-  bool CreateTable(const String &sTableName, const Schema &iSchema);
-  bool DropTable(const String &sTableName);
+  void UseDatabase(const String &sDatabaseName);
+  void CreateDatabase(const String &sDatabaseName);
+  void DropDatabase(const String &sDatabaseName);
+  void RenameDatabase(const String &sOldDatabaseName,
+                      const String &sNewDatabaseName);
+  std::vector<String> GetDatabaseNames() const;
+
+  void CreateTable(const String &sTableName, const Schema &iSchema);
+  void DropTable(const String &sTableName);
+  void RenameTable(const String &sOldTableName, const String &sNewTableName);
   /**
    * @brief 获得列在表中的位置信息
    */
@@ -60,9 +68,9 @@ class Instance {
    */
   Index *GetIndex(const String &sTableName, const String &sColName) const;
   std::vector<Record *> GetIndexInfos() const;
-  bool CreateIndex(const String &sTableName, const String &sColName,
+  void CreateIndex(const String &sTableName, const String &sColName,
                    FieldType iType);
-  bool DropIndex(const String &sTableName, const String &sColName);
+  void DropIndex(const String &sTableName, const String &sColName);
 
   /**
    * @brief 实现多个表的JOIN操作

@@ -4,6 +4,9 @@
 --SELECT AVG(tmp.name),MAX(tmp.id),COUNT(*) FROM tmp WHERE tmp.name < 30 AND tmp.name < (SELECT * FROM tmp) AND tmp.name IS NULL;
 
 
+CREATE DATABASE THU;
+USE THU;
+
 CREATE TABLE student(name VARCHAR(2000), id INT);
 INSERT INTO student VALUES('Jack',20);
 INSERT INTO student VALUES('Mike',NULL);

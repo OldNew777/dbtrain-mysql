@@ -45,8 +45,7 @@ Table* DataManager::GetTable(const String& sTableName) {
   return database->GetTable(sTableName);
 }
 
-Table* DataManager::CreateTable(const String& sTableName,
-                                const Schema& iSchema) {
+void DataManager::CreateTable(const String& sTableName, const Schema& iSchema) {
   CheckDatabaseUsed();
   database->CreateTable(sTableName, iSchema);
 }
