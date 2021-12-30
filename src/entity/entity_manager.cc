@@ -4,6 +4,7 @@
 #include "exception/exceptions.h"
 #include "macros.h"
 #include "page/record_page.h"
+#include "settings.h"
 #include "string.h"
 #include "utils/basic_function.h"
 
@@ -36,14 +37,25 @@ void EntityManager::InsertEntity(const String& sEntityName) {
   // insert entity to page
   FindNextNotFull();
   PageID nPageID = _nNotFull;
+
   RecordPage page(nPageID);
   uint8_t* data = new uint8_t[pManagerPage->GetTotalSize()];
-  int pageID = nPageID;
+  int entityPageID = _iEntityPageIDMap[sEntityName];
   memset(data, 0, pManagerPage->GetTotalSize());
   memcpy(data, sEntityName.c_str(), sEntityName.size());
-  memcpy(data + TABLE_NAME_SIZE, &pageID, 4);
+  memcpy(data + TABLE_NAME_SIZE, &entityPageID, 4);
   SlotID nSlotID = page.InsertRecord(data);
   _iEntityPageSlotIDMap[sEntityName] = {nPageID, nSlotID};
+
+#ifdef DATABASE_DEBUG
+  printf("\n----EntityManager::InsertEntity----\n");
+  printf("_nHeadID = %d\n", int(_nHeadID));
+  printf("_nTailID = %d\n", int(_nTailID));
+  printf("entity PageID = %d\n", int(nPageID));
+  printf("entity save postion = ");
+  PrintPageSlotID(_iEntityPageSlotIDMap[sEntityName]);
+  printf("\n\n");
+#endif
 
   delete[] data;
 }

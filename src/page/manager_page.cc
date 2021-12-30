@@ -5,6 +5,7 @@
 #include "exception/exceptions.h"
 #include "macros.h"
 #include "page/record_page.h"
+#include "settings.h"
 #include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
@@ -64,17 +65,27 @@ void ManagerPage::Store() {
   FieldID iFieldSize = _iSizeVec.size();
   SetHeader((uint8_t*)&iFieldSize, 4, COLUMN_LEN_OFFSET);
   for (Size i = 0; i < iFieldSize; ++i) {
-    int nType = (int)_iTypeVec[i];
-    SetData((uint8_t*)&nType, 1, COLUMN_TYPE_OFFSET + i);
+    uint8_t nType = (int)_iTypeVec[i];
+    SetData(&nType, 1, COLUMN_TYPE_OFFSET + i);
   }
   for (Size i = 0; i < iFieldSize; ++i) {
-    Size nSize = _iSizeVec[i];
+    uint16_t nSize = _iSizeVec[i];
     SetData((uint8_t*)&nSize, 2, COLUMN_SIZE_OFFSET + 2 * i);
   }
   String sColumnsName = BuildColumnsString(_iColMap);
   Size sColNameLen = sColumnsName.size();
   SetHeader((uint8_t*)&sColNameLen, 4, COLUMN_NAME_LEN_OFFSET);
   SetData((uint8_t*)sColumnsName.c_str(), sColNameLen, COLUMN_NAME_OFFSET);
+
+#ifdef DATABASE_DEBUG
+  printf("\n----ManagerPage::Store----\n");
+  printf("_nPageID = %d\n", int(_nPageID));
+  printf("_nHeadID = %d\n", int(_nHeadID));
+  printf("_nTailID = %d\n", int(_nTailID));
+  printf("size = %d\n", int(iFieldSize));
+  printf("sColNameLen = %d\n", int(sColNameLen));
+  std::cout << "BuildColumnsString = " << sColumnsName << "\n\n";
+#endif
 }
 
 void ManagerPage::Load() {
@@ -83,12 +94,12 @@ void ManagerPage::Load() {
   FieldID iFieldSize = 0;
   GetHeader((uint8_t*)&iFieldSize, 4, COLUMN_LEN_OFFSET);
   for (Size i = 0; i < iFieldSize; ++i) {
-    int nType = 0;
-    GetData((uint8_t*)&nType, 1, COLUMN_TYPE_OFFSET + i);
+    uint8_t nType = 0;
+    GetData(&nType, 1, COLUMN_TYPE_OFFSET + i);
     _iTypeVec.push_back(FieldType(nType));
   }
   for (Size i = 0; i < iFieldSize; ++i) {
-    Size nSize = 0;
+    uint16_t nSize = 0;
     GetData((uint8_t*)&nSize, 2, COLUMN_SIZE_OFFSET + 2 * i);
     _iSizeVec.push_back(nSize);
   }
@@ -97,8 +108,19 @@ void ManagerPage::Load() {
   char* pTemp = new char[sColNameLen + 1];
   pTemp[sColNameLen] = '\0';
   GetData((uint8_t*)pTemp, sColNameLen, COLUMN_NAME_OFFSET);
-  String sName{pTemp};
+  String sName(pTemp);
   _iColMap = LoadColumnsString(sName);
+
+#ifdef DATABASE_DEBUG
+  printf("\n----ManagerPage::Load----\n");
+  printf("_nPageID = %d\n", int(_nPageID));
+  printf("_nHeadID = %d\n", int(_nHeadID));
+  printf("_nTailID = %d\n", int(_nTailID));
+  printf("size = %d\n", int(iFieldSize));
+  printf("sColNameLen = %d\n", int(sColNameLen));
+  std::cout << "LoadColumnsString " << sName << "\n\n";
+#endif
+
   delete[] pTemp;
 }
 

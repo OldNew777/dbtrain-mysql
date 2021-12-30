@@ -13,12 +13,11 @@
 #include "antlr4-runtime.h"
 #include "condition/conditions.h"
 #include "system/instance.h"
-#include "util.h"
 
 namespace dbtrain_mysql {
 
 class SystemVisitor : public MYSQLBaseVisitor {
- private:
+ protected:
   Instance *_pDB;
 
  public:

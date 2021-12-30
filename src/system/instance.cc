@@ -11,14 +11,14 @@
 #include "condition/conditions.h"
 #include "datastruct/hashes.h"
 #include "exception/exceptions.h"
-#include "manager/table_manager.h"
+#include "os/os.h"
 #include "record/fixed_record.h"
 #include "settings.h"
 
 namespace dbtrain_mysql {
 
 Instance::Instance() {
-  _pTableManager = new Database(TABLE_MANAGER_PAGEID);
+  _pTableManager = new Database(MYSQL_MANAGER_PAGEID);
   // _pTableManager = new TableManager();
   _pIndexManager = new IndexManager();
   _pTransactionManager = new TransactionManager();
@@ -34,6 +34,7 @@ Instance::~Instance() {
   delete _pIndexManager;
   delete _pTransactionManager;
   delete _pRecoveryManager;
+  OS::WriteBack();
 }
 
 Table* Instance::GetTable(const String& sTableName) const {

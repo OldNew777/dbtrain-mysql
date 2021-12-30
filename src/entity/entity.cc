@@ -13,16 +13,7 @@ Entity::~Entity() { delete pManagerPage; }
 void Entity::Init() {
   _nHeadID = pManagerPage->GetHeadID();
   _nTailID = pManagerPage->GetTailID();
-
-#ifdef DATABASE_DEBUG
-  printf("pManagerPage->GetPageID() = %d\n", int(pManagerPage->GetPageID()));
-  printf("_nHeadID = %d\n", int(_nHeadID));
-  printf("_nTailID = %d\n", int(_nTailID));
-  printf("\n");
-#endif
-
   _nNotFull = _nHeadID;
-  FindNextNotFull();
 }
 
 PageID NextPageID(PageID nCur) {

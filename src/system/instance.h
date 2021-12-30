@@ -2,18 +2,15 @@
 #define DBTRAIN_MYSQL_INSTANCE_H
 
 #include "defines.h"
+#include "entity/database.h"
 #include "entity/schema.h"
 #include "field/fields.h"
 #include "index/index.h"
 #include "manager/index_manager.h"
 #include "manager/recovery_manager.h"
-#include "manager/table_manager.h"
 #include "manager/transaction_manager.h"
 #include "record/transform.h"
 #include "result/results.h"
-
-// debug
-#include "entity/database.h"
 
 namespace dbtrain_mysql {
 
