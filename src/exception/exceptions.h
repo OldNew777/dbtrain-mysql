@@ -4,6 +4,7 @@
 // children class
 #include "case_exception.h"
 #include "compare_exception.h"
+#include "database_exception.h"
 #include "index_exception.h"
 #include "nullptr_exception.h"
 #include "os_exception.h"

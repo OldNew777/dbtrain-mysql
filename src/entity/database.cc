@@ -76,13 +76,7 @@ void Database::RenameTable(const String& sOldTableName,
   _iEntityPageIDMap.erase(sOldTableName);
 }
 
-std::vector<String> Database::GetTableNames() {
-  std::vector<String> names;
-  for (auto iter = _iEntityPageSlotIDMap.begin();
-       iter != _iEntityPageSlotIDMap.end(); ++iter)
-    names.push_back(iter->first);
-  return names;
-}
+std::vector<String> Database::GetTableNames() { return GetEntityNames(); }
 
 std::vector<String> Database::GetColumnNames(const String& sTableName) {
   Table* pTable = GetTable(sTableName);
@@ -91,18 +85,5 @@ std::vector<String> Database::GetColumnNames(const String& sTableName) {
 }
 
 EntityType Database::GetEntityType() const { return EntityType::DATABASE_TYPE; }
-
-void Database::Init() {
-  EntityManager::Init();
-  std::vector<std::pair<PageSlotID, Record*>> records =
-      pManagerPage->GetAllRecords();
-  for (auto pRecord : records) {
-    String sTableName = pRecord.second->GetField(0)->ToString();
-    _iEntityPageSlotIDMap[sTableName] = pRecord.first;
-    _iEntityPageIDMap[sTableName] =
-        dynamic_cast<IntField*>(pRecord.second->GetField(1))->GetIntData();
-    delete pRecord.second;
-  }
-}
 
 }  // namespace dbtrain_mysql

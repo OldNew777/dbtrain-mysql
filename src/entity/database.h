@@ -56,9 +56,6 @@ class Database : public EntityManager {
   std::vector<String> GetColumnNames(const String& sTableName);
 
   virtual EntityType GetEntityType() const;
-
- protected:
-  virtual void Init() override;
 };
 
 }  // namespace dbtrain_mysql

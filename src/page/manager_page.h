@@ -8,12 +8,12 @@
 
 namespace dbtrain_mysql {
 
-class Entity;
-class Database;
+class EntityManager;
 
 enum class ManagerPageType {
   DATABASE_PAGE_TYPE = 0,
   TABLE_PAGE_TYPE = 1,
+  WHOLE_PAGE_TYPE = 2,
 };
 
 class ManagerPage : public Page {
@@ -44,8 +44,7 @@ class ManagerPage : public Page {
   std::vector<Size> _iSizeVec;
   PageID _nHeadID, _nTailID;
 
-  friend class Entity;
-  friend class Database;
+  friend class EntityManager;
 };
 
 }  // namespace dbtrain_mysql

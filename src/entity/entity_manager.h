@@ -15,10 +15,7 @@ class EntityManager : public Entity {
   EntityManager() = default;
   virtual ~EntityManager();
 
-  /**
-   * @brief 清空EntityManger内的所有Entity
-   *
-   */
+  std::vector<String> GetEntityNames() const;
   void Clear();
 
  protected:
@@ -28,6 +25,8 @@ class EntityManager : public Entity {
 
   void InsertEntity(const String& sEntityName);
   void DeleteEntity(const String& sEntityName, PageSlotID nPageSlotID);
+
+  virtual void Init() override;
 };
 
 }  // namespace dbtrain_mysql

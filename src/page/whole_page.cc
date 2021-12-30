@@ -1,4 +1,4 @@
-#include "database_page.h"
+#include "whole_page.h"
 
 #include "exception/exceptions.h"
 #include "macros.h"
@@ -6,11 +6,11 @@
 
 namespace dbtrain_mysql {
 
-DatabasePage::DatabasePage() : ManagerPage() {
-  _iColMap["TableName"] = 0;
+WholePage::WholePage() : ManagerPage() {
+  _iColMap["DatabaseName"] = 0;
   _iColMap["PageID"] = 1;
   _iTypeVec = {FieldType::CHAR_TYPE, FieldType::INT_TYPE};
-  _iSizeVec = {TABLE_NAME_SIZE, 4};
+  _iSizeVec = {DATABASE_NAME_SIZE, 4};
 
   RecordPage* pPage = new RecordPage(GetTotalSize(), true);
   _nHeadID = _nTailID = pPage->GetPageID();
@@ -18,10 +18,10 @@ DatabasePage::DatabasePage() : ManagerPage() {
   _bModified = true;
 }
 
-DatabasePage::DatabasePage(PageID nPageID) : ManagerPage(nPageID) {}
+WholePage::WholePage(PageID nPageID) : ManagerPage(nPageID) {}
 
-ManagerPageType DatabasePage::GetManagerPageType() const {
-  return ManagerPageType::DATABASE_PAGE_TYPE;
+ManagerPageType WholePage::GetManagerPageType() const {
+  return ManagerPageType::WHOLE_PAGE_TYPE;
 }
 
 }  // namespace dbtrain_mysql

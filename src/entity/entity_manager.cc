@@ -2,6 +2,7 @@
 
 #include "defines.h"
 #include "exception/exceptions.h"
+#include "field/fields.h"
 #include "macros.h"
 #include "page/record_page.h"
 #include "settings.h"
@@ -66,6 +67,27 @@ void EntityManager::DeleteEntity(const String& sEntityName,
   RecordPage page(nPageSlotID.first);
   page.DeleteRecord(nPageSlotID.second);
   _iEntityPageSlotIDMap.erase(sEntityName);
+}
+
+void EntityManager::Init() {
+  Entity::Init();
+  std::vector<std::pair<PageSlotID, Record*>> records =
+      pManagerPage->GetAllRecords();
+  for (auto pRecord : records) {
+    String sEntityName = pRecord.second->GetField(0)->ToString();
+    _iEntityPageSlotIDMap[sEntityName] = pRecord.first;
+    _iEntityPageIDMap[sEntityName] =
+        dynamic_cast<IntField*>(pRecord.second->GetField(1))->GetIntData();
+    delete pRecord.second;
+  }
+}
+
+std::vector<String> EntityManager::GetEntityNames() const {
+  std::vector<String> names;
+  for (auto iter = _iEntityPageSlotIDMap.begin();
+       iter != _iEntityPageSlotIDMap.end(); ++iter)
+    names.push_back(iter->first);
+  return names;
 }
 
 }  // namespace dbtrain_mysql
