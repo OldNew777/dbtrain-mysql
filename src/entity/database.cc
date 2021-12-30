@@ -34,7 +34,10 @@ Table* Database::GetTable(const String& sTableName) {
 
 void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   // Table existed before
-  if (GetTable(sTableName) != nullptr) throw TableExistException(sTableName);
+  if (GetTable(sTableName) != nullptr) {
+    printf("Table '%s' existed\n", sTableName.c_str());
+    throw TableExistException(sTableName);
+  }
 
   // Create table and cache it
   TablePage* pPage = new TablePage(iSchema);
@@ -48,7 +51,10 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
 void Database::DropTable(const String& sTableName) {
   Table* pTable = GetTable(sTableName);
-  if (pTable == nullptr) throw TableNotExistException(sTableName);
+  if (pTable == nullptr) {
+    printf("Table '%s' not existed\n", sTableName.c_str());
+    throw TableNotExistException(sTableName);
+  }
   pTable->Clear();
   delete pTable;
   OS::GetOS()->DeletePage(_iEntityPageIDMap[sTableName]);
@@ -61,9 +67,14 @@ void Database::DropTable(const String& sTableName) {
 void Database::RenameTable(const String& sOldTableName,
                            const String& sNewTableName) {
   Table* pTable = GetTable(sOldTableName);
-  if (pTable == nullptr) throw TableNotExistException(sOldTableName);
-  if (GetTable(sNewTableName) != nullptr)
+  if (pTable == nullptr) {
+    printf("Table '%s' not existed\n", sOldTableName.c_str());
+    throw TableNotExistException(sOldTableName);
+  }
+  if (GetTable(sNewTableName) != nullptr) {
+    printf("Table '%s' existed\n", sNewTableName.c_str());
     throw TableExistException(sNewTableName);
+  }
 
   DeleteEntity(sOldTableName, _iEntityPageSlotIDMap[sOldTableName]);
   InsertEntity(sNewTableName);
@@ -78,7 +89,6 @@ std::vector<String> Database::GetTableNames() { return GetEntityNames(); }
 
 std::vector<String> Database::GetColumnNames(const String& sTableName) {
   Table* pTable = GetTable(sTableName);
-  if (pTable == nullptr) throw TableNotExistException(sTableName);
   return pTable->GetColumnNames();
 }
 

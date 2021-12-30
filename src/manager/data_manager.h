@@ -92,6 +92,8 @@ class DataManager {
  protected:
   Whole* whole;
   Database* database;
+
+  void CheckDatabaseUsed() const;
 };
 
 }  // namespace dbtrain_mysql

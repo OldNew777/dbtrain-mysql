@@ -18,7 +18,7 @@
 namespace dbtrain_mysql {
 
 Instance::Instance() {
-  _pTableManager = new Database(MYSQL_MANAGER_PAGEID);
+  _pDataManager = new DataManager();
   // _pTableManager = new TableManager();
   _pIndexManager = new IndexManager();
   _pTransactionManager = new TransactionManager();
@@ -30,7 +30,7 @@ Instance::Instance() {
 }
 
 Instance::~Instance() {
-  delete _pTableManager;
+  delete _pDataManager;
   delete _pIndexManager;
   delete _pTransactionManager;
   delete _pRecoveryManager;
@@ -38,7 +38,7 @@ Instance::~Instance() {
 }
 
 Table* Instance::GetTable(const String& sTableName) const {
-  return _pTableManager->GetTable(sTableName);
+  return _pDataManager->GetTable(sTableName);
 }
 
 bool Instance::CreateTable(const String& sTableName, const Schema& iSchema,
@@ -50,9 +50,9 @@ bool Instance::CreateTable(const String& sTableName, const Schema& iSchema,
     Column txnColumn("TransactionID", FieldType::INT_TYPE);
     columns.push_back(txnColumn);
     Schema iSchemaTxn(columns);
-    _pTableManager->CreateTable(sTableName, iSchemaTxn);
+    _pDataManager->CreateTable(sTableName, iSchemaTxn);
   } else {
-    _pTableManager->CreateTable(sTableName, iSchema);
+    _pDataManager->CreateTable(sTableName, iSchema);
   }
   return true;
 }
@@ -60,7 +60,7 @@ bool Instance::CreateTable(const String& sTableName, const Schema& iSchema,
 bool Instance::DropTable(const String& sTableName) {
   for (const auto& sColName : _pIndexManager->GetTableIndexes(sTableName))
     _pIndexManager->DropIndex(sTableName, sColName);
-  _pTableManager->DropTable(sTableName);
+  _pDataManager->DropTable(sTableName);
   return true;
 }
 
@@ -337,10 +337,10 @@ std::vector<Record*> Instance::GetTableInfos(const String& sTableName) const {
   return iVec;
 }
 std::vector<String> Instance::GetTableNames() const {
-  return _pTableManager->GetTableNames();
+  return _pDataManager->GetTableNames();
 }
 std::vector<String> Instance::GetColumnNames(const String& sTableName) const {
-  return _pTableManager->GetColumnNames(sTableName);
+  return _pDataManager->GetColumnNames(sTableName);
 }
 
 bool Instance::IsIndex(const String& sTableName, const String& sColName) const {

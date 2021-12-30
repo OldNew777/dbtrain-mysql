@@ -33,8 +33,10 @@ Database* Whole::GetDatabase(const String& sDatabaseName) {
 
 void Whole::CreateDatabase(const String& sDatabaseName) {
   // Database existed before
-  if (GetDatabase(sDatabaseName) != nullptr)
+  if (GetDatabase(sDatabaseName) != nullptr) {
+    printf("Database '%s' existed\n", sDatabaseName.c_str());
     throw DatabaseExistException(sDatabaseName);
+  }
 
   // Create database and cache it
   DatabasePage* pPage = new DatabasePage();
@@ -48,7 +50,10 @@ void Whole::CreateDatabase(const String& sDatabaseName) {
 
 void Whole::DropDatabase(const String& sDatabaseName) {
   Database* pDatabase = GetDatabase(sDatabaseName);
-  if (pDatabase == nullptr) throw DatabaseNotExistException(sDatabaseName);
+  if (pDatabase == nullptr) {
+    printf("Database '%s' not existed\n", sDatabaseName.c_str());
+    throw DatabaseNotExistException(sDatabaseName);
+  }
   pDatabase->Clear();
   delete pDatabase;
   OS::GetOS()->DeletePage(_iEntityPageIDMap[sDatabaseName]);
@@ -61,9 +66,14 @@ void Whole::DropDatabase(const String& sDatabaseName) {
 void Whole::RenameDatabase(const String& sOldDatabaseName,
                            const String& sNewDatabaseName) {
   Database* pDatabase = GetDatabase(sOldDatabaseName);
-  if (pDatabase == nullptr) throw DatabaseNotExistException(sOldDatabaseName);
-  if (GetDatabase(sNewDatabaseName) != nullptr)
+  if (pDatabase == nullptr) {
+    printf("Database '%s' not existed\n", sOldDatabaseName.c_str());
+    throw DatabaseNotExistException(sOldDatabaseName);
+  }
+  if (GetDatabase(sNewDatabaseName) != nullptr) {
+    printf("Database '%s' existed\n", sNewDatabaseName.c_str());
     throw DatabaseExistException(sNewDatabaseName);
+  }
 
   DeleteEntity(sOldDatabaseName, _iEntityPageSlotIDMap[sOldDatabaseName]);
   InsertEntity(sNewDatabaseName);

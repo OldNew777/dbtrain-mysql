@@ -2,10 +2,10 @@
 #define DBTRAIN_MYSQL_INSTANCE_H
 
 #include "defines.h"
-#include "entity/database.h"
 #include "entity/schema.h"
 #include "field/fields.h"
 #include "index/index.h"
+#include "manager/data_manager.h"
 #include "manager/index_manager.h"
 #include "manager/recovery_manager.h"
 #include "manager/transaction_manager.h"
@@ -96,7 +96,7 @@ class Instance {
       std::vector<Condition *> &iJoinConds);
 
  private:
-  Database *_pTableManager;
+  DataManager *_pDataManager;
   IndexManager *_pIndexManager;
   TransactionManager *_pTransactionManager;
   RecoveryManager *_pRecoveryManager;

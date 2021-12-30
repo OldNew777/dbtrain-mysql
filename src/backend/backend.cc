@@ -7,6 +7,7 @@
 #include "macros.h"
 #include "os/os.h"
 #include "page/record_page.h"
+#include "page/whole_page.h"
 #include "parser/ErrorListener.h"
 #include "parser/MYSQLLexer.h"
 #include "parser/MYSQLParser.h"
@@ -32,17 +33,15 @@ void Init() {
   RecordPage* pNotUsed2 = new RecordPage(256, true);
   RecordPage* pIndexManagerPage = new RecordPage(INDEX_NAME_SIZE + 4 + 1, true);
   RecordPage* pRecoveryManagerPage = new RecordPage(4 + 4 + 1, true);
-  // RecordPage* pTableManagerPage = new RecordPage(TABLE_NAME_SIZE + 4 + 1,
-  // true);
-  DatabasePage* pTableManagerPage = new DatabasePage();
+  WholePage* pDataManagerPage = new WholePage();
 
   printf("Build Finish.\n");
 
   delete pNotUsed1;
   delete pNotUsed2;
-  delete pTableManagerPage;
   delete pIndexManagerPage;
   delete pRecoveryManagerPage;
+  delete pDataManagerPage;
 
   OS::WriteBack();
 }

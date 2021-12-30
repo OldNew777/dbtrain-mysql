@@ -13,10 +13,13 @@ DataManager::DataManager() {
 DataManager::~DataManager() { delete whole; }
 
 void DataManager::UseDatabase(const String& sDatabaseName) {
-  database = whole->GetDatabase(sDatabaseName);
-  if (database == nullptr) {
+  // shouldn't delete database here
+  // it will be done by whole
+  try {
+    database = whole->GetDatabase(sDatabaseName);
+  } catch (DatabaseNotExistException& e) {
     printf("Database '%s' not existed\n", sDatabaseName.c_str());
-    throw DatabaseNotExistException(sDatabaseName);
+    throw e;
   }
 }
 
@@ -38,53 +41,42 @@ std::vector<String> DataManager::GetDatabaseNames() const {
 }
 
 Table* DataManager::GetTable(const String& sTableName) {
-  if (database == nullptr) {
-    printf("Please USE (DATABASE) first\n");
-    throw DatabaseUnusedException();
-  }
+  CheckDatabaseUsed();
   return database->GetTable(sTableName);
 }
 
 Table* DataManager::CreateTable(const String& sTableName,
                                 const Schema& iSchema) {
-  if (database == nullptr) {
-    printf("Please USE (DATABASE) first\n");
-    throw DatabaseUnusedException();
-  }
+  CheckDatabaseUsed();
   database->CreateTable(sTableName, iSchema);
 }
 
 void DataManager::DropTable(const String& sTableName) {
-  if (database == nullptr) {
-    printf("Please USE (DATABASE) first\n");
-    throw DatabaseUnusedException();
-  }
+  CheckDatabaseUsed();
   database->DropTable(sTableName);
 }
 
 void DataManager::RenameTable(const String& sOldTableName,
                               const String& sNewTableName) {
-  if (database == nullptr) {
-    printf("Please USE (DATABASE) first\n");
-    throw DatabaseUnusedException();
-  }
+  CheckDatabaseUsed();
   database->RenameTable(sOldTableName, sNewTableName);
 }
 
 std::vector<String> DataManager::GetTableNames() {
-  if (database == nullptr) {
-    printf("Please USE (DATABASE) first\n");
-    throw DatabaseUnusedException();
-  }
+  CheckDatabaseUsed();
   return database->GetTableNames();
 }
 
 std::vector<String> DataManager::GetColumnNames(const String& sTableName) {
+  CheckDatabaseUsed();
+  return database->GetColumnNames(sTableName);
+}
+
+void DataManager::CheckDatabaseUsed() const {
   if (database == nullptr) {
     printf("Please USE (DATABASE) first\n");
     throw DatabaseUnusedException();
   }
-  return database->GetColumnNames(sTableName);
 }
 
 }  // namespace dbtrain_mysql

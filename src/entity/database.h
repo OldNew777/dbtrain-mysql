@@ -54,6 +54,7 @@ class Database : public EntityManager {
    */
   std::vector<String> GetColumnNames(const String& sTableName);
 
+ protected:
   virtual EntityType GetEntityType() const;
 };
 
