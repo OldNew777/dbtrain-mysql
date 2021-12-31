@@ -63,7 +63,6 @@ class Table : public Entity {
   std::vector<Record*> GetTableInfos() const;
   std::vector<String> GetColumnNames() const;
 
- protected:
   virtual EntityType GetEntityType() const;
 };
 

@@ -16,8 +16,10 @@ const PageOffset COLUMN_LEN_OFFSET = 24;
 const PageOffset COLUMN_NAME_LEN_OFFSET = 28;
 
 const PageOffset COLUMN_TYPE_OFFSET = 0;
-const PageOffset COLUMN_SIZE_OFFSET = 64;
-const PageOffset COLUMN_NAME_OFFSET = 192;
+const PageOffset COLUMN_SIZE_OFFSET =
+    COLUMN_TYPE_OFFSET + COLUMN_NUM_MAX * FIELD_TYPE_BYTES;
+const PageOffset COLUMN_NAME_OFFSET =
+    COLUMN_SIZE_OFFSET + COLUMN_NUM_MAX * FIELD_SIZE_MAX_BYTES;
 
 ManagerPage::ManagerPage() : Page() {}
 
@@ -65,12 +67,13 @@ void ManagerPage::Store() {
   FieldID iFieldSize = _iSizeVec.size();
   SetHeader((uint8_t*)&iFieldSize, 4, COLUMN_LEN_OFFSET);
   for (Size i = 0; i < iFieldSize; ++i) {
-    uint8_t nType = (int)_iTypeVec[i];
-    SetData(&nType, 1, COLUMN_TYPE_OFFSET + i);
+    int nType = (int)_iTypeVec[i];
+    SetData((uint8_t*)&nType, FIELD_TYPE_BYTES, COLUMN_TYPE_OFFSET + i);
   }
   for (Size i = 0; i < iFieldSize; ++i) {
-    uint16_t nSize = _iSizeVec[i];
-    SetData((uint8_t*)&nSize, 2, COLUMN_SIZE_OFFSET + 2 * i);
+    Size nSize = _iSizeVec[i];
+    SetData((uint8_t*)&nSize, FIELD_SIZE_MAX_BYTES,
+            COLUMN_SIZE_OFFSET + FIELD_SIZE_MAX_BYTES * i);
   }
   String sColumnsName = BuildColumnsString(_iColMap);
   Size sColNameLen = sColumnsName.size();
@@ -94,13 +97,14 @@ void ManagerPage::Load() {
   FieldID iFieldSize = 0;
   GetHeader((uint8_t*)&iFieldSize, 4, COLUMN_LEN_OFFSET);
   for (Size i = 0; i < iFieldSize; ++i) {
-    uint8_t nType = 0;
-    GetData(&nType, 1, COLUMN_TYPE_OFFSET + i);
+    int nType = 0;
+    GetData((uint8_t*)&nType, FIELD_TYPE_BYTES, COLUMN_TYPE_OFFSET + i);
     _iTypeVec.push_back(FieldType(nType));
   }
   for (Size i = 0; i < iFieldSize; ++i) {
-    uint16_t nSize = 0;
-    GetData((uint8_t*)&nSize, 2, COLUMN_SIZE_OFFSET + 2 * i);
+    Size nSize = 0;
+    GetData((uint8_t*)&nSize, FIELD_SIZE_MAX_BYTES,
+            COLUMN_SIZE_OFFSET + FIELD_SIZE_MAX_BYTES * i);
     _iSizeVec.push_back(nSize);
   }
   Size sColNameLen = 0;

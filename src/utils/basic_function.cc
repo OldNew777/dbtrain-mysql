@@ -71,4 +71,14 @@ std::map<String, FieldID> LoadColumnsString(const String& sName) {
   return iColMap;
 }
 
+std::vector<PageSlotID> Intersection(std::vector<PageSlotID> iA,
+                                     std::vector<PageSlotID> iB) {
+  std::sort(iA.begin(), iA.end(), CmpPageSlotID);
+  std::sort(iB.begin(), iB.end(), CmpPageSlotID);
+  std::vector<PageSlotID> iRes{};
+  std::set_intersection(iA.begin(), iA.end(), iB.begin(), iB.end(),
+                        std::back_inserter(iRes));
+  return iRes;
+}
+
 }  // namespace dbtrain_mysql

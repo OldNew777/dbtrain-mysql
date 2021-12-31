@@ -5,6 +5,7 @@
 #include "settings.h"
 
 namespace dbtrain_mysql {
+
 Index::Index(FieldType iType) {
   // 建立一个新的根结点，注意需要基于类型判断根结点的属性
   // 根结点需要设为中间结点

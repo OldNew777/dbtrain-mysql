@@ -105,6 +105,10 @@ class DataManager {
                     const PageSlotID& nPageSlotID) const;
   std::vector<Record*> GetTableInfos(const String& sTableName) const;
 
+  std::pair<std::vector<String>, std::vector<Record*>> Join(
+      std::map<String, std::vector<PageSlotID>>& iResultMap,
+      std::vector<Condition*>& iJoinConds);
+
  protected:
   Whole* _pWhole;
   Database* _pDatabase;

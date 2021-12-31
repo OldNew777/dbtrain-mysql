@@ -86,13 +86,9 @@ class Instance {
       std::map<String, std::vector<PageSlotID>> &iResultMap,
       std::vector<Condition *> &iJoinConds);
 
- private:
+ protected:
   DataManager *_pDataManager;
   IndexManager *_pIndexManager;
-
-  std::string _dbname;
-
-  void DeleteForce(const String &sTableName, const PageSlotID &pageSlotID);
 };
 
 }  // namespace dbtrain_mysql

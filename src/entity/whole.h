@@ -48,7 +48,6 @@ class Whole : public EntityManager {
    */
   std::vector<String> GetDatabaseNames() const;
 
- protected:
   virtual EntityType GetEntityType() const;
 };
 

@@ -25,6 +25,9 @@ bool lessCmpBySecond(const std::pair<First, Second>& a,
 String BuildColumnsString(const std::map<String, FieldID>& iColMap);
 std::map<String, FieldID> LoadColumnsString(const String& sName);
 
+std::vector<PageSlotID> Intersection(std::vector<PageSlotID> iA,
+                                     std::vector<PageSlotID> iB);
+
 }  // namespace dbtrain_mysql
 
 #endif
