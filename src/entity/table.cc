@@ -14,14 +14,23 @@
 
 namespace dbtrain_mysql {
 
-Table::Table(TablePage* nTablePageID) {
-  pManagerPage = nTablePageID;
+Table::Table(TablePage* nTablePage) {
+  _pManagerPage = nTablePage;
   Init();
 }
 
 Table::Table(PageID nTableID) : Entity() {
-  pManagerPage = new TablePage(nTableID);
+  _pManagerPage = new TablePage(nTableID);
   Init();
+}
+
+void Table::Init() {
+  Entity::Init();
+  _pTablePage = dynamic_cast<TablePage*>(_pManagerPage);
+  // for (const String& sColName : GetColumnNames()) {
+  //   PageID nPageID = _pTablePage->GetIndexPageID(sColName);
+  //   if (nPageID != NULL_PAGE) _iIndexPageIDMap[sColName] = nPageID;
+  // }
 }
 
 Record* Table::GetRecord(PageID nPageID, SlotID nSlotID) {
@@ -43,7 +52,7 @@ PageSlotID Table::InsertRecord(Record* pRecord) {
 
   RecordPage page(nPageID);
 
-  uint8_t* data = new uint8_t[pManagerPage->GetTotalSize()];
+  uint8_t* data = new uint8_t[_pManagerPage->GetTotalSize()];
   pRecord->Store(data);
 
   // 利用RecordPage::InsertRecord插入数据
@@ -76,7 +85,7 @@ void Table::UpdateRecord(PageID nPageID, SlotID nSlotID,
   }
 
   // 将新的记录序列化
-  uint8_t* data = new uint8_t[pManagerPage->GetTotalSize()];
+  uint8_t* data = new uint8_t[_pManagerPage->GetTotalSize()];
   record->Store(data);
   // 利用RecordPage::UpdateRecord更新一条数据
   RecordPage page(nPageID);
@@ -91,7 +100,7 @@ std::vector<PageSlotID> Table::SearchRecord(Condition* pCond) {
   std::vector<PageSlotID> ans;
 
   bool unStop = true;
-  PageID nPageID = pManagerPage->GetHeadID();
+  PageID nPageID = _pManagerPage->GetHeadID();
   Record* record = EmptyRecord();
   while (unStop) {
     RecordPage page(nPageID);
@@ -108,7 +117,7 @@ std::vector<PageSlotID> Table::SearchRecord(Condition* pCond) {
         }
       }
     }
-    if (nPageID == pManagerPage->GetTailID()) unStop = false;
+    if (nPageID == _pManagerPage->GetTailID()) unStop = false;
     nPageID = page.GetNextID();
   }
   delete record;
@@ -131,22 +140,21 @@ void Table::SearchRecord(std::vector<PageSlotID>& iPairs, Condition* pCond) {
 }
 
 FieldID Table::GetColPos(const String& sCol) const {
-  return dynamic_cast<TablePage*>(pManagerPage)->GetColPos(sCol);
+  return _pTablePage->GetColPos(sCol);
 }
 
 FieldType Table::GetType(const String& sCol) const {
-  return dynamic_cast<TablePage*>(pManagerPage)->GetType(sCol);
+  return _pTablePage->GetType(sCol);
 }
 
 Size Table::GetSize(const String& sCol) const {
-  return dynamic_cast<TablePage*>(pManagerPage)->GetSize(sCol);
+  return _pTablePage->GetSize(sCol);
 }
 
 std::vector<String> Table::GetColumnNames() const {
   std::vector<String> iVec{};
   std::vector<std::pair<String, FieldID>> iPairVec(
-      dynamic_cast<TablePage*>(pManagerPage)->_iColMap.begin(),
-      dynamic_cast<TablePage*>(pManagerPage)->_iColMap.end());
+      _pTablePage->_iColMap.begin(), _pTablePage->_iColMap.end());
   std::sort(iPairVec.begin(), iPairVec.end(), lessCmpBySecond<String, FieldID>);
   for (const auto& it : iPairVec) iVec.push_back(it.first);
   return iVec;

@@ -13,7 +13,7 @@ Database::Database(DatabasePage* pDatabasePage) : EntityManager(pDatabasePage) {
 }
 
 Database::Database(PageID nDatabasePageID) : EntityManager() {
-  pManagerPage = new DatabasePage(nDatabasePageID);
+  _pManagerPage = new DatabasePage(nDatabasePageID);
   Init();
 }
 

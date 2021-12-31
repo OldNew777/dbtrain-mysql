@@ -23,7 +23,7 @@ void EntityManager::Clear() {
 }
 
 EntityManager::EntityManager(ManagerPage* pManagerPage) {
-  this->pManagerPage = pManagerPage;
+  this->_pManagerPage = pManagerPage;
   Init();
 }
 
@@ -40,9 +40,9 @@ void EntityManager::InsertEntity(const String& sEntityName) {
   PageID nPageID = _nNotFull;
 
   RecordPage page(nPageID);
-  uint8_t* data = new uint8_t[pManagerPage->GetTotalSize()];
+  uint8_t* data = new uint8_t[_pManagerPage->GetTotalSize()];
   int entityPageID = _iEntityPageIDMap[sEntityName];
-  memset(data, 0, pManagerPage->GetTotalSize());
+  memset(data, 0, _pManagerPage->GetTotalSize());
   memcpy(data, sEntityName.c_str(), sEntityName.size());
   memcpy(data + TABLE_NAME_SIZE, &entityPageID, 4);
   SlotID nSlotID = page.InsertRecord(data);
@@ -72,7 +72,7 @@ void EntityManager::DeleteEntity(const String& sEntityName,
 void EntityManager::Init() {
   Entity::Init();
   std::vector<std::pair<PageSlotID, Record*>> records =
-      pManagerPage->GetAllRecords();
+      _pManagerPage->GetAllRecords();
   for (auto pRecord : records) {
     String sEntityName = pRecord.second->GetField(0)->ToString();
     _iEntityPageSlotIDMap[sEntityName] = pRecord.first;

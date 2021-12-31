@@ -34,7 +34,7 @@ class Entity {
   virtual EntityType GetEntityType() const = 0;
 
  protected:
-  ManagerPage* pManagerPage;
+  ManagerPage* _pManagerPage;
   PageID _nHeadID;
   PageID _nTailID;
   /**

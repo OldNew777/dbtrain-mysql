@@ -8,11 +8,11 @@
 
 namespace dbtrain_mysql {
 
-Entity::~Entity() { delete pManagerPage; }
+Entity::~Entity() { delete _pManagerPage; }
 
 void Entity::Init() {
-  _nHeadID = pManagerPage->GetHeadID();
-  _nTailID = pManagerPage->GetTailID();
+  _nHeadID = _pManagerPage->GetHeadID();
+  _nTailID = _pManagerPage->GetTailID();
   _nNotFull = _nHeadID;
 }
 
@@ -33,9 +33,9 @@ void Entity::Clear() {
 }
 
 Record* Entity::EmptyRecord() const {
-  return new FixedRecord(pManagerPage->GetFieldSize(),
-                         pManagerPage->GetTypeVec(),
-                         pManagerPage->GetSizeVec());
+  return new FixedRecord(_pManagerPage->GetFieldSize(),
+                         _pManagerPage->GetTypeVec(),
+                         _pManagerPage->GetSizeVec());
 }
 
 void Entity::FindNextNotFull() {
@@ -46,17 +46,17 @@ void Entity::FindNextNotFull() {
   // 只需要保证均摊复杂度较低即可
 
   PageID searchFlag = _nNotFull;
-  if (NextNotFullUntil(pManagerPage->GetTailID())) return;
-  _nNotFull = pManagerPage->GetHeadID();
+  if (NextNotFullUntil(_pManagerPage->GetTailID())) return;
+  _nNotFull = _pManagerPage->GetHeadID();
   // searchFlag会重复搜索一次
   if (NextNotFullUntil(searchFlag)) return;
 
   // 需要插入新的page
-  RecordPage newPage(pManagerPage->GetTotalSize(), true);
-  LinkedPage tailPageBefore(pManagerPage->GetTailID());
+  RecordPage newPage(_pManagerPage->GetTotalSize(), true);
+  LinkedPage tailPageBefore(_pManagerPage->GetTailID());
   _nNotFull = newPage.GetPageID();
   tailPageBefore.PushBack(&newPage);
-  pManagerPage->SetTailID(newPage.GetPageID());
+  _pManagerPage->SetTailID(newPage.GetPageID());
 }
 
 bool Entity::NextNotFullUntil(PageID target) {
