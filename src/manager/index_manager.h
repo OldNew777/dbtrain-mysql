@@ -9,7 +9,10 @@ namespace dbtrain_mysql {
 class IndexManager {
  public:
   IndexManager();
+  IndexManager(PageID nPageID);
   ~IndexManager();
+
+  PageID GetPageID() const;
 
   Index *GetIndex(const String &sTableName, const String &sColName);
   Index *AddIndex(const String &sTableName, const String &sColName,
@@ -21,7 +24,8 @@ class IndexManager {
   std::vector<String> GetTableIndexes(const String &sTableName) const;
   bool HasIndex(const String &sTableName) const;
 
- private:
+ protected:
+  PageID _nPageID;
   std::map<String, Index *> _iIndexMap;
   std::map<String, PageID> _iIndexIDMap;
   std::map<String, std::vector<String>> _iTableIndexes;

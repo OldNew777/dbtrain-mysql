@@ -6,7 +6,6 @@
 #include "field/fields.h"
 #include "index/index.h"
 #include "manager/data_manager.h"
-#include "manager/index_manager.h"
 #include "record/transform.h"
 #include "result/results.h"
 
@@ -88,7 +87,6 @@ class Instance {
 
  protected:
   DataManager *_pDataManager;
-  IndexManager *_pIndexManager;
 };
 
 }  // namespace dbtrain_mysql

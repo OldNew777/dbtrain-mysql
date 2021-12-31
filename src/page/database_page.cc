@@ -2,6 +2,7 @@
 
 #include "exception/exceptions.h"
 #include "macros.h"
+#include "manager/index_manager.h"
 #include "page/record_page.h"
 
 namespace dbtrain_mysql {
@@ -20,7 +21,7 @@ DatabasePage::DatabasePage() : ManagerPage() {
   delete pPage;
 
   // Init page containing IndexManager
-
+  IndexManager indexManager();
 
   _bModified = true;
 }

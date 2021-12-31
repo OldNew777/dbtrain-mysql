@@ -23,6 +23,13 @@ std::pair<String, String> SplitIndexName(const String &sName) {
 }
 
 IndexManager::IndexManager() {
+  _nPageID = NULL_PAGE;
+  Load();
+  Init();
+}
+
+IndexManager::IndexManager(PageID nPageID) {
+  _nPageID = nPageID;
   Load();
   Init();
 }
@@ -35,6 +42,8 @@ IndexManager::~IndexManager() {
       delete iPair.second;
     }
 }
+
+PageID IndexManager::GetPageID() const { return _nPageID; }
 
 Index *IndexManager::GetIndex(const String &sTableName,
                               const String &sColName) {
@@ -103,37 +112,68 @@ void IndexManager::Store() {
   // Update Index Root
   for (const auto &iPair : _iIndexMap)
     _iIndexIDMap[iPair.first] = iPair.second->GetRootID();
-  RecordPage *pPage = new RecordPage(INDEX_MANAGER_PAGEID);
-  pPage->Clear();
+  RecordPage *pPage = new RecordPage(_nPageID);
+  PageID nNowPageID = _nPageID;
+  auto iter = _iIndexIDMap.begin();
   FixedRecord *pRecord = new FixedRecord(
       2, {FieldType::CHAR_TYPE, FieldType::INT_TYPE}, {INDEX_NAME_SIZE, 4});
-  for (const auto &iPair : _iIndexIDMap) {
-    CharField *pString = new CharField(iPair.first);
-    IntField *pInt = new IntField(iPair.second);
-    pRecord->SetField(0, pString);
-    pRecord->SetField(1, pInt);
-    uint8_t pData[INDEX_NAME_SIZE + 4 + 1];
-    pRecord->Store(pData);
-    pPage->InsertRecord(pData);
+  while (iter != _iIndexIDMap.end()) {
+    pPage->Clear();
+    for (int i = 0; i < pPage->GetCap(), iter != _iIndexIDMap.end(); ++i) {
+      const auto &iPair = *iter;
+      CharField *pString = new CharField(iPair.first);
+      IntField *pInt = new IntField(iPair.second);
+      pRecord->SetField(0, pString);
+      pRecord->SetField(1, pInt);
+      uint8_t pData[INDEX_NAME_SIZE + 4 + 1];
+      pRecord->Store(pData);
+      pPage->InsertRecord(pData);
+      ++iter;
+    }
+    if (iter == _iIndexIDMap.end()) break;
+    nNowPageID = pPage->GetNextID();
+    if (nNowPageID == NULL_PAGE) {
+      RecordPage *pNewPage = new RecordPage(INDEX_NAME_SIZE + 4 + 1, true);
+      pPage->PushBack(pNewPage);
+      delete pPage;
+      pPage = pNewPage;
+      nNowPageID = pPage->GetPageID();
+    } else {
+      delete pPage;
+      pPage = new RecordPage(nNowPageID);
+    }
   }
   delete pRecord;
   delete pPage;
 }
 
 void IndexManager::Load() {
-  RecordPage *pPage = new RecordPage(INDEX_MANAGER_PAGEID);
+  RecordPage *pPage;
+  if (_nPageID == NULL_PAGE) {
+    pPage = new RecordPage(INDEX_NAME_SIZE + 4 + 1, true);
+    _nPageID = pPage->GetPageID();
+  } else {
+    pPage = new RecordPage(_nPageID);
+  }
+  PageID nNowPageID = _nPageID;
   FixedRecord *pRecord = new FixedRecord(
       2, {FieldType::CHAR_TYPE, FieldType::INT_TYPE}, {INDEX_NAME_SIZE, 4});
-  for (Size i = 0, num = 0; i < pPage->GetCap() && num < pPage->GetUsed();
-       ++i) {
-    if (!pPage->HasRecord(i)) continue;
-    ++num;
-    uint8_t *pData = pPage->GetRecord(i);
-    pRecord->Load(pData);
-    CharField *pString = dynamic_cast<CharField *>(pRecord->GetField(0));
-    IntField *pInt = dynamic_cast<IntField *>(pRecord->GetField(1));
-    _iIndexIDMap[pString->GetString()] = pInt->GetIntData();
-    delete[] pData;
+  while (true) {
+    for (Size i = 0, num = 0; i < pPage->GetCap() && num < pPage->GetUsed();
+         ++i) {
+      if (!pPage->HasRecord(i)) continue;
+      ++num;
+      uint8_t *pData = pPage->GetRecord(i);
+      pRecord->Load(pData);
+      CharField *pString = dynamic_cast<CharField *>(pRecord->GetField(0));
+      IntField *pInt = dynamic_cast<IntField *>(pRecord->GetField(1));
+      _iIndexIDMap[pString->GetString()] = pInt->GetIntData();
+      delete[] pData;
+    }
+    nNowPageID = pPage->GetNextID();
+    if (nNowPageID == NULL_PAGE) break;
+    delete pPage;
+    pPage = new RecordPage(nNowPageID);
   }
   delete pRecord;
   delete pPage;

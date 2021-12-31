@@ -29,12 +29,10 @@ void Init() {
   if (Exists()) return;
   printf("Database Init.\n");
 
-  RecordPage* pIndexManagerPage = new RecordPage(INDEX_NAME_SIZE + 4 + 1, true);
   WholePage* pDataManagerPage = new WholePage();
 
   printf("Build Finish.\n");
 
-  delete pIndexManagerPage;
   delete pDataManagerPage;
 
   OS::WriteBack();

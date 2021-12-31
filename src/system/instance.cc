@@ -17,15 +17,10 @@
 
 namespace dbtrain_mysql {
 
-Instance::Instance() {
-  _pDataManager = new DataManager();
-  // _pTableManager = new TableManager();
-  _pIndexManager = new IndexManager();
-}
+Instance::Instance() { _pDataManager = new DataManager(); }
 
 Instance::~Instance() {
   delete _pDataManager;
-  delete _pIndexManager;
   OS::WriteBack();
 }
 

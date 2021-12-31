@@ -138,7 +138,6 @@ bool RecordPage::HasRecord(SlotID nSlotID) { return _pUsed->Get(nSlotID); }
 void RecordPage::DeleteRecord(SlotID nSlotID) {
   // 先检查是否有该Record
   if (!_pUsed->Get(nSlotID)) throw RecordPageSlotUnusedException(nSlotID);
-
   _bModified = true;
 
   // 需要设置_pUsed

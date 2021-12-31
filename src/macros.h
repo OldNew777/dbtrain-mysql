@@ -20,13 +20,12 @@ const PageID DB_PAGES = 1U << 28;
 const PageID NULL_PAGE = 0xFFFFFFFF;
 const SlotID NULL_SLOT = 0xFFFF;
 
-const PageID INDEX_MANAGER_PAGEID = 0;
-const PageID MYSQL_MANAGER_PAGEID = 1;
+const PageID MYSQL_MANAGER_PAGEID = 0;
 
 const PageOffset DATABASE_NAME_SIZE = 64;
 const PageOffset TABLE_NAME_SIZE = 64;
-const PageOffset INDEX_NAME_SIZE = 124;
 const PageOffset COLUMN_NAME_SIZE = 64;
+const PageOffset INDEX_NAME_SIZE = TABLE_NAME_SIZE + 1 + COLUMN_NAME_SIZE;
 
 const Size FIELD_TYPE_BYTES = 1;
 const Size FIELD_SIZE_MAX_BYTES = 2;
