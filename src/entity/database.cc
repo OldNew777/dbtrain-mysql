@@ -9,13 +9,22 @@
 namespace dbtrain_mysql {
 
 Database::Database(DatabasePage* pDatabasePage) : EntityManager(pDatabasePage) {
+  _pIndexManagerPageID =
+      new IndexManager(pDatabasePage->GetIndexManagerPageID());
   Init();
 }
 
 Database::Database(PageID nDatabasePageID) : EntityManager() {
-  _pManagerPage = new DatabasePage(nDatabasePageID);
+  DatabasePage* pDatabasePage = new DatabasePage(nDatabasePageID);
+  _pManagerPage = pDatabasePage;
+  _pIndexManagerPageID =
+      new IndexManager(pDatabasePage->GetIndexManagerPageID());
   Init();
 }
+
+Database::~Database() { delete _pIndexManagerPageID; }
+
+IndexManager* Database::GetIndexManager() const { return _pIndexManagerPageID; }
 
 Table* Database::GetTable(const String& sTableName) {
   if (_iEntityMap.find(sTableName) == _iEntityMap.end()) {

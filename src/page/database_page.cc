@@ -21,12 +21,20 @@ DatabasePage::DatabasePage() : ManagerPage() {
   delete pPage;
 
   // Init page containing IndexManager
-  IndexManager indexManager();
+  IndexManager indexManager;
+  nIndexManagerPageID = indexManager.GetPageID();
+  SetHeader((uint8_t*)&nIndexManagerPageID, 4, INDEX_MANAGER_PAGE_ID_OFFSET);
 
   _bModified = true;
 }
 
-DatabasePage::DatabasePage(PageID nPageID) : ManagerPage(nPageID) {}
+DatabasePage::DatabasePage(PageID nPageID) : ManagerPage(nPageID) {
+  GetHeader((uint8_t*)&nIndexManagerPageID, 4, INDEX_MANAGER_PAGE_ID_OFFSET);
+}
+
+PageID DatabasePage::GetIndexManagerPageID() const {
+  return nIndexManagerPageID;
+}
 
 ManagerPageType DatabasePage::GetManagerPageType() const {
   return ManagerPageType::DATABASE_PAGE_TYPE;
