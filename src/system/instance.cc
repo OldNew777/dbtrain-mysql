@@ -54,8 +54,11 @@ void Instance::CreateTable(const String& sTableName, const Schema& iSchema) {
 }
 
 void Instance::DropTable(const String& sTableName) {
-  for (const auto& sColName : _pIndexManager->GetTableIndexes(sTableName))
-    _pIndexManager->DropIndex(sTableName, sColName);
+  for (const auto& sColName :
+       _pDataManager->_pDatabase->GetIndexManager()->GetTableIndexes(
+           sTableName))
+    _pDataManager->_pDatabase->GetIndexManager()->DropIndex(sTableName,
+                                                            sColName);
   _pDataManager->DropTable(sTableName);
 }
 
@@ -123,12 +126,16 @@ PageSlotID Instance::Insert(const String& sTableName,
   PageSlotID iPair = pTable->InsertRecord(pRecord);
 
   // Handle Insert on Index
-  if (_pIndexManager->HasIndex(sTableName)) {
-    auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
+  if (_pDataManager->_pDatabase->GetIndexManager()->HasIndex(sTableName)) {
+    auto iColNames =
+        _pDataManager->_pDatabase->GetIndexManager()->GetTableIndexes(
+            sTableName);
     for (const auto& sCol : iColNames) {
       FieldID nPos = pTable->GetColPos(sCol);
       Field* pKey = pRecord->GetField(nPos);
-      _pIndexManager->GetIndex(sTableName, sCol)->Insert(pKey, iPair);
+      _pDataManager->_pDatabase->GetIndexManager()
+          ->GetIndex(sTableName, sCol)
+          ->Insert(pKey, iPair);
     }
   }
 
@@ -140,16 +147,21 @@ uint32_t Instance::Delete(const String& sTableName, Condition* pCond,
                           const std::vector<Condition*>& iIndexCond) {
   auto iResVec = Search(sTableName, pCond, iIndexCond);
   Table* pTable = GetTable(sTableName);
-  bool bHasIndex = _pIndexManager->HasIndex(sTableName);
+  bool bHasIndex =
+      _pDataManager->_pDatabase->GetIndexManager()->HasIndex(sTableName);
   for (const auto& iPair : iResVec) {
     // Handle Delete on Index
     if (bHasIndex) {
       Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
-      auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
+      auto iColNames =
+          _pDataManager->_pDatabase->GetIndexManager()->GetTableIndexes(
+              sTableName);
       for (const auto& sCol : iColNames) {
         FieldID nPos = pTable->GetColPos(sCol);
         Field* pKey = pRecord->GetField(nPos);
-        _pIndexManager->GetIndex(sTableName, sCol)->Delete(pKey, iPair);
+        _pDataManager->_pDatabase->GetIndexManager()
+            ->GetIndex(sTableName, sCol)
+            ->Delete(pKey, iPair);
       }
     }
 
@@ -163,16 +175,21 @@ uint32_t Instance::Update(const String& sTableName, Condition* pCond,
                           const std::vector<Transform>& iTrans) {
   auto iResVec = Search(sTableName, pCond, iIndexCond);
   Table* pTable = GetTable(sTableName);
-  bool bHasIndex = _pIndexManager->HasIndex(sTableName);
+  bool bHasIndex =
+      _pDataManager->_pDatabase->GetIndexManager()->HasIndex(sTableName);
   for (const auto& iPair : iResVec) {
     // Handle Delete on Index
     if (bHasIndex) {
       Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
-      auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
+      auto iColNames =
+          _pDataManager->_pDatabase->GetIndexManager()->GetTableIndexes(
+              sTableName);
       for (const auto& sCol : iColNames) {
         FieldID nPos = pTable->GetColPos(sCol);
         Field* pKey = pRecord->GetField(nPos);
-        _pIndexManager->GetIndex(sTableName, sCol)->Delete(pKey, iPair);
+        _pDataManager->_pDatabase->GetIndexManager()
+            ->GetIndex(sTableName, sCol)
+            ->Delete(pKey, iPair);
       }
       delete pRecord;
     }
@@ -182,11 +199,15 @@ uint32_t Instance::Update(const String& sTableName, Condition* pCond,
     // Handle Insert on Index
     if (bHasIndex) {
       Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
-      auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
+      auto iColNames =
+          _pDataManager->_pDatabase->GetIndexManager()->GetTableIndexes(
+              sTableName);
       for (const auto& sCol : iColNames) {
         FieldID nPos = pTable->GetColPos(sCol);
         Field* pKey = pRecord->GetField(nPos);
-        _pIndexManager->GetIndex(sTableName, sCol)->Insert(pKey, iPair);
+        _pDataManager->_pDatabase->GetIndexManager()
+            ->GetIndex(sTableName, sCol)
+            ->Insert(pKey, iPair);
       }
       delete pRecord;
     }
@@ -210,17 +231,20 @@ std::vector<String> Instance::GetColumnNames(const String& sTableName) const {
 }
 
 bool Instance::IsIndex(const String& sTableName, const String& sColName) const {
-  return _pIndexManager->IsIndex(sTableName, sColName);
+  return _pDataManager->_pDatabase->GetIndexManager()->IsIndex(sTableName,
+                                                               sColName);
 }
 
 Index* Instance::GetIndex(const String& sTableName,
                           const String& sColName) const {
-  return _pIndexManager->GetIndex(sTableName, sColName);
+  return _pDataManager->_pDatabase->GetIndexManager()->GetIndex(sTableName,
+                                                                sColName);
 }
 
 std::vector<Record*> Instance::GetIndexInfos() const {
   std::vector<Record*> iVec{};
-  for (const auto& iPair : _pIndexManager->GetIndexInfos()) {
+  for (const auto& iPair :
+       _pDataManager->_pDatabase->GetIndexManager()->GetIndexInfos()) {
     FixedRecord* pInfo =
         new FixedRecord(4,
                         {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE,
@@ -239,14 +263,17 @@ std::vector<Record*> Instance::GetIndexInfos() const {
 void Instance::CreateIndex(const String& sTableName, const String& sColName,
                            FieldType iType) {
   auto iAll = Search(sTableName, nullptr, {});
-  _pIndexManager->AddIndex(sTableName, sColName, iType);
+  _pDataManager->_pDatabase->GetIndexManager()->AddIndex(sTableName, sColName,
+                                                         iType);
   Table* pTable = GetTable(sTableName);
   // Handle Exists Data
   for (const auto& iPair : iAll) {
     FieldID nPos = pTable->GetColPos(sColName);
     Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
     Field* pKey = pRecord->GetField(nPos);
-    _pIndexManager->GetIndex(sTableName, sColName)->Insert(pKey, iPair);
+    _pDataManager->_pDatabase->GetIndexManager()
+        ->GetIndex(sTableName, sColName)
+        ->Insert(pKey, iPair);
     delete pRecord;
   }
 }
@@ -258,10 +285,12 @@ void Instance::DropIndex(const String& sTableName, const String& sColName) {
     FieldID nPos = pTable->GetColPos(sColName);
     Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
     Field* pKey = pRecord->GetField(nPos);
-    _pIndexManager->GetIndex(sTableName, sColName)->Delete(pKey, iPair);
+    _pDataManager->_pDatabase->GetIndexManager()
+        ->GetIndex(sTableName, sColName)
+        ->Delete(pKey, iPair);
     delete pRecord;
   }
-  _pIndexManager->DropIndex(sTableName, sColName);
+  _pDataManager->_pDatabase->GetIndexManager()->DropIndex(sTableName, sColName);
 }
 
 std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(

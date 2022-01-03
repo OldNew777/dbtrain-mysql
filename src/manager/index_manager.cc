@@ -143,6 +143,9 @@ void IndexManager::Store() {
       pPage = new RecordPage(nNowPageID);
     }
   }
+  while (pPage->GetNextID() != NULL_PAGE) {
+    pPage->PopBack();
+  }
   delete pRecord;
   delete pPage;
 }

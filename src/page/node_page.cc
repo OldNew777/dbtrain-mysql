@@ -23,8 +23,8 @@ using namespace std;
 
 NodePage::NodePage(Size nKeyLen, FieldType iKeyType, bool bLeaf)
     : LinkedPage(), _nKeyLen(nKeyLen), _iKeyType(iKeyType), _bLeaf(bLeaf) {
-  // TODO: 基于自己实现的Store算法确定最大容量
-  // TODO: 如果为中间结点，注意可能需要初始化第一个子结点
+  // 基于自己实现的Store算法确定最大容量
+  // 如果为中间结点，注意可能需要初始化第一个子结点
   CalculateCap();
   _bModified = true;
 }
