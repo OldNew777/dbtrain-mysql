@@ -4,8 +4,8 @@
 
 namespace dbtrain_mysql {
 
-Column::Column(const String& sName, FieldType iType)
-    : _sName(sName), _iType(iType) {
+Column::Column(const String& sName, FieldType iType, bool isNull)
+    : _sName(sName), _iType(iType), _isNull(isNull) {
   switch (iType) {
     case FieldType::NULL_TYPE:
       _nSize = 0;
@@ -22,8 +22,8 @@ Column::Column(const String& sName, FieldType iType)
   }
 }
 
-Column::Column(const String& sName, FieldType iType, Size nSize)
-    : _sName(sName), _iType(iType), _nSize(nSize) {}
+Column::Column(const String& sName, FieldType iType, Size nSize, bool isNull)
+    : _sName(sName), _iType(iType), _nSize(nSize),_isNull(isNull) {}
 
 String Column::GetName() const { return _sName; }
 

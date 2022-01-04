@@ -151,6 +151,10 @@ Size Table::GetSize(const String& sCol) const {
   return _pTablePage->GetSize(sCol);
 }
 
+bool Table::GetIsNull(const String& sCol) const {
+  return _pTablePage->GetIsNull(sCol);
+}
+
 std::vector<String> Table::GetColumnNames() const {
   std::vector<String> iVec{};
   std::vector<std::pair<String, FieldID>> iPairVec(

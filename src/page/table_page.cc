@@ -34,39 +34,13 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
     _iColMap[iCol.GetName()] = i;
     _iTypeVec.push_back(iCol.GetType());
     _iSizeVec.push_back(iCol.GetSize());
+    _iNullVec.push_back(iCol.GetIsNull());
   }
   assert(_iColMap.size() == _iTypeVec.size());
-  for(int i = 0; i < _iTypeVec.size(); i ++){
-    uint8_t iNull = 0;
-    GetData(&iNull, COLUMN_NOT_NULL_BYTES, 
-      COLUMN_NOT_NULL_BYTES * i + COLUMN_NOT_NULL_OFFSET);
-    if(iNull == 0){
-      _iNullVec.push_back(false);
-    }
-    else{
-      _iNullVec.push_back(true);
-    }
-  }
   RecordPage* pPage = new RecordPage(GetTotalSize(), true);
   _nHeadID = _nTailID = pPage->GetPageID();
   delete pPage;
   _bModified = true;
-
-  // // Init Index PageID
-  // for (Size i = 0; i < _iSizeVec.size(); ++i) {
-  //   SetData((uint8_t*)&NULL_PAGE, 4, COLUMN_INDEX_PAGEID_OFFSET + 4 * i);
-  //   _iIndexPageIDVec.push_back(NULL_PAGE);
-  // }
-}
-TablePage::~TablePage(){
-  for(int i = 0; i < _iNullVec.size(); i ++){
-    uint8_t iNull = 0;
-    if(_iNullVec[i]){
-      iNull = 1;
-    }
-    SetData(&iNull, COLUMN_NOT_NULL_BYTES, 
-      COLUMN_NOT_NULL_BYTES * i + COLUMN_NOT_NULL_OFFSET);
-  }
 }
 
 TablePage::TablePage(PageID nPageID) : ManagerPage(nPageID) {

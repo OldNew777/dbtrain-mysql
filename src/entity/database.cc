@@ -195,6 +195,18 @@ PageSlotID Database::Insert(const String& sTableName,
                             const std::vector<String>& iRawVec) {
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) throw TableNotExistException(sTableName);
+  
+  std::vector<std::string> colNames = pTable->GetColumnNames();
+  if(colNames.size() != iRawVec.size()){
+    delete pTable;
+    throw FieldListException();
+  }
+  for(int i = 0; i < colNames.size(); i ++){
+    if(iRawVec[i] == "Null" && !pTable->GetIsNull(colNames[i])){
+      delete pTable;
+      throw FieldListException();
+    }
+  }
 
   Record* pRecord = pTable->EmptyRecord();
 

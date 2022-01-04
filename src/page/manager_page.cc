@@ -20,6 +20,8 @@ const PageOffset COLUMN_SIZE_OFFSET =
     COLUMN_TYPE_OFFSET + COLUMN_NUM_MAX * FIELD_TYPE_BYTES;
 const PageOffset COLUMN_NAME_OFFSET =
     COLUMN_SIZE_OFFSET + COLUMN_NUM_MAX * FIELD_SIZE_MAX_BYTES;
+const PageOffset COLUMN_NOT_NULL_OFFSET = 
+    COLUMN_NAME_OFFSET + COLUMN_NUM_MAX * COLUMN_NOT_NULL_BYTES;
 
 ManagerPage::ManagerPage() : Page() {}
 
@@ -75,6 +77,14 @@ void ManagerPage::Store() {
     SetData((uint8_t*)&nSize, FIELD_SIZE_MAX_BYTES,
             COLUMN_SIZE_OFFSET + FIELD_SIZE_MAX_BYTES * i);
   }
+  for(int i = 0; i < _iNullVec.size(); i ++){
+    uint8_t iNull = 0;
+    if(_iNullVec[i]){
+      iNull = 1;
+    }
+    SetData(&iNull, COLUMN_NOT_NULL_BYTES, 
+      COLUMN_NOT_NULL_BYTES * i + COLUMN_NOT_NULL_OFFSET);
+  }
   String sColumnsName = BuildColumnsString(_iColMap);
   Size sColNameLen = sColumnsName.size();
   SetHeader((uint8_t*)&sColNameLen, 4, COLUMN_NAME_LEN_OFFSET);
@@ -108,6 +118,19 @@ void ManagerPage::Load() {
             COLUMN_SIZE_OFFSET + FIELD_SIZE_MAX_BYTES * i);
     _iSizeVec.push_back(nSize);
   }
+
+  for(int i = 0; i < _iTypeVec.size(); i ++){
+    uint8_t iNull = 0;
+    GetData(&iNull, COLUMN_NOT_NULL_BYTES, 
+      COLUMN_NOT_NULL_BYTES * i + COLUMN_NOT_NULL_OFFSET);
+    if(iNull == 0){
+      _iNullVec.push_back(false);
+    }
+    else{
+      _iNullVec.push_back(true);
+    }
+  }
+
   Size sColNameLen = 0;
   GetHeader((uint8_t*)&sColNameLen, 4, COLUMN_NAME_LEN_OFFSET);
   char* pTemp = new char[sColNameLen + 1];

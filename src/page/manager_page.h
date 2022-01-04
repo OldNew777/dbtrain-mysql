@@ -42,6 +42,7 @@ class ManagerPage : public Page {
   std::map<String, FieldID> _iColMap;
   std::vector<FieldType> _iTypeVec;
   std::vector<Size> _iSizeVec;
+  std::vector<bool> _iNullVec;
   PageID _nHeadID, _nTailID;
 
   friend class EntityManager;

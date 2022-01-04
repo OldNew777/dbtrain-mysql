@@ -480,13 +480,14 @@ antlrcpp::Any SystemVisitor::visitNormal_field(
     MYSQLParser::Normal_fieldContext *ctx) {
   String sType = ctx->type_()->getText();
   // TODO : add NULL/PRIMARY KEY/DEFAULT
+  bool flag = (ctx->Null() == nullptr);
   if (sType == "INT") {
-    return Column(ctx->Identifier()->getText(), FieldType::INT_TYPE);
+    return Column(ctx->Identifier()->getText(), FieldType::INT_TYPE, flag);
   } else if (sType == "FLOAT") {
-    return Column(ctx->Identifier()->getText(), FieldType::FLOAT_TYPE);
+    return Column(ctx->Identifier()->getText(), FieldType::FLOAT_TYPE, flag);
   } else {
     int nSize = atoi(ctx->type_()->Integer()->getText().c_str());
-    return Column(ctx->Identifier()->getText(), FieldType::CHAR_TYPE, nSize);
+    return Column(ctx->Identifier()->getText(), FieldType::CHAR_TYPE, nSize, flag);
   }
 }
 

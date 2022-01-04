@@ -7,22 +7,24 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 project(dbtrain-mysql)
 
-# Download and unpack googletest at configure time
-configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
-if(result)
-    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif()
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
-if(result)
-    message(FATAL_ERROR "Build step for googletest failed: ${result}")
-endif()
-add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
-                 ${CMAKE_BINARY_DIR}/googletest-build)
+add_definitions(-w)
+
+# # Download and unpack googletest at configure time
+# configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+# execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+#     RESULT_VARIABLE result
+#     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+# if(result)
+#     message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+# endif()
+# execute_process(COMMAND ${CMAKE_COMMAND} --build .
+#     RESULT_VARIABLE result
+#     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+# if(result)
+#     message(FATAL_ERROR "Build step for googletest failed: ${result}")
+# endif()
+# add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+#                  ${CMAKE_BINARY_DIR}/googletest-build)
 
 include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/third_party/antlr4-cpp-runtime-4.7/src)
 
@@ -47,12 +49,12 @@ foreach(executable_source ${EXECUTABLE_SOURCES})
 endforeach(executable_source ${EXECUTABLE_SOURCES})
 
 
-# Add test
-file(GLOB TESTS ${PROJECT_SOURCE_DIR}/../dbtrain-mysql-test/test/test*)
-foreach(test_dir ${TESTS})
-    file(GLOB_RECURSE TEST_SOURCES ${test_dir}/*.cc)
-    get_filename_component(test ${test_dir} NAME)
-    add_executable(${test}_test ${TEST_SOURCES})
-    target_link_libraries(${test}_test dbtrain_mysql_shared gtest)
-    set_target_properties(${test}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test)
-endforeach(test_dir ${TESTS})
+# # Add test
+# file(GLOB TESTS ${PROJECT_SOURCE_DIR}/../dbtrain-mysql-test/test/test*)
+# foreach(test_dir ${TESTS})
+#     file(GLOB_RECURSE TEST_SOURCES ${test_dir}/*.cc)
+#     get_filename_component(test ${test_dir} NAME)
+#     add_executable(${test}_test ${TEST_SOURCES})
+#     # target_link_libraries(${test}_test dbtrain_mysql_shared gtest)
+#     set_target_properties(${test}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test)
+# endforeach(test_dir ${TESTS})
