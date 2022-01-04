@@ -19,11 +19,8 @@
 namespace dbtrain_mysql {
 
 Instance::Instance() {
-  printf("1\n");
   _pDataManager = new DataManager();
-  printf("2\n");
   _pIndexManager = new IndexManager();
-  printf("3\n");
 }
 
 Instance::~Instance() {
