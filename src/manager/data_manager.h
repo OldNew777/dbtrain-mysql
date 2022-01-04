@@ -111,9 +111,26 @@ class DataManager {
                     const PageSlotID& nPageSlotID) const;
   std::vector<Record*> GetTableInfos(const String& sTableName) const;
 
+  // ------------------------ RECORD ------------------------
   std::pair<std::vector<String>, std::vector<Record*>> Join(
       std::map<String, std::vector<PageSlotID>>& iResultMap,
       std::vector<Condition*>& iJoinConds);
+  std::vector<PageSlotID> Search(const String& sTableName, Condition* pCond,
+                                 const std::vector<Condition*>& iIndexCond);
+  uint32_t Delete(const String& sTableName, Condition* pCond,
+                  const std::vector<Condition*>& iIndexCond);
+  uint32_t Update(const String& sTableName, Condition* pCond,
+                  const std::vector<Condition*>& iIndexCond,
+                  const std::vector<Transform>& iTrans);
+  PageSlotID Insert(const String& sTableName,
+                    const std::vector<String>& iRawVec);
+
+  // ------------------------ INDEX ------------------------
+  void CreateIndex(const String& sTableName, const String& sColName);
+  void DropIndex(const String& sTableName, const String& sColName);
+  bool IsIndex(const String& sTableName, const String& sColName) const;
+  Index* GetIndex(const String& sTableName, const String& sColName) const;
+  std::vector<Record*> GetIndexInfos() const;
 
  protected:
   Whole* _pWhole;

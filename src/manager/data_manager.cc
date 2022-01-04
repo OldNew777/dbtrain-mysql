@@ -6,6 +6,7 @@
 #include "datastruct/hashes.h"
 #include "exception/exceptions.h"
 #include "macros.h"
+#include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
 
@@ -59,6 +60,9 @@ void DataManager::CreateTable(const String& sTableName,
 
 void DataManager::DropTable(const String& sTableName) const {
   CheckDatabaseUsed();
+  for (const auto& sColName :
+       _pDatabase->GetIndexManager()->GetTableIndexes(sTableName))
+    _pDatabase->GetIndexManager()->DropIndex(sTableName, sColName);
   _pDatabase->DropTable(sTableName);
 }
 
@@ -433,6 +437,60 @@ std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
   for (auto iter = iRecordMap.begin(); iter != iRecordMap.end(); ++iter)
     for (Size i = 0; i < iter->second.size(); ++i) delete iter->second[i];
   return ans;
+}
+
+std::vector<PageSlotID> DataManager::Search(
+    const String& sTableName, Condition* pCond,
+    const std::vector<Condition*>& iIndexCond) {
+  CheckDatabaseUsed();
+  return _pDatabase->Search(sTableName, pCond, iIndexCond);
+}
+
+uint32_t DataManager::Delete(const String& sTableName, Condition* pCond,
+                             const std::vector<Condition*>& iIndexCond) {
+  CheckDatabaseUsed();
+  return _pDatabase->Delete(sTableName, pCond, iIndexCond);
+}
+
+uint32_t DataManager::Update(const String& sTableName, Condition* pCond,
+                             const std::vector<Condition*>& iIndexCond,
+                             const std::vector<Transform>& iTrans) {
+  CheckDatabaseUsed();
+  return _pDatabase->Update(sTableName, pCond, iIndexCond, iTrans);
+}
+
+PageSlotID DataManager::Insert(const String& sTableName,
+                               const std::vector<String>& iRawVec) {
+  CheckDatabaseUsed();
+  return _pDatabase->Insert(sTableName, iRawVec);
+}
+
+void DataManager::CreateIndex(const String& sTableName,
+                              const String& sColName) {
+  CheckDatabaseUsed();
+  _pDatabase->CreateIndex(sTableName, sColName);
+}
+
+void DataManager::DropIndex(const String& sTableName, const String& sColName) {
+  CheckDatabaseUsed();
+  _pDatabase->DropIndex(sTableName, sColName);
+}
+
+bool DataManager::IsIndex(const String& sTableName,
+                          const String& sColName) const {
+  CheckDatabaseUsed();
+  return _pDatabase->IsIndex(sTableName, sColName);
+}
+
+Index* DataManager::GetIndex(const String& sTableName,
+                             const String& sColName) const {
+  CheckDatabaseUsed();
+  return _pDatabase->GetIndex(sTableName, sColName);
+}
+
+std::vector<Record*> DataManager::GetIndexInfos() const {
+  CheckDatabaseUsed();
+  return _pDatabase->GetIndexInfos();
 }
 
 void DataManager::CheckDatabaseUsed() const {

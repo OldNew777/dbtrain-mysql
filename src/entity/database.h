@@ -56,10 +56,28 @@ class Database : public EntityManager {
   std::vector<String> GetColumnNames(const String& sTableName);
   IndexManager* GetIndexManager() const;
 
+  // ------------------------ RECORD ------------------------
+  std::vector<PageSlotID> Search(const String& sTableName, Condition* pCond,
+                                 const std::vector<Condition*>& iIndexCond);
+  uint32_t Delete(const String& sTableName, Condition* pCond,
+                  const std::vector<Condition*>& iIndexCond);
+  uint32_t Update(const String& sTableName, Condition* pCond,
+                  const std::vector<Condition*>& iIndexCond,
+                  const std::vector<Transform>& iTrans);
+  PageSlotID Insert(const String& sTableName,
+                    const std::vector<String>& iRawVec);
+
+  // ------------------------ INDEX ------------------------
+  void CreateIndex(const String& sTableName, const String& sColName);
+  void DropIndex(const String& sTableName, const String& sColName);
+  bool IsIndex(const String& sTableName, const String& sColName);
+  Index* GetIndex(const String& sTableName, const String& sColName);
+  std::vector<Record*> GetIndexInfos();
+
   virtual EntityType GetEntityType() const;
 
  protected:
-  IndexManager* _pIndexManagerPageID;
+  IndexManager* _pIndexManager;
 };
 
 }  // namespace dbtrain_mysql

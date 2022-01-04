@@ -68,8 +68,7 @@ class Instance {
    */
   Index *GetIndex(const String &sTableName, const String &sColName) const;
   std::vector<Record *> GetIndexInfos() const;
-  void CreateIndex(const String &sTableName, const String &sColName,
-                   FieldType iType);
+  void CreateIndex(const String &sTableName, const String &sColName);
   void DropIndex(const String &sTableName, const String &sColName);
 
   /**

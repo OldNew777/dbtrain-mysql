@@ -340,8 +340,7 @@ antlrcpp::Any SystemVisitor::visitAlter_add_index(
   Size nSize = 0;
   for (const auto &sColName : iColNameVec) {
     try {
-      FieldType iType = _pDB->GetColType(sTableName, sColName);
-      _pDB->CreateIndex(sTableName, sColName, iType);
+      _pDB->CreateIndex(sTableName, sColName);
       ++nSize;
     } catch (const std::exception &e) {
       // TODO
