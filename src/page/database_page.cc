@@ -11,7 +11,7 @@ DatabasePage::DatabasePage() : ManagerPage() {
   _iColMap["PageID"] = 1;
   _iTypeVec = {FieldType::CHAR_TYPE, FieldType::INT_TYPE};
   _iSizeVec = {TABLE_NAME_SIZE, 4};
-
+  printf("database page\n");
   RecordPage* pPage = new RecordPage(GetTotalSize(), true);
   _nHeadID = _nTailID = pPage->GetPageID();
   delete pPage;

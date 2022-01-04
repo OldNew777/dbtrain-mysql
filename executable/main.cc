@@ -5,6 +5,7 @@
 
 using namespace dbtrain_mysql;
 int main(){
+    printf("in main\n");
     Instance *pDB = new Instance();
     String sSQL;
     std::ifstream f;

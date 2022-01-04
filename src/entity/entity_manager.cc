@@ -73,6 +73,7 @@ void EntityManager::Init() {
   Entity::Init();
   std::vector<std::pair<PageSlotID, Record*>> records =
       pManagerPage->GetAllRecords();
+
   for (auto pRecord : records) {
     String sEntityName = pRecord.second->GetField(0)->ToString();
     _iEntityPageSlotIDMap[sEntityName] = pRecord.first;

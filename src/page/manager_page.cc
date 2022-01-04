@@ -98,6 +98,7 @@ void ManagerPage::Load() {
     GetData(&nType, 1, COLUMN_TYPE_OFFSET + i);
     _iTypeVec.push_back(FieldType(nType));
   }
+
   for (Size i = 0; i < iFieldSize; ++i) {
     uint16_t nSize = 0;
     GetData((uint8_t*)&nSize, 2, COLUMN_SIZE_OFFSET + 2 * i);
@@ -122,6 +123,8 @@ void ManagerPage::Load() {
 #endif
 
   delete[] pTemp;
+  printf("7\n");
+
 }
 
 std::vector<std::pair<PageSlotID, Record*>> ManagerPage::GetAllRecords() const {

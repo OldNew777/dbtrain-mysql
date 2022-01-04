@@ -2,6 +2,7 @@
 #define DBTRAIN_MYSQL_OS_H
 
 #include "defines.h"
+#include "cache.h"
 #include "os/raw_page.h"
 #include "utils/bitmap.h"
 
@@ -17,8 +18,24 @@ class OS {
 
   PageID NewPage();
   void DeletePage(PageID pid);
+  /**
+   * @brief read a page 
+   *
+   * @param pid page id
+   * @param dst destination buffer 
+   * @param nSize the length of read
+   * @param nOffset the start palace of read
+   */
   void ReadPage(PageID pid, uint8_t* dst, PageOffset nSize,
                 PageOffset nOffset = 0);
+  /**
+   * @brief write a page 
+   *
+   * @param pid page id
+   * @param src source buffer 
+   * @param nSize the length of read
+   * @param nOffset the start place of read
+   */
   void WritePage(PageID pid, const uint8_t* src, PageOffset nSize,
                  PageOffset nOffset = 0);
   Size GetUsedSize() const;
@@ -28,13 +45,14 @@ class OS {
   ~OS();
 
   void LoadBitmap();
-  void LoadPages();
-
   void StoreBitmap();
-  void StorePages();
 
-  RawPage** _pMemory;
+  CacheGroup* _getCacheGroup(PageID pid){
+    return _cache[pid % CACHE_ASSOCIATIVE];
+  }
+
   Bitmap* _pUsed;
+  CacheGroup** _cache;
   Size _nClock;
 
   static OS* os;

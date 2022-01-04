@@ -11,7 +11,9 @@ namespace dbtrain_mysql {
 Whole::Whole(WholePage* pWholePage) : EntityManager(pWholePage) { Init(); }
 
 Whole::Whole(PageID pWholePageID) : EntityManager() {
+  printf("whole\n");
   pManagerPage = new DatabasePage(pWholePageID);
+  printf("end databasePage\n");
   Init();
 }
 

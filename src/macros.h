@@ -28,6 +28,9 @@ const PageOffset TABLE_NAME_SIZE = 64;
 const PageOffset INDEX_NAME_SIZE = 124;
 const PageOffset COLUMN_NAME_SIZE = 60;
 
+const uint32_t CACHE_ASSOCIATIVE = 16;
+const uint32_t CACHE_GROUP_NUM = 1024;
+
 }  // namespace dbtrain_mysql
 
 #endif
