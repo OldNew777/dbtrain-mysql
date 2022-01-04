@@ -46,6 +46,7 @@ class OS {
 
   void LoadBitmap();
   void StoreBitmap();
+  void initDBPage();
 
   CacheGroup* _getCacheGroup(PageID pid){
     return _cache[pid % CACHE_ASSOCIATIVE];

@@ -36,7 +36,6 @@ namespace dbtrain_mysql
     class CacheGroup{
     private:
         std::list<CacheLine*> _cacheGroup;
-        uint32_t _size = 0;
         CacheLine* _getPage(PageID pid);
 
     public:
@@ -48,7 +47,6 @@ namespace dbtrain_mysql
         void WritePage(PageID pid, const uint8_t* src, PageOffset nSize,
                         PageOffset nOffset = 0);
         // void Evict(PageID pid);
-        void Clear();
         void NewPage(PageID pid);
 
     };

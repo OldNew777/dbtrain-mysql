@@ -32,6 +32,7 @@ OS::OS() {
   }
   _nClock = 0;
   LoadBitmap();
+  initDBPage();
   printf("pUsed num:%d\n", _pUsed->GetUsed());
 }
 
@@ -101,6 +102,17 @@ void OS::StoreBitmap() {
 Size OS::GetUsedSize() const {
   if (!_pUsed) throw OsException();
   return _pUsed->GetSize();
+}
+
+void OS::initDBPage(){
+  std::ifstream fin(DB_PAGE_NAME, std::ios::binary);
+  if(fin) return;
+  std::ofstream fout(DB_PAGE_NAME, std::ios::binary);
+  uint8_t* ptemp = new uint8_t[PAGE_SIZE * MEM_PAGES];
+  memset(ptemp, 0, PAGE_SIZE * MEM_PAGES);
+  fout.write((char*) ptemp, PAGE_SIZE * MEM_PAGES);
+  fout.close();
+  delete ptemp;
 }
 
 }  // namespace dbtrain_mysql
