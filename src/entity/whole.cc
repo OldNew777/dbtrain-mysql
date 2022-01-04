@@ -54,9 +54,22 @@ void Whole::DropDatabase(const String& sDatabaseName) {
     printf("Database '%s' not existed\n", sDatabaseName.c_str());
     throw DatabaseNotExistException(sDatabaseName);
   }
+#ifdef DELETE_DEBUG
+  printf("Checkpoint 1\n");
+#endif
   pDatabase->Clear();
+#ifdef DELETE_DEBUG
+  printf("Checkpoint 2\n");
+#endif
   delete pDatabase;
+#ifdef DELETE_DEBUG
+  printf("Database root page delete begin\n");
+  printf("root page id %d\n", int(_iEntityPageIDMap[sDatabaseName]));
+#endif
   OS::GetOS()->DeletePage(_iEntityPageIDMap[sDatabaseName]);
+#ifdef DELETE_DEBUG
+  printf("Database root page delete succeed\n");
+#endif
   _iEntityMap.erase(sDatabaseName);
   _iEntityPageIDMap.erase(sDatabaseName);
 

@@ -38,7 +38,6 @@ IndexManager::~IndexManager() {
   Store();
   for (const auto &iPair : _iIndexMap)
     if (iPair.second) {
-      iPair.second->print();
       delete iPair.second;
     }
 }
@@ -109,6 +108,8 @@ bool IndexManager::HasIndex(const String &sTableName) const {
 }
 
 void IndexManager::Store() {
+  if (_bCleared) return;
+
   // Update Index Root
   for (const auto &iPair : _iIndexMap)
     _iIndexIDMap[iPair.first] = iPair.second->GetRootID();
@@ -194,6 +195,7 @@ void IndexManager::Init() {
 }
 
 void IndexManager::Clear() {
+  _bCleared = true;
   LinkedPage pLinkedPage(_nPageID);
   pLinkedPage.ReleaseListAll();
 }

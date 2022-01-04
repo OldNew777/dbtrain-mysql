@@ -50,10 +50,12 @@ void Entity::FindNextNotFull() {
 
   // 需要插入新的page
   RecordPage newPage(_pManagerPage->GetTotalSize(), true);
-  LinkedPage tailPageBefore(_pManagerPage->GetTailID());
   _nNotFull = newPage.GetPageID();
+  LinkedPage tailPageBefore(_pManagerPage->GetTailID());
   tailPageBefore.PushBack(&newPage);
-  _pManagerPage->SetTailID(newPage.GetPageID());
+
+  _nTailID = _nNotFull;
+  _pManagerPage->SetTailID(_nNotFull);
 }
 
 bool Entity::NextNotFullUntil(PageID target) {

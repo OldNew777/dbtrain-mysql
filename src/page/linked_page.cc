@@ -118,14 +118,14 @@ void LinkedPage::ReleaseListAll() {
   OS* os = OS::GetOS();
 
 #ifdef DELETE_DEBUG
-  int count = 0;
+  int count = 1;
 #endif
 
   PageID pageID = GetNextID();
-#ifdef DELETE_DEBUG
-  ++count;
-#endif
   while (pageID != NULL_PAGE) {
+#ifdef DELETE_DEBUG
+    ++count;
+#endif
     LinkedPage page(pageID);
     os->DeletePage(pageID);
     pageID = page.GetNextID();

@@ -14,10 +14,19 @@ namespace dbtrain_mysql {
 
 void EntityManager::Clear() {
   for (auto iter : _iEntityMap)
-    if (iter.second) {
+    if (iter.second != nullptr) {
       iter.second->Clear();
+#ifdef DELETE_DEBUG
+      printf("Try to delete root page id %d\n",
+             int(_iEntityPageIDMap[iter.first]));
+#endif
       OS::GetOS()->DeletePage(_iEntityPageIDMap[iter.first]);
+      iter.second->_pManagerPage->_bModified = false;
       delete iter.second;
+#ifdef DELETE_DEBUG
+      printf("Try to delete root page id %d\n",
+             int(_iEntityPageIDMap[iter.first]));
+#endif
     }
   _iEntityMap.clear();
   _iEntityPageIDMap.clear();

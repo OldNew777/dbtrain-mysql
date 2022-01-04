@@ -28,6 +28,7 @@ class IndexManager {
 
  protected:
   PageID _nPageID;
+  bool _bCleared = false;
   std::map<String, Index *> _iIndexMap;
   std::map<String, PageID> _iIndexIDMap;
   std::map<String, std::vector<String>> _iTableIndexes;

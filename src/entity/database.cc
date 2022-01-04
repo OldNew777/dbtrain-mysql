@@ -64,6 +64,7 @@ void Database::DropTable(const String& sTableName) {
     printf("Table '%s' not existed\n", sTableName.c_str());
     throw TableNotExistException(sTableName);
   }
+  // TODO : delete index
   pTable->Clear();
   delete pTable;
   OS::GetOS()->DeletePage(_iEntityPageIDMap[sTableName]);
