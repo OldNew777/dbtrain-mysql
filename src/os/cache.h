@@ -9,6 +9,7 @@
 #include <fstream>
 #include <list>
 
+
 namespace dbtrain_mysql
 {
     class CacheLine {
