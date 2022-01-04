@@ -15,6 +15,7 @@
 
 namespace dbtrain_mysql {
 
+
 SystemVisitor::SystemVisitor(Instance *pDB) : _pDB{pDB} { assert(_pDB); }
 
 antlrcpp::Any SystemVisitor::visitProgram(MYSQLParser::ProgramContext *ctx) {
@@ -129,12 +130,63 @@ antlrcpp::Any SystemVisitor::visitShow_indexes(
 
 antlrcpp::Any SystemVisitor::visitLoad_data(
     MYSQLParser::Load_dataContext *ctx) {
-  throw UnimplementedException();
+  std::vector<std::vector<String>> iValueListVec;
+  std::string path = ctx->String()->getText();
+  path = path.substr(1, path.size() - 2);
+  std::fstream fin(path, std::ios::in);
+  printf("path:%s\n", path.data());
+  if(!fin){throw FileNotExistException();}
+  std::string str = "";
+  while(std::getline(fin, str)){
+    iValueListVec.push_back(std::vector<String>());
+    if(str.find("\n") != str.npos){
+      str = str.substr(0, str.find("\n"));// delete \n
+    }
+    std::string::size_type tail = str.find(",");
+    std::string::size_type head = 0;
+    int pt = 0;
+    while(tail != std::string::npos){
+      iValueListVec.back().push_back(str.substr(head, tail - head));
+      head = tail + 1;
+      tail = str.find(",", head);
+      pt ++;
+    }
+    if(head != str.length()){
+      iValueListVec.back().push_back(str.substr(head));
+    }
+  }
+  fin.close();
+
+  String sTableName = ctx->Identifier()->getText();
+  int inserted = 0;
+  try {
+    for (const auto &iValueList : iValueListVec) {
+      _pDB->Insert(sTableName, iValueList);
+      ++inserted;
+    }
+  } catch (const std::exception &e) {
+  }
+  Result *res = new MemResult({"Insert"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(inserted));
+  res->PushBack(pRes);
+  return res;
 }
 
 antlrcpp::Any SystemVisitor::visitDump_data(
     MYSQLParser::Dump_dataContext *ctx) {
-  throw UnimplementedException();
+  std::string tablename = ctx->Identifier()->getText();
+  std::string path = ctx->String()->getText();
+  path = path.substr(1, path.length() - 2);
+  std::vector<PageSlotID> pageslotvec =  _pDB->Search(tablename, nullptr, {});
+  Result *pResult = new MemResult(_pDB->GetColumnNames(tablename));
+  for (const auto &it : pageslotvec)
+    pResult->PushBack(_pDB->GetRecord(tablename, it));
+  std::ofstream fout(path);
+  if(!fout) throw FileNotExistException();
+  fout.write(pResult->Dump().data(),pResult->Dump().size());
+  fout.close();
+  return pResult;
 }
 
 antlrcpp::Any SystemVisitor::visitCreate_table(

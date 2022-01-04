@@ -13,3 +13,4 @@
 #include "table_exception.h"
 #include "unimplemented_exception.h"
 #include "cache_invalide_exception.h"
+#include "file_not_exist_exception.h"
