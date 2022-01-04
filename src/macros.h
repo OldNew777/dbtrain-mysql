@@ -31,6 +31,9 @@ const Size FIELD_TYPE_BYTES = 1;
 const Size FIELD_SIZE_MAX_BYTES = 2;
 const Size COLUMN_NUM_MAX = 32;
 
+const uint32_t CACHE_ASSOCIATIVE = 16;
+const uint32_t CACHE_GROUP_NUM = 1024;
+
 }  // namespace dbtrain_mysql
 
 #endif
