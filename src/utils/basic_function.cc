@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "exception/exceptions.h"
+
 namespace dbtrain_mysql {
 
 void PrintPageSlotID(const PageSlotID& nPageSlotID) {
@@ -79,6 +81,45 @@ std::vector<PageSlotID> Intersection(std::vector<PageSlotID> iA,
   std::set_intersection(iA.begin(), iA.end(), iB.begin(), iB.end(),
                         std::back_inserter(iRes));
   return iRes;
+}
+
+Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
+  Field* pField = nullptr;
+  if (toUpper(sRaw) == "NULL") {
+    pField = new NullField();
+  } else {
+    if (iTargetFieldType == FieldType::NULL_TYPE) {
+      pField = new NullField();
+    } else if (iTargetFieldType == FieldType::INT_TYPE) {
+      try {
+        int nVal = std::stoi(sRaw);
+        pField = new IntField(nVal);
+      } catch (const std::invalid_argument& e) {
+        printf("INT format error\n");
+        throw e;
+      } catch (const std::out_of_range& e) {
+        printf("INT out of range\n");
+        throw e;
+      }
+    } else if (iTargetFieldType == FieldType::FLOAT_TYPE) {
+      try {
+        double fVal = std::stod(sRaw);
+        pField = new FloatField(fVal);
+      } catch (const std::invalid_argument& e) {
+        printf("FLOAT format error\n");
+        throw e;
+      } catch (const std::out_of_range& e) {
+        printf("FLOAT out of range\n");
+        throw e;
+      }
+    } else if (iTargetFieldType == FieldType::CHAR_TYPE) {
+      // erase \' and \"
+      pField = new CharField(sRaw.substr(1, sRaw.size() - 2));
+    } else {
+      throw RecordTypeException();
+    }
+  }
+  return pField;
 }
 
 }  // namespace dbtrain_mysql

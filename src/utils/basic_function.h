@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "defines.h"
+#include "field/fields.h"
 
 namespace dbtrain_mysql {
 
@@ -27,6 +28,8 @@ std::map<String, FieldID> LoadColumnsString(const String& sName);
 
 std::vector<PageSlotID> Intersection(std::vector<PageSlotID> iA,
                                      std::vector<PageSlotID> iB);
+
+Field* BuildField(const String& sRaw, FieldType iTargetFieldType);
 
 }  // namespace dbtrain_mysql
 
