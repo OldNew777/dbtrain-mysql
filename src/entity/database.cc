@@ -60,11 +60,11 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
 void Database::DropTable(const String& sTableName) {
   Table* pTable = GetTable(sTableName);
+  _pIndexManager->DropIndex(sTableName);
   if (pTable == nullptr) {
     printf("Table '%s' not existed\n", sTableName.c_str());
     throw TableNotExistException(sTableName);
   }
-  // TODO : delete index
   pTable->Clear();
   delete pTable;
   OS::GetOS()->DeletePage(_iEntityPageIDMap[sTableName]);
@@ -283,6 +283,12 @@ std::vector<Record*> Database::GetIndexInfos() {
 
 void Database::Clear() {
   _pIndexManager->Clear();
+  // load tables to delete pages later
+  for (auto iter : _iEntityPageIDMap)
+    if (_iEntityMap.find(iter.first) == _iEntityMap.end() ||
+        _iEntityMap[iter.first] == nullptr) {
+      _iEntityMap[iter.first] = new Table(iter.second);
+    }
   EntityManager::Clear();
 }
 

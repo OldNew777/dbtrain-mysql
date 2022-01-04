@@ -18,6 +18,7 @@ class IndexManager {
   Index *AddIndex(const String &sTableName, const String &sColName,
                   FieldType iType);
   void DropIndex(const String &sTableName, const String &sColName);
+  void DropIndex(const String &sTableName);
   bool IsIndex(const String &sTableName, const String &sColName);
 
   std::vector<std::pair<String, String>> GetIndexInfos() const;

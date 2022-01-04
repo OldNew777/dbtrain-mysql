@@ -91,6 +91,20 @@ void IndexManager::DropIndex(const String &sTableName, const String &sColName) {
   if (_iTableIndexes[sTableName].size() == 0) _iTableIndexes.erase(sTableName);
 }
 
+void IndexManager::DropIndex(const String &sTableName) {
+  if (!HasIndex(sTableName)) return;
+  for (const auto &sColName : GetTableIndexes(sTableName)) {
+    String sIndexName = GetIndexName(sTableName, sColName);
+    Index *pIndex = GetIndex(sTableName, sColName);
+    pIndex->Clear();
+    delete pIndex;
+    _iIndexIDMap.erase(sIndexName);
+    _iIndexMap.erase(sIndexName);
+  }
+  assert(_iTableIndexes.find(sTableName) != _iTableIndexes.end());
+  if (_iTableIndexes[sTableName].size() == 0) _iTableIndexes.erase(sTableName);
+}
+
 std::vector<String> IndexManager::GetTableIndexes(
     const String &sTableName) const {
   if (_iTableIndexes.find(sTableName) == _iTableIndexes.end()) return {};

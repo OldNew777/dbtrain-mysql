@@ -20,11 +20,10 @@ DataManager::~DataManager() { delete _pWhole; }
 void DataManager::UseDatabase(const String& sDatabaseName) {
   // shouldn't delete _pDatabase here
   // it will be done by _pWhole
-  try {
-    _pDatabase = _pWhole->GetDatabase(sDatabaseName);
-  } catch (DatabaseNotExistException& e) {
+  _pDatabase = _pWhole->GetDatabase(sDatabaseName);
+  if (_pDatabase == nullptr) {
     printf("Database '%s' not existed\n", sDatabaseName.c_str());
-    throw e;
+    throw DatabaseNotExistException(sDatabaseName);
   }
 }
 

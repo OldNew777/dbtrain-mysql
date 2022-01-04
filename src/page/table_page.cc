@@ -40,19 +40,6 @@ Size TablePage::GetSize(const String& sCol) {
   return _iSizeVec[GetColPos(sCol)];
 }
 
-// void TablePage::DeleteIndex(const String& sCol) { AddIndex(sCol, NULL_PAGE);
-// }
-
-// void TablePage::AddIndex(const String& sCol, PageID nPageID) {
-//   FieldID pos = GetColPos(sCol);
-//   _iIndexPageIDVec[pos] = nPageID;
-//   SetData((uint8_t*)&nPageID, 4, COLUMN_INDEX_PAGEID_OFFSET + 4 * pos);
-// }
-
-// PageID TablePage::GetIndexPageID(const String& sCol) {
-//   return _iIndexPageIDVec[GetColPos(sCol)];
-// }
-
 ManagerPageType TablePage::GetManagerPageType() const {
   return ManagerPageType::TABLE_PAGE_TYPE;
 }
