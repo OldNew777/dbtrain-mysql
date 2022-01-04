@@ -14,10 +14,11 @@ class TablePage : public ManagerPage {
  public:
   TablePage(const Schema& iSchema);
   TablePage(PageID nPageID);
-  virtual ~TablePage() = default;
+  ~TablePage();
 
   FieldID GetColPos(const String& sCol);
   FieldType GetType(const String& sCol);
+  bool GetIsNull(const String& sCol);
   Size GetSize(const String& sCol);
 
   // PageID GetIndexPageID(const String& sCol);
@@ -28,7 +29,8 @@ class TablePage : public ManagerPage {
 
  protected:
   friend class Table;
-
+ private:
+  std::vector<bool> _iNullVec;
   // std::vector<PageID> _iIndexPageIDVec;
 };
 
