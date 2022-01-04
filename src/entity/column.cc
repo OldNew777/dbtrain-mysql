@@ -31,4 +31,6 @@ FieldType Column::GetType() const { return _iType; }
 
 Size Column::GetSize() const { return _nSize; }
 
+bool Column::GetIsNull() const {return _isNull;}
+
 }  // namespace dbtrain_mysql
