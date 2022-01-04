@@ -14,7 +14,7 @@
 
 namespace dbtrain_mysql {
 
-Table::Table(TablePage* nTablePage) {
+Table::Table(TablePage* nTablePage) : Entity() {
   _pManagerPage = nTablePage;
   Init();
 }
@@ -27,10 +27,6 @@ Table::Table(PageID nTableID) : Entity() {
 void Table::Init() {
   Entity::Init();
   _pTablePage = dynamic_cast<TablePage*>(_pManagerPage);
-  // for (const String& sColName : GetColumnNames()) {
-  //   PageID nPageID = _pTablePage->GetIndexPageID(sColName);
-  //   if (nPageID != NULL_PAGE) _iIndexPageIDMap[sColName] = nPageID;
-  // }
 }
 
 Record* Table::GetRecord(PageID nPageID, SlotID nSlotID) {
@@ -45,17 +41,19 @@ Record* Table::GetRecord(PageID nPageID, SlotID nSlotID) {
 
 PageSlotID Table::InsertRecord(Record* pRecord) {
   // 利用_nNotFull来获取有空间的页面
-
   FindNextNotFull();
   PageID nPageID = _nNotFull;
+
+#ifdef DELETE_DEBUG
+  printf("Table::InsertRecord to page %d\n", int(nPageID));
+#endif
+
   // 利用Record::Store获得序列化数据
-
-  RecordPage page(nPageID);
-
   uint8_t* data = new uint8_t[_pManagerPage->GetTotalSize()];
   pRecord->Store(data);
 
   // 利用RecordPage::InsertRecord插入数据
+  RecordPage page(nPageID);
   SlotID nSlotID = page.InsertRecord(data);
 
   // 页满时更新_nNotFull

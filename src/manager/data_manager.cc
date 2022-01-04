@@ -33,6 +33,7 @@ void DataManager::CreateDatabase(const String& sDatabaseName) {
 }
 
 void DataManager::DropDatabase(const String& sDatabaseName) {
+  if (_pDatabase == _pWhole->GetDatabase(sDatabaseName)) _pDatabase = nullptr;
   _pWhole->DropDatabase(sDatabaseName);
 }
 

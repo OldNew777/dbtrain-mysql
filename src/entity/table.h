@@ -71,7 +71,6 @@ class Table : public Entity {
 
  protected:
   TablePage* _pTablePage;
-  std::map<String, PageID> _iIndexPageIDMap;
 
   void Init();
 };

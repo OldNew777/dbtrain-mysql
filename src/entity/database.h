@@ -74,6 +74,8 @@ class Database : public EntityManager {
   Index* GetIndex(const String& sTableName, const String& sColName);
   std::vector<Record*> GetIndexInfos();
 
+  virtual void Clear() override;
+
   virtual EntityType GetEntityType() const;
 
  protected:

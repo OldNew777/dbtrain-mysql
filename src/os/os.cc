@@ -59,7 +59,7 @@ PageID OS::NewPage() {
 void OS::DeletePage(PageID pid) {
   if (!_pUsed->Get(pid)) throw PageNotInitException(pid);
   delete _pMemory[pid];
-  _pMemory[pid] = 0;
+  _pMemory[pid] = nullptr;
   _pUsed->Unset(pid);
 }
 

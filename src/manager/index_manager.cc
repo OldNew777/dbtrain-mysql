@@ -193,6 +193,11 @@ void IndexManager::Init() {
   }
 }
 
+void IndexManager::Clear() {
+  LinkedPage pLinkedPage(_nPageID);
+  pLinkedPage.ReleaseListAll();
+}
+
 std::vector<std::pair<String, String>> IndexManager::GetIndexInfos() const {
   std::vector<std::pair<String, String>> iInfos{};
   for (const auto &it : _iIndexIDMap)

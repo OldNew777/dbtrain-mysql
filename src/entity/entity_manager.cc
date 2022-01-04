@@ -4,6 +4,7 @@
 #include "exception/exceptions.h"
 #include "field/fields.h"
 #include "macros.h"
+#include "os/os.h"
 #include "page/record_page.h"
 #include "settings.h"
 #include "string.h"
@@ -14,6 +15,8 @@ namespace dbtrain_mysql {
 void EntityManager::Clear() {
   for (auto iter : _iEntityMap)
     if (iter.second) {
+      iter.second->Clear();
+      OS::GetOS()->DeletePage(_iEntityPageIDMap[iter.first]);
       delete iter.second;
     }
   _iEntityMap.clear();
@@ -22,9 +25,13 @@ void EntityManager::Clear() {
   Entity::Clear();
 }
 
-EntityManager::EntityManager(ManagerPage* pManagerPage) {
+EntityManager::EntityManager(ManagerPage* pManagerPage) : Entity() {
   this->_pManagerPage = pManagerPage;
   Init();
+}
+
+EntityManager::EntityManager() : Entity() {
+  _nHeadID = _nTailID = _nNotFull = NULL_PAGE;
 }
 
 EntityManager::~EntityManager() {
@@ -71,6 +78,9 @@ void EntityManager::DeleteEntity(const String& sEntityName,
 
 void EntityManager::Init() {
   Entity::Init();
+  _iEntityMap.clear();
+  _iEntityPageIDMap.clear();
+  _iEntityPageSlotIDMap.clear();
   std::vector<std::pair<PageSlotID, Record*>> records =
       _pManagerPage->GetAllRecords();
   for (auto pRecord : records) {

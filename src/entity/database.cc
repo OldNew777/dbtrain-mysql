@@ -104,8 +104,10 @@ std::vector<String> Database::GetColumnNames(const String& sTableName) {
 std::vector<PageSlotID> Database::Search(
     const String& sTableName, Condition* pCond,
     const std::vector<Condition*>& iIndexCond) {
-  if (!((pCond == nullptr) ^ (iIndexCond.size() > 0)))
+  if (pCond != nullptr && iIndexCond.size() > 0) {
+    printf("Search function accept exclusive arguments\n");
     throw Exception("Search function accept exclusive arguments");
+  }
 
   Table* pTable = GetTable(sTableName);
   std::vector<PageSlotID> ans;
@@ -276,6 +278,11 @@ std::vector<Record*> Database::GetIndexInfos() {
     iVec.push_back(pInfo);
   }
   return iVec;
+}
+
+void Database::Clear() {
+  _pIndexManager->Clear();
+  EntityManager::Clear();
 }
 
 EntityType Database::GetEntityType() const { return EntityType::DATABASE_TYPE; }

@@ -115,10 +115,16 @@ void LinkedPage::ReleaseListRight() {
 
 void LinkedPage::ReleaseListAll() {
   _bModified = false;
-
   OS* os = OS::GetOS();
 
+#ifdef DELETE_DEBUG
+  int count = 0;
+#endif
+
   PageID pageID = GetNextID();
+#ifdef DELETE_DEBUG
+  ++count;
+#endif
   while (pageID != NULL_PAGE) {
     LinkedPage page(pageID);
     os->DeletePage(pageID);
@@ -126,11 +132,18 @@ void LinkedPage::ReleaseListAll() {
   }
   pageID = GetPrevID();
   while (pageID != NULL_PAGE) {
+#ifdef DELETE_DEBUG
+    ++count;
+#endif
     LinkedPage page(pageID);
     os->DeletePage(pageID);
     pageID = page.GetPrevID();
   }
   os->DeletePage(GetPageID());
+
+#ifdef DELETE_DEBUG
+  printf("LinkedPage::ReleaseListAll() : release %d pages\n", count);
+#endif
 }
 
 }  // namespace dbtrain_mysql

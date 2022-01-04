@@ -10,5 +10,6 @@
 // #define PRINT_PAGE
 // #define JOIN_DEBUG
 // #define DATABASE_DEBUG
+#define DELETE_DEBUG
 
 #endif

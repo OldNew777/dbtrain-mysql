@@ -8,13 +8,7 @@
 
 namespace dbtrain_mysql {
 
-// DEBUG
-class Instance;
-
 class DataManager {
-  // DEBUG
-  friend class Instance;
-
  public:
   DataManager();
   ~DataManager();

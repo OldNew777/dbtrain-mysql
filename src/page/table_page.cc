@@ -11,14 +11,6 @@
 
 namespace dbtrain_mysql {
 
-// const PageOffset COLUMN_TYPE_OFFSET = 0;
-// const PageOffset COLUMN_SIZE_OFFSET =
-//     COLUMN_TYPE_OFFSET + COLUMN_NUM_MAX * FIELD_TYPE_BYTES;
-// const PageOffset COLUMN_NAME_OFFSET =
-//     COLUMN_SIZE_OFFSET + COLUMN_NUM_MAX * FIELD_SIZE_MAX_BYTES;
-// const PageOffset COLUMN_INDEX_PAGEID_OFFSET =
-//     COLUMN_NAME_OFFSET + COLUMN_NUM_MAX * COLUMN_NAME_SIZE;
-
 TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
   for (Size i = 0; i < iSchema.GetSize(); ++i) {
     Column iCol = iSchema.GetColumn(i);
@@ -31,22 +23,9 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
   _nHeadID = _nTailID = pPage->GetPageID();
   delete pPage;
   _bModified = true;
-
-  // // Init Index PageID
-  // for (Size i = 0; i < _iSizeVec.size(); ++i) {
-  //   SetData((uint8_t*)&NULL_PAGE, 4, COLUMN_INDEX_PAGEID_OFFSET + 4 * i);
-  //   _iIndexPageIDVec.push_back(NULL_PAGE);
-  // }
 }
 
-TablePage::TablePage(PageID nPageID) : ManagerPage(nPageID) {
-  // // Load Index PageID
-  // for (Size i = 0; i < _iSizeVec.size(); ++i) {
-  //   PageID nPageID = 0;
-  //   GetData((uint8_t*)&nPageID, 4, COLUMN_INDEX_PAGEID_OFFSET + 4 * i);
-  //   _iIndexPageIDVec.push_back(nPageID);
-  // }
-}
+TablePage::TablePage(PageID nPageID) : ManagerPage(nPageID) {}
 
 FieldID TablePage::GetColPos(const String& sCol) {
   if (_iColMap.find(sCol) == _iColMap.end()) throw TableException();

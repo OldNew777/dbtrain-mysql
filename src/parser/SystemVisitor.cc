@@ -316,7 +316,7 @@ antlrcpp::Any SystemVisitor::visitSelect_table(
   }
   std::pair<std::vector<String>, std::vector<Record *>> iHeadDataPair{};
   if (bJoin) iHeadDataPair = _pDB->Join(iResultMap, iJoinConds);
-
+ 
   // Generate Result
   std::vector<PageSlotID> iData;
   if (!bJoin) {
@@ -476,10 +476,6 @@ antlrcpp::Any SystemVisitor::visitWhere_and_clause(
   std::map<String, std::vector<Condition *>> iCondMap;
   for (const auto &it : ctx->where_clause()) {
     std::pair<String, Condition *> iCondPair = it->accept(this);
-    // TODO: JOIN CONDITION
-    if (iCondPair.second->GetType() == ConditionType::JOIN_TYPE) {
-    }
-    // Not Join Condition
     if (iCondMap.find(iCondPair.first) == iCondMap.end()) {
       iCondMap[iCondPair.first] = {};
     }
@@ -503,27 +499,27 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
   if (_pDB->IsIndex(iPair.first, iPair.second)) {
     float fValue = stod(ctx->expression()->value()->getText());
     FieldType iType = _pDB->GetColType(iPair.first, iPair.second);
-    if (ctx->children[1]->getText() == "<") {
+    if (ctx->operator_()->getText() == "<") {
       return std::pair<String, Condition *>(
           iPair.first, new IndexCondition(iPair.first, iPair.second, DBL_MIN,
                                           fValue, iType));
-    } else if (ctx->children[1]->getText() == ">") {
+    } else if (ctx->operator_()->getText() == ">") {
       return std::pair<String, Condition *>(
           iPair.first, new IndexCondition(iPair.first, iPair.second,
                                           floatNext(fValue), DBL_MAX, iType));
-    } else if (ctx->children[1]->getText() == "=") {
+    } else if (ctx->operator_()->getText() == "=") {
       return std::pair<String, Condition *>(
           iPair.first, new IndexCondition(iPair.first, iPair.second, fValue,
                                           floatNext(fValue), iType));
-    } else if (ctx->children[1]->getText() == "<=") {
+    } else if (ctx->operator_()->getText() == "<=") {
       return std::pair<String, Condition *>(
           iPair.first, new IndexCondition(iPair.first, iPair.second, DBL_MIN,
                                           floatNext(fValue), iType));
-    } else if (ctx->children[1]->getText() == ">=") {
+    } else if (ctx->operator_()->getText() == ">=") {
       return std::pair<String, Condition *>(
           iPair.first, new IndexCondition(iPair.first, iPair.second, fValue,
                                           DBL_MAX, iType));
-    } else if (ctx->children[1]->getText() == "<>") {
+    } else if (ctx->operator_()->getText() == "<>") {
       return std::pair<String, Condition *>(
           iPair.first, new NotCondition(new RangeCondition(nColIndex, fValue,
                                                            floatNext(fValue))));
@@ -532,25 +528,25 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
     }
   } else {
     float fValue = stod(ctx->expression()->value()->getText());
-    if (ctx->children[1]->getText() == "<") {
+    if (ctx->operator_()->getText() == "<") {
       return std::pair<String, Condition *>(
           iPair.first, new RangeCondition(nColIndex, DBL_MIN, fValue));
-    } else if (ctx->children[1]->getText() == ">") {
+    } else if (ctx->operator_()->getText() == ">") {
       return std::pair<String, Condition *>(
           iPair.first,
           new RangeCondition(nColIndex, floatNext(fValue), DBL_MAX));
-    } else if (ctx->children[1]->getText() == "=") {
+    } else if (ctx->operator_()->getText() == "=") {
       return std::pair<String, Condition *>(
           iPair.first,
           new RangeCondition(nColIndex, fValue, floatNext(fValue)));
-    } else if (ctx->children[1]->getText() == "<=") {
+    } else if (ctx->operator_()->getText() == "<=") {
       return std::pair<String, Condition *>(
           iPair.first,
           new RangeCondition(nColIndex, DBL_MIN, floatNext(fValue)));
-    } else if (ctx->children[1]->getText() == ">=") {
+    } else if (ctx->operator_()->getText() == ">=") {
       return std::pair<String, Condition *>(
           iPair.first, new RangeCondition(nColIndex, fValue, DBL_MAX));
-    } else if (ctx->children[1]->getText() == "<>") {
+    } else if (ctx->operator_()->getText() == "<>") {
       return std::pair<String, Condition *>(
           iPair.first, new NotCondition(new RangeCondition(nColIndex, fValue,
                                                            floatNext(fValue))));
@@ -558,6 +554,7 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
       throw CaseException();
     }
   }
+  return iPair;
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_operator_select(

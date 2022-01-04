@@ -24,6 +24,8 @@ class IndexManager {
   std::vector<String> GetTableIndexes(const String &sTableName) const;
   bool HasIndex(const String &sTableName) const;
 
+  void Clear();
+
  protected:
   PageID _nPageID;
   std::map<String, Index *> _iIndexMap;
