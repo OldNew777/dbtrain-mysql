@@ -12,7 +12,7 @@ namespace dbtrain_mysql {
 class EntityManager : public Entity {
  public:
   EntityManager(ManagerPage* pManagerPage);
-  EntityManager() = default;
+  EntityManager();
   virtual ~EntityManager();
 
   std::vector<String> GetEntityNames() const;

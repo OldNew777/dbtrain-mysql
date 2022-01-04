@@ -27,7 +27,7 @@ OS::OS() {
   printf("os init\n");
   _pUsed = new Bitmap(MEM_PAGES);
   _cache = new CacheGroup*[CACHE_ASSOCIATIVE];
-  for(int i = 0; i < CACHE_ASSOCIATIVE; i ++){
+  for (int i = 0; i < CACHE_ASSOCIATIVE; i++) {
     _cache[i] = new CacheGroup();
   }
   _nClock = 0;
@@ -39,7 +39,7 @@ OS::OS() {
 OS::~OS() {
   // printf("pUsed num:%d\n", _pUsed->GetUsed());
   StoreBitmap();
-  for(int i = 0; i < CACHE_ASSOCIATIVE; i ++){
+  for (int i = 0; i < CACHE_ASSOCIATIVE; i++) {
     delete _cache[i];
   }
   delete[] _cache;
@@ -104,13 +104,13 @@ Size OS::GetUsedSize() const {
   return _pUsed->GetSize();
 }
 
-void OS::initDBPage(){
+void OS::initDBPage() {
   std::ifstream fin(DB_PAGE_NAME, std::ios::binary);
-  if(fin) return;
+  if (fin) return;
   std::ofstream fout(DB_PAGE_NAME, std::ios::binary);
   uint8_t* ptemp = new uint8_t[PAGE_SIZE * MEM_PAGES];
   memset(ptemp, 0, PAGE_SIZE * MEM_PAGES);
-  fout.write((char*) ptemp, PAGE_SIZE * MEM_PAGES);
+  fout.write((char*)ptemp, PAGE_SIZE * MEM_PAGES);
   fout.close();
   delete ptemp;
 }

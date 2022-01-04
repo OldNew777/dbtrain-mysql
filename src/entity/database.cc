@@ -60,6 +60,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
 void Database::DropTable(const String& sTableName) {
   Table* pTable = GetTable(sTableName);
+  _pIndexManager->DropIndex(sTableName);
   if (pTable == nullptr) {
     printf("Table '%s' not existed\n", sTableName.c_str());
     throw TableNotExistException(sTableName);
@@ -104,8 +105,10 @@ std::vector<String> Database::GetColumnNames(const String& sTableName) {
 std::vector<PageSlotID> Database::Search(
     const String& sTableName, Condition* pCond,
     const std::vector<Condition*>& iIndexCond) {
-  if (!((pCond == nullptr) ^ (iIndexCond.size() > 0)))
+  if (pCond != nullptr && iIndexCond.size() > 0) {
+    printf("Search function accept exclusive arguments\n");
     throw Exception("Search function accept exclusive arguments");
+  }
 
   Table* pTable = GetTable(sTableName);
   std::vector<PageSlotID> ans;
@@ -276,6 +279,17 @@ std::vector<Record*> Database::GetIndexInfos() {
     iVec.push_back(pInfo);
   }
   return iVec;
+}
+
+void Database::Clear() {
+  _pIndexManager->Clear();
+  // load tables to delete pages later
+  for (auto iter : _iEntityPageIDMap)
+    if (_iEntityMap.find(iter.first) == _iEntityMap.end() ||
+        _iEntityMap[iter.first] == nullptr) {
+      _iEntityMap[iter.first] = new Table(iter.second);
+    }
+  EntityManager::Clear();
 }
 
 EntityType Database::GetEntityType() const { return EntityType::DATABASE_TYPE; }

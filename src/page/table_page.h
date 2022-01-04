@@ -20,16 +20,10 @@ class TablePage : public ManagerPage {
   FieldType GetType(const String& sCol);
   Size GetSize(const String& sCol);
 
-  // PageID GetIndexPageID(const String& sCol);
-  // void DeleteIndex(const String& sCol);
-  // void AddIndex(const String& sCol, PageID nPageID);
-
   virtual ManagerPageType GetManagerPageType() const;
 
  protected:
   friend class Table;
-
-  // std::vector<PageID> _iIndexPageIDVec;
 };
 
 }  // namespace dbtrain_mysql

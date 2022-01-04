@@ -4,6 +4,7 @@
 #include "exception/exceptions.h"
 #include "field/fields.h"
 #include "macros.h"
+#include "os/os.h"
 #include "page/record_page.h"
 #include "settings.h"
 #include "string.h"
@@ -12,19 +13,34 @@
 namespace dbtrain_mysql {
 
 void EntityManager::Clear() {
-  for (auto iter : _iEntityMap)
-    if (iter.second) {
-      delete iter.second;
-    }
+  for (auto iter : _iEntityMap) {
+    if (iter.second == nullptr) continue;
+    iter.second->Clear();
+#ifdef DELETE_DEBUG
+    printf("Try to delete root page id %d\n",
+           int(_iEntityPageIDMap[iter.first]));
+#endif
+    iter.second->_pManagerPage->_bModified = false;
+    delete iter.second;
+#ifdef DELETE_DEBUG
+    printf("Try to delete root page id %d\n",
+           int(_iEntityPageIDMap[iter.first]));
+#endif
+  }
+  for (auto iter : _iEntityPageIDMap) OS::GetOS()->DeletePage(iter.second);
   _iEntityMap.clear();
   _iEntityPageIDMap.clear();
   _iEntityPageSlotIDMap.clear();
   Entity::Clear();
 }
 
-EntityManager::EntityManager(ManagerPage* pManagerPage) {
+EntityManager::EntityManager(ManagerPage* pManagerPage) : Entity() {
   this->_pManagerPage = pManagerPage;
   Init();
+}
+
+EntityManager::EntityManager() : Entity() {
+  _nHeadID = _nTailID = _nNotFull = NULL_PAGE;
 }
 
 EntityManager::~EntityManager() {
@@ -71,6 +87,9 @@ void EntityManager::DeleteEntity(const String& sEntityName,
 
 void EntityManager::Init() {
   Entity::Init();
+  _iEntityMap.clear();
+  _iEntityPageIDMap.clear();
+  _iEntityPageSlotIDMap.clear();
   std::vector<std::pair<PageSlotID, Record*>> records =
       _pManagerPage->GetAllRecords();
   for (auto pRecord : records) {

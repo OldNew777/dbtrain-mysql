@@ -16,20 +16,17 @@ void Entity::Init() {
   _nNotFull = _nHeadID;
 }
 
-PageID NextPageID(PageID nCur) {
-  LinkedPage* pPage = new LinkedPage(nCur);
-  PageID nNext = pPage->GetNextID();
-  delete pPage;
-  return nNext;
-}
-
 void Entity::Clear() {
-  PageID nBegin = _nHeadID;
-  while (nBegin != NULL_PAGE) {
-    PageID nTemp = nBegin;
-    nBegin = NextPageID(nBegin);
-    OS::GetOS()->DeletePage(nTemp);
-  }
+#ifdef DELETE_DEBUG
+  printf("\n-------------- Clear Begin --------------\n");
+  printf("_nHeadID = %d\n", int(_nHeadID));
+  printf("_nTailID = %d\n", int(_nTailID));
+#endif
+  LinkedPage pLinkedPage(_nHeadID);
+  pLinkedPage.ReleaseListAll();
+#ifdef DELETE_DEBUG
+  printf("\n--------------- Clear End ---------------\n\n");
+#endif
 }
 
 Record* Entity::EmptyRecord() const {
@@ -53,10 +50,12 @@ void Entity::FindNextNotFull() {
 
   // 需要插入新的page
   RecordPage newPage(_pManagerPage->GetTotalSize(), true);
-  LinkedPage tailPageBefore(_pManagerPage->GetTailID());
   _nNotFull = newPage.GetPageID();
+  LinkedPage tailPageBefore(_pManagerPage->GetTailID());
   tailPageBefore.PushBack(&newPage);
-  _pManagerPage->SetTailID(newPage.GetPageID());
+
+  _nTailID = _nNotFull;
+  _pManagerPage->SetTailID(_nNotFull);
 }
 
 bool Entity::NextNotFullUntil(PageID target) {

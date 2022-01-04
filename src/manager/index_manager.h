@@ -18,14 +18,18 @@ class IndexManager {
   Index *AddIndex(const String &sTableName, const String &sColName,
                   FieldType iType);
   void DropIndex(const String &sTableName, const String &sColName);
+  void DropIndex(const String &sTableName);
   bool IsIndex(const String &sTableName, const String &sColName);
 
   std::vector<std::pair<String, String>> GetIndexInfos() const;
   std::vector<String> GetTableIndexes(const String &sTableName) const;
   bool HasIndex(const String &sTableName) const;
 
+  void Clear();
+
  protected:
   PageID _nPageID;
+  bool _bCleared = false;
   std::map<String, Index *> _iIndexMap;
   std::map<String, PageID> _iIndexIDMap;
   std::map<String, std::vector<String>> _iTableIndexes;

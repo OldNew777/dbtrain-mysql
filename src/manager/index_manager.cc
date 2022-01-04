@@ -38,7 +38,6 @@ IndexManager::~IndexManager() {
   Store();
   for (const auto &iPair : _iIndexMap)
     if (iPair.second) {
-      iPair.second->print();
       delete iPair.second;
     }
 }
@@ -92,6 +91,20 @@ void IndexManager::DropIndex(const String &sTableName, const String &sColName) {
   if (_iTableIndexes[sTableName].size() == 0) _iTableIndexes.erase(sTableName);
 }
 
+void IndexManager::DropIndex(const String &sTableName) {
+  if (!HasIndex(sTableName)) return;
+  for (const auto &sColName : GetTableIndexes(sTableName)) {
+    String sIndexName = GetIndexName(sTableName, sColName);
+    Index *pIndex = GetIndex(sTableName, sColName);
+    pIndex->Clear();
+    delete pIndex;
+    _iIndexIDMap.erase(sIndexName);
+    _iIndexMap.erase(sIndexName);
+  }
+  assert(_iTableIndexes.find(sTableName) != _iTableIndexes.end());
+  if (_iTableIndexes[sTableName].size() == 0) _iTableIndexes.erase(sTableName);
+}
+
 std::vector<String> IndexManager::GetTableIndexes(
     const String &sTableName) const {
   if (_iTableIndexes.find(sTableName) == _iTableIndexes.end()) return {};
@@ -109,6 +122,8 @@ bool IndexManager::HasIndex(const String &sTableName) const {
 }
 
 void IndexManager::Store() {
+  if (_bCleared) return;
+
   // Update Index Root
   for (const auto &iPair : _iIndexMap)
     _iIndexIDMap[iPair.first] = iPair.second->GetRootID();
@@ -191,6 +206,12 @@ void IndexManager::Init() {
       _iTableIndexes[iPair.first].push_back(iPair.second);
     }
   }
+}
+
+void IndexManager::Clear() {
+  _bCleared = true;
+  LinkedPage pLinkedPage(_nPageID);
+  pLinkedPage.ReleaseListAll();
 }
 
 std::vector<std::pair<String, String>> IndexManager::GetIndexInfos() const {

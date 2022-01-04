@@ -13,6 +13,8 @@ enum class EntityType {
   MYSQL_TYPE = 2,
 };
 
+class EntityManager;
+
 class Entity {
  public:
   Entity() = default;
@@ -34,6 +36,8 @@ class Entity {
   virtual EntityType GetEntityType() const = 0;
 
  protected:
+  friend class EntityManager;
+
   ManagerPage* _pManagerPage;
   PageID _nHeadID;
   PageID _nTailID;

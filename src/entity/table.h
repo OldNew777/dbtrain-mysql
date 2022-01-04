@@ -65,13 +65,10 @@ class Table : public Entity {
   std::vector<Record*> GetTableInfos() const;
   std::vector<String> GetColumnNames() const;
 
-  // bool HasIndex(const String& sCol) const;
-
   virtual EntityType GetEntityType() const;
 
  protected:
   TablePage* _pTablePage;
-  std::map<String, PageID> _iIndexPageIDMap;
 
   void Init();
 };
