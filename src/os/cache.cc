@@ -94,7 +94,7 @@ namespace dbtrain_mysql{
         _getPage(pid)->Write(src, nSize, nOffset);
     }
     void CacheGroup::DeletePage(PageID pid){
-        printf("delete page %d \n", pid);
+        // printf("delete page %d \n", pid);
         for(auto it = _cacheGroup.begin(); it != _cacheGroup.end(); it ++){
             if(*it == nullptr){
                 throw CacheInvalideException();

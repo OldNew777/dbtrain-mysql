@@ -33,11 +33,11 @@ OS::OS() {
   _nClock = 0;
   LoadBitmap();
   initDBPage();
-  printf("pUsed num:%d\n", _pUsed->GetUsed());
+  // printf("pUsed num:%d\n", _pUsed->GetUsed());
 }
 
 OS::~OS() {
-  printf("pUsed num:%d\n", _pUsed->GetUsed());
+  // printf("pUsed num:%d\n", _pUsed->GetUsed());
   StoreBitmap();
   for(int i = 0; i < CACHE_ASSOCIATIVE; i ++){
     delete _cache[i];
@@ -52,7 +52,7 @@ PageID OS::NewPage() {
     if (!_pUsed->Get(_nClock)) {
       _getCacheGroup(_nClock)->NewPage(_nClock);
       _pUsed->Set(_nClock);
-      printf("\nnewpage: %d\n", _nClock);
+      // printf("\nnewpage: %d\n", _nClock);
       return _nClock;
     } else {
       _nClock += 1;
