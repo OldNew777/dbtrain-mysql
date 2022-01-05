@@ -2,6 +2,7 @@
 
 #include <float.h>
 #include <stdlib.h>
+#include <unordered_map>
 
 #include "condition/conditions.h"
 #include "entity/schema.h"
@@ -470,31 +471,70 @@ antlrcpp::Any SystemVisitor::visitAlter_table_rename(
 
 antlrcpp::Any SystemVisitor::visitField_list(
     MYSQLParser::Field_listContext *ctx) {
+  std::vector<std::vector<String>> sColVec;
+  std::unordered_map<String, int> sColMap;
   std::vector<Column> iColVec;
   for (const auto &it : ctx->field()) {
-    iColVec.push_back(it->accept(this));
+    std::vector<String> tmp = it->accept(this);
+    if(tmp[0][0] != '@'){
+      // if(sColMap.find(tmp[0]) != sColMap.end()) throw Exception();
+      sColMap[tmp[0]] = sColVec.size();
+      sColVec.push_back(tmp);
+    }
+    else if(tmp[0][0] == '@'){ //primary key
+      for(String& str : tmp){
+        printf("%s\n", str.substr(1).data());
+        if(sColMap.find(str.substr(1)) == sColMap.end()) throw Exception();
+        sColVec[sColMap[str.substr(1)]][3] = 1;
+      }
+    }
   }
+  for(auto it = sColVec.begin(); it != sColVec.end(); it ++){
+    FieldType type = FieldType::NULL_TYPE;
+    printf("%s %s %s %s %s %s\n", (*it)[0].data(), (*it)[1].data(),
+       (*it)[2].data(), (*it)[3].data(),(*it)[4].data(),
+       (*it)[5].data());
+    int size = 0;
+    if ((*it)[1] == "INT") {
+      type =  FieldType::INT_TYPE;
+      size = 4;
+    } else if ((*it)[1] == "FLOAT") {
+      type =  FieldType::FLOAT_TYPE;
+      size = 4;
+    } else {
+      type =  FieldType::CHAR_TYPE;
+      size = std::stoi((*it)[5]);
+    }
+    bool isNull = ((*it)[2] == "1")? true : false;
+    bool isPrimary = ((*it)[3] == "1")? true : false;
+
+    iColVec.push_back(Column((*it)[0], type, isNull,isPrimary, size));
+  }
+
   return Schema(iColVec);
 }
 
 antlrcpp::Any SystemVisitor::visitNormal_field(
     MYSQLParser::Normal_fieldContext *ctx) {
-  String sType = ctx->type_()->getText();
+  std::vector<String> vec;
+  vec.push_back(ctx->Identifier()->getText()); //0
+  vec.push_back(ctx->type_()->getText());// 1
+  vec.push_back((ctx->Null() == nullptr) ? "1" : "0"); //2 NULL
+  vec.push_back("0");//3 PRIMARY 
+  vec.push_back("NULL") ;//4 DEFUALT
+  vec.push_back((ctx->type_()->Integer() == nullptr)?
+     "0" : ctx->type_()->Integer()->getText()); //5 SIZE
   // TODO : add NULL/PRIMARY KEY/DEFAULT
-  bool flag = (ctx->Null() == nullptr);
-  if (sType == "INT") {
-    return Column(ctx->Identifier()->getText(), FieldType::INT_TYPE, flag);
-  } else if (sType == "FLOAT") {
-    return Column(ctx->Identifier()->getText(), FieldType::FLOAT_TYPE, flag);
-  } else {
-    int nSize = atoi(ctx->type_()->Integer()->getText().c_str());
-    return Column(ctx->Identifier()->getText(), FieldType::CHAR_TYPE, nSize, flag);
-  }
+  return vec;
 }
 
 antlrcpp::Any SystemVisitor::visitPrimary_key_field(
     MYSQLParser::Primary_key_fieldContext *ctx) {
-  throw UnimplementedException();
+  std::vector<String> vec = ctx->identifiers()->accept(this);
+  for(int i = 0; i < vec.size(); i ++){
+    vec[i] = "@" + vec[i];
+  }
+  return vec;
 }
 
 antlrcpp::Any SystemVisitor::visitForeign_key_field(
@@ -520,6 +560,7 @@ antlrcpp::Any SystemVisitor::visitValue_list(
   for (const auto &it : ctx->value()) iValueList.push_back(it->getText());
   return iValueList;
 }
+
 
 antlrcpp::Any SystemVisitor::visitValue(MYSQLParser::ValueContext *ctx) {
   return visitChildren(ctx);

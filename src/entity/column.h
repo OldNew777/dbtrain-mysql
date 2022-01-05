@@ -8,8 +8,8 @@ namespace dbtrain_mysql {
 
 class Column {
  public:
-  Column(const String& sName, FieldType iType, bool isNull);
-  Column(const String& sName, FieldType iType, Size nSize, bool isNull);
+  // Column(const String& sName, FieldType iType, bool isNull);
+  Column(const String& sName, FieldType iType, bool isNull, bool isPrimary, Size nSize);
   ~Column() = default;
 
   String GetName() const;
@@ -22,6 +22,7 @@ class Column {
   FieldType _iType;
   Size _nSize;
   bool _isNull;
+  bool _isPrimary;
 };
 
 }  // namespace dbtrain_mysql
