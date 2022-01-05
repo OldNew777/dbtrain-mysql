@@ -7,7 +7,7 @@
 CREATE DATABASE THU;
 USE THU;
 
-CREATE TABLE student(name VARCHAR(2000), id INT);
+CREATE TABLE student(name VARCHAR(2000) NOT NULL, id INT);
 -- INSERT INTO student VALUES('Jack',20);
 -- INSERT INTO student VALUES('Jack',20);
 -- INSERT INTO student VALUES('Jack',20);
