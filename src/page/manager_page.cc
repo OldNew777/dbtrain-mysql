@@ -10,19 +10,6 @@
 
 namespace dbtrain_mysql {
 
-const PageOffset HEAD_PAGE_OFFSET = 16;
-const PageOffset TAIL_PAGE_OFFSET = 20;
-const PageOffset COLUMN_LEN_OFFSET = 24;
-const PageOffset COLUMN_NAME_LEN_OFFSET = 28;
-
-const PageOffset COLUMN_TYPE_OFFSET = 0;
-const PageOffset COLUMN_SIZE_OFFSET =
-    COLUMN_TYPE_OFFSET + COLUMN_NUM_MAX * FIELD_TYPE_BYTES;
-const PageOffset COLUMN_NAME_OFFSET =
-    COLUMN_SIZE_OFFSET + COLUMN_NUM_MAX * FIELD_SIZE_MAX_BYTES;
-const PageOffset COLUMN_NOT_NULL_OFFSET = 
-    COLUMN_NAME_OFFSET + COLUMN_NUM_MAX * COLUMN_NOT_NULL_BYTES;
-
 ManagerPage::ManagerPage() : Page() {}
 
 ManagerPage::ManagerPage(PageID nPageID) : Page(nPageID) {
@@ -77,13 +64,10 @@ void ManagerPage::Store() {
     SetData((uint8_t*)&nSize, FIELD_SIZE_MAX_BYTES,
             COLUMN_SIZE_OFFSET + FIELD_SIZE_MAX_BYTES * i);
   }
-  for(int i = 0; i < _iNullVec.size(); i ++){
-    uint8_t iNull = 0;
-    if(_iNullVec[i]){
-      iNull = 1;
-    }
+  for(int i = 0; i < _iStatusVec.size(); i ++){
+    uint8_t iNull = _iStatusVec[i];
     SetData(&iNull, COLUMN_NOT_NULL_BYTES, 
-      COLUMN_NOT_NULL_BYTES * i + COLUMN_NOT_NULL_OFFSET);
+      COLUMN_NOT_NULL_BYTES * i + COLUMN_STATUS_OFFSET);
   }
   String sColumnsName = BuildColumnsString(_iColMap);
   Size sColNameLen = sColumnsName.size();
@@ -122,12 +106,12 @@ void ManagerPage::Load() {
   for(int i = 0; i < _iTypeVec.size(); i ++){
     uint8_t iNull = 0;
     GetData(&iNull, COLUMN_NOT_NULL_BYTES, 
-      COLUMN_NOT_NULL_BYTES * i + COLUMN_NOT_NULL_OFFSET);
-    if(iNull == 0){
-      _iNullVec.push_back(false);
+      COLUMN_NOT_NULL_BYTES * i + COLUMN_STATUS_OFFSET);
+    if(iNull & 0b1 == 0b0){
+      _iStatusVec.push_back(false);
     }
     else{
-      _iNullVec.push_back(true);
+      _iStatusVec.push_back(true);
     }
   }
   Size sColNameLen = 0;
@@ -149,7 +133,6 @@ void ManagerPage::Load() {
 #endif
 
   delete[] pTemp;
-  printf("7\n");
 
 }
 

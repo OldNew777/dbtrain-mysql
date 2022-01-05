@@ -20,13 +20,13 @@ namespace dbtrain_mysql {
 //     COLUMN_NAME_OFFSET + COLUMN_NUM_MAX * COLUMN_NAME_SIZE;
 // const PageOffset COLUMN_INDEX_NOTNULL_OFFSET = 
 //   COLUMN_INDEX_PAGEID_OFFSET + COLUMN_NUM_MAX * 
-const PageOffset COLUMN_TYPE_OFFSET = 0;
-const PageOffset COLUMN_SIZE_OFFSET =
-    COLUMN_TYPE_OFFSET + COLUMN_NUM_MAX * FIELD_TYPE_BYTES;
-const PageOffset COLUMN_NAME_OFFSET =
-    COLUMN_SIZE_OFFSET + COLUMN_NUM_MAX * FIELD_SIZE_MAX_BYTES;
-const PageOffset COLUMN_NOT_NULL_OFFSET = 
-    COLUMN_NAME_OFFSET + COLUMN_NUM_MAX * COLUMN_NOT_NULL_BYTES;
+// const PageOffset COLUMN_TYPE_OFFSET = 0;
+// const PageOffset COLUMN_SIZE_OFFSET =
+//     COLUMN_TYPE_OFFSET + COLUMN_NUM_MAX * FIELD_TYPE_BYTES;
+// const PageOffset COLUMN_NAME_OFFSET =
+//     COLUMN_SIZE_OFFSET + COLUMN_NUM_MAX * FIELD_SIZE_MAX_BYTES;
+// const PageOffset COLUMN_NOT_NULL_OFFSET = 
+//     COLUMN_NAME_OFFSET + COLUMN_NUM_MAX * COLUMN_NOT_NULL_BYTES;
 
 TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
   for (Size i = 0; i < iSchema.GetSize(); ++i) {
@@ -34,7 +34,9 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
     _iColMap[iCol.GetName()] = i;
     _iTypeVec.push_back(iCol.GetType());
     _iSizeVec.push_back(iCol.GetSize());
-    _iNullVec.push_back(iCol.GetIsNull());
+    uint8_t status = 0;
+    if(iCol.GetIsNull()) status |= 0b1;
+    _iStatusVec.push_back(status);
   }
   assert(_iColMap.size() == _iTypeVec.size());
   RecordPage* pPage = new RecordPage(GetTotalSize(), true);
@@ -60,7 +62,7 @@ Size TablePage::GetSize(const String& sCol) {
   return _iSizeVec[GetColPos(sCol)];
 }
 bool TablePage::GetIsNull(const String& sCol){
-  return _iNullVec[GetColPos(sCol)];
+  return (_iStatusVec[GetColPos(sCol)] & 0b1 == 0b1);
 }
 
 // void TablePage::DeleteIndex(const String& sCol) { AddIndex(sCol, NULL_PAGE);
