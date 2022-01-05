@@ -205,7 +205,11 @@ PageSlotID Database::Insert(const String& sTableName,
       (!pTable->GetIsNull(colNames[i]) || pTable->GetIsPrimary(colNames[i])) ){
       throw FieldListException();
     }
+    if(pTable->GetIsPrimary(colNames[i])){
+      
+    }
   }
+  
 
   Record* pRecord = pTable->EmptyRecord();
 
