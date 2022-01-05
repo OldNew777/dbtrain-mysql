@@ -18,7 +18,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
     _iTypeVec.push_back(iCol.GetType());
     _iSizeVec.push_back(iCol.GetSize());
     uint8_t status = 0;
-    if(iCol.GetIsNull()) status |= 0b1;
+    if(iCol.GetCanBeNull()) status |= 0b1;
     if(iCol.GetIsPrimary()) {
       // printf("name: %s\n", iCol.GetName());
       status |= 0b10;
@@ -62,7 +62,7 @@ FieldType TablePage::GetType(const String& sCol) {
 Size TablePage::GetSize(const String& sCol) {
   return _iSizeVec[GetColPos(sCol)];
 }
-bool TablePage::GetIsNull(const String& sCol){
+bool TablePage::GetCanBeNull(const String& sCol){
   return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1);
 }
 bool TablePage::GetIsPrimary(const String& sCol){

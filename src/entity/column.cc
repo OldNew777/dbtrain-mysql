@@ -4,8 +4,8 @@
 
 namespace dbtrain_mysql {
 
-Column::Column(const String& sName, FieldType iType, bool isNull, bool isPrimary, Size nSize)
-    : _sName(sName), _iType(iType), _isNull(isNull), _nSize(nSize), _isPrimary(isPrimary){
+Column::Column(const String& sName, FieldType iType, bool canBeNull, bool isPrimary, Size nSize)
+    : _sName(sName), _iType(iType), _canBeNull(canBeNull), _nSize(nSize), _isPrimary(isPrimary){
   // switch (iType) {
   //   case FieldType::NULL_TYPE:
   //     _nSize = 0;
@@ -31,7 +31,7 @@ FieldType Column::GetType() const { return _iType; }
 
 Size Column::GetSize() const { return _nSize; }
 
-bool Column::GetIsNull() const {return _isNull;}
+bool Column::GetCanBeNull() const {return _canBeNull;}
 
 bool Column::GetIsPrimary() const {return _isPrimary;}
 

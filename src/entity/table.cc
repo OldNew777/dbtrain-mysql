@@ -157,8 +157,8 @@ Size Table::GetSize(const String& sCol) const {
   return _pTablePage->GetSize(sCol);
 }
 
-bool Table::GetIsNull(const String& sCol) const {
-  return _pTablePage->GetIsNull(sCol);
+bool Table::GetCanBeNull(const String& sCol) const {
+  return _pTablePage->GetCanBeNull(sCol);
 }
 
 bool Table::GetIsPrimary(const String& sCol) const {
@@ -184,7 +184,7 @@ std::vector<Record*> Table::GetTableInfos() const {
     pDesc->SetField(0, new CharField(sColName));
     pDesc->SetField(1, new CharField(toString(GetType(sColName))));
     pDesc->SetField(2, new IntField(GetSize(sColName)));
-    pDesc->SetField(3, new CharField((_pTablePage->GetIsNull(sColName) 
+    pDesc->SetField(3, new CharField((_pTablePage->GetCanBeNull(sColName) 
       && !_pTablePage->GetIsPrimary(sColName))
       ? "YES" : "NO"));
     pDesc->SetField(4, new CharField((_pTablePage->GetIsPrimary(sColName)) 

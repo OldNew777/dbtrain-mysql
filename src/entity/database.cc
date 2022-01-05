@@ -207,7 +207,7 @@ PageSlotID Database::Insert(const String& sTableName,
 
   bool primaryKeyConflict = false;
   for (int i = 0; i < colNames.size(); i++) {
-    if (iRawVec[i] == "NULL" && (!pTable->GetIsNull(colNames[i]) ||
+    if (iRawVec[i] == "NULL" && (!pTable->GetCanBeNull(colNames[i]) ||
                                  pTable->GetIsPrimary(colNames[i]))) {
       printf("Column should not be NULL\n");
       throw FieldListException();
@@ -262,7 +262,7 @@ PageSlotID Database::Insert(const String& sTableName,
   bool primaryKeyConflict = false;
   for (int i = 0; i < colNames.size(); i++) {
     if (iValueVec[i]->GetType() == FieldType::NULL_TYPE &&
-        (!pTable->GetIsNull(colNames[i]) ||
+        (!pTable->GetCanBeNull(colNames[i]) ||
          pTable->GetIsPrimary(colNames[i]))) {
       printf("Column should not be NULL\n");
       throw FieldListException();

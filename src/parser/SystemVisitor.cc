@@ -510,10 +510,10 @@ antlrcpp::Any SystemVisitor::visitField_list(
       type = FieldType::CHAR_TYPE;
       size = std::stoi((*it)[5]);
     }
-    bool isNull = ((*it)[2] == "1") ? true : false;
+    bool canBeNull = ((*it)[2] == "1") ? true : false;
     bool isPrimary = ((*it)[3] == "1") ? true : false;
     if (isPrimary) printf("%s\n", (*it)[0].data());
-    iColVec.push_back(Column((*it)[0], type, isNull, isPrimary, size));
+    iColVec.push_back(Column((*it)[0], type, canBeNull, isPrimary, size));
   }
 
   return Schema(iColVec);
