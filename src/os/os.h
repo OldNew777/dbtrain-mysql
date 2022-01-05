@@ -5,6 +5,7 @@
 #include "cache.h"
 #include "os/raw_page.h"
 #include "utils/bitmap.h"
+#include <filesystem>
 
 namespace dbtrain_mysql {
 
@@ -55,6 +56,7 @@ class OS {
   Bitmap* _pUsed;
   CacheGroup** _cache;
   Size _nClock;
+  Size _maxSize;
 
   static OS* os;
 };

@@ -2,6 +2,7 @@
 
 #include <float.h>
 #include <stdlib.h>
+#include <unordered_map>
 
 #include "condition/conditions.h"
 #include "entity/schema.h"
@@ -14,6 +15,7 @@
 #include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
+
 
 SystemVisitor::SystemVisitor(Instance *pDB) : _pDB{pDB} { assert(_pDB); }
 
@@ -129,12 +131,63 @@ antlrcpp::Any SystemVisitor::visitShow_indexes(
 
 antlrcpp::Any SystemVisitor::visitLoad_data(
     MYSQLParser::Load_dataContext *ctx) {
-  throw UnimplementedException();
+  std::vector<std::vector<String>> iValueListVec;
+  std::string path = ctx->String()->getText();
+  path = path.substr(1, path.size() - 2);
+  std::fstream fin(path, std::ios::in);
+  printf("path:%s\n", path.data());
+  if(!fin){throw FileNotExistException();}
+  std::string str = "";
+  while(std::getline(fin, str)){
+    iValueListVec.push_back(std::vector<String>());
+    if(str.find("\n") != str.npos){
+      str = str.substr(0, str.find("\n"));// delete \n
+    }
+    std::string::size_type tail = str.find(",");
+    std::string::size_type head = 0;
+    int pt = 0;
+    while(tail != std::string::npos){
+      iValueListVec.back().push_back(str.substr(head, tail - head));
+      head = tail + 1;
+      tail = str.find(",", head);
+      pt ++;
+    }
+    if(head != str.length()){
+      iValueListVec.back().push_back(str.substr(head));
+    }
+  }
+  fin.close();
+
+  String sTableName = ctx->Identifier()->getText();
+  int inserted = 0;
+  try {
+    for (const auto &iValueList : iValueListVec) {
+      _pDB->Insert(sTableName, iValueList);
+      ++inserted;
+    }
+  } catch (const std::exception &e) {
+  }
+  Result *res = new MemResult({"Insert"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(inserted));
+  res->PushBack(pRes);
+  return res;
 }
 
 antlrcpp::Any SystemVisitor::visitDump_data(
     MYSQLParser::Dump_dataContext *ctx) {
-  throw UnimplementedException();
+  std::string tablename = ctx->Identifier()->getText();
+  std::string path = ctx->String()->getText();
+  path = path.substr(1, path.length() - 2);
+  std::vector<PageSlotID> pageslotvec =  _pDB->Search(tablename, nullptr, {});
+  Result *pResult = new MemResult(_pDB->GetColumnNames(tablename));
+  for (const auto &it : pageslotvec)
+    pResult->PushBack(_pDB->GetRecord(tablename, it));
+  std::ofstream fout(path);
+  if(!fout) throw FileNotExistException();
+  fout.write(pResult->Dump().data(),pResult->Dump().size());
+  fout.close();
+  return pResult;
 }
 
 antlrcpp::Any SystemVisitor::visitCreate_table(
@@ -172,7 +225,7 @@ antlrcpp::Any SystemVisitor::visitDrop_table(
 
 antlrcpp::Any SystemVisitor::visitDescribe_table(
     MYSQLParser::Describe_tableContext *ctx) {
-  Result *res = new MemResult({"Column Name", "Column Type", "Column Size"});
+  Result *res = new MemResult({"Column Name", "Column Type", "Column Size", "Can Be Null?", "Is Primary?"});
   String sTableName = ctx->Identifier()->getText();
   try {
     for (const auto &pRecord : _pDB->GetTableInfos(sTableName))
@@ -194,6 +247,7 @@ antlrcpp::Any SystemVisitor::visitInsert_into_table(
       ++inserted;
     }
   } catch (const std::exception &e) {
+    throw e;
   }
   Result *res = new MemResult({"Insert"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
@@ -417,30 +471,70 @@ antlrcpp::Any SystemVisitor::visitAlter_table_rename(
 
 antlrcpp::Any SystemVisitor::visitField_list(
     MYSQLParser::Field_listContext *ctx) {
+  std::vector<std::vector<String>> sColVec;
+  std::unordered_map<String, int> sColMap;
   std::vector<Column> iColVec;
   for (const auto &it : ctx->field()) {
-    iColVec.push_back(it->accept(this));
+    std::vector<String> tmp = it->accept(this);
+    if(tmp[0][0] != '@'){
+      // if(sColMap.find(tmp[0]) != sColMap.end()) throw Exception();
+      sColVec.push_back(tmp);
+      sColMap[tmp[0]] = sColVec.size() - 1;
+    }
+    else if(tmp[0][0] == '@'){ //primary key
+      for(String& str : tmp){
+        // printf("%s\n", str.substr(1).data());
+        if(sColMap.find(str.substr(1)) == sColMap.end()) throw Exception();
+        sColVec[sColMap[str.substr(1)]][3] = "1";
+      }
+    }
   }
+  for(auto it = sColVec.begin(); it != sColVec.end(); it ++){
+    FieldType type = FieldType::NULL_TYPE;
+    // printf("%s\t%s\t%s\t%s\t%s\t%s\n", (*it)[0].data(), (*it)[1].data(),
+    //    (*it)[2].data(), (*it)[3].data(),(*it)[4].data(),
+    //    (*it)[5].data());
+    int size = 0;
+    if ((*it)[1] == "INT") {
+      type =  FieldType::INT_TYPE;
+      size = 4;
+    } else if ((*it)[1] == "FLOAT") {
+      type =  FieldType::FLOAT_TYPE;
+      size = 4;
+    } else {
+      type =  FieldType::CHAR_TYPE;
+      size = std::stoi((*it)[5]);
+    }
+    bool isNull = ((*it)[2] == "1")? true : false;
+    bool isPrimary = ((*it)[3] == "1")? true : false;
+    if(isPrimary) printf("%s\n", (*it)[0].data());
+    iColVec.push_back(Column((*it)[0], type, isNull,isPrimary, size));
+  }
+
   return Schema(iColVec);
 }
 
 antlrcpp::Any SystemVisitor::visitNormal_field(
     MYSQLParser::Normal_fieldContext *ctx) {
-  String sType = ctx->type_()->getText();
+  std::vector<String> vec;
+  vec.push_back(ctx->Identifier()->getText()); //0
+  vec.push_back(ctx->type_()->getText());// 1
+  vec.push_back((ctx->Null() == nullptr) ? "1" : "0"); //2 NULL
+  vec.push_back("0");//3 PRIMARY 
+  vec.push_back("NULL") ;//4 DEFUALT
+  vec.push_back((ctx->type_()->Integer() == nullptr)?
+     "0" : ctx->type_()->Integer()->getText()); //5 SIZE
   // TODO : add NULL/PRIMARY KEY/DEFAULT
-  if (sType == "INT") {
-    return Column(ctx->Identifier()->getText(), FieldType::INT_TYPE);
-  } else if (sType == "FLOAT") {
-    return Column(ctx->Identifier()->getText(), FieldType::FLOAT_TYPE);
-  } else {
-    int nSize = atoi(ctx->type_()->Integer()->getText().c_str());
-    return Column(ctx->Identifier()->getText(), FieldType::CHAR_TYPE, nSize);
-  }
+  return vec;
 }
 
 antlrcpp::Any SystemVisitor::visitPrimary_key_field(
     MYSQLParser::Primary_key_fieldContext *ctx) {
-  throw UnimplementedException();
+  std::vector<String> vec = ctx->identifiers()->accept(this);
+  for(int i = 0; i < vec.size(); i ++){
+    vec[i] = "@" + vec[i];
+  }
+  return vec;
 }
 
 antlrcpp::Any SystemVisitor::visitForeign_key_field(
@@ -466,6 +560,7 @@ antlrcpp::Any SystemVisitor::visitValue_list(
   for (const auto &it : ctx->value()) iValueList.push_back(it->getText());
   return iValueList;
 }
+
 
 antlrcpp::Any SystemVisitor::visitValue(MYSQLParser::ValueContext *ctx) {
   return visitChildren(ctx);

@@ -10,22 +10,12 @@
 
 namespace dbtrain_mysql {
 
-const PageOffset HEAD_PAGE_OFFSET = 16;
-const PageOffset TAIL_PAGE_OFFSET = 20;
-const PageOffset COLUMN_LEN_OFFSET = 24;
-const PageOffset COLUMN_NAME_LEN_OFFSET = 28;
-
-const PageOffset COLUMN_TYPE_OFFSET = 0;
-const PageOffset COLUMN_SIZE_OFFSET =
-    COLUMN_TYPE_OFFSET + COLUMN_NUM_MAX * FIELD_TYPE_BYTES;
-const PageOffset COLUMN_NAME_OFFSET =
-    COLUMN_SIZE_OFFSET + COLUMN_NUM_MAX * FIELD_SIZE_MAX_BYTES;
-
 ManagerPage::ManagerPage() : Page() {}
 
 ManagerPage::ManagerPage(PageID nPageID) : Page(nPageID) {
   Load();
   _bModified = false;
+  // printf("ManagePage\n");
 }
 
 ManagerPage::~ManagerPage() {
@@ -33,6 +23,7 @@ ManagerPage::~ManagerPage() {
     _bModified = false;
     Store();
   };
+  // printf("~ManagePage\n");
 }
 
 PageID ManagerPage::GetHeadID() const { return _nHeadID; }
@@ -108,6 +99,7 @@ void ManagerPage::Load() {
             COLUMN_SIZE_OFFSET + FIELD_SIZE_MAX_BYTES * i);
     _iSizeVec.push_back(nSize);
   }
+
   Size sColNameLen = 0;
   GetHeader((uint8_t*)&sColNameLen, 4, COLUMN_NAME_LEN_OFFSET);
   char* pTemp = new char[sColNameLen + 1];
@@ -127,7 +119,6 @@ void ManagerPage::Load() {
 #endif
 
   delete[] pTemp;
-  printf("7\n");
 
 }
 

@@ -82,7 +82,10 @@ std::vector<PageSlotID> Instance::Search(
 
 PageSlotID Instance::Insert(const String& sTableName,
                             const std::vector<String>& iRawVec) {
-  return _pDataManager->Insert(sTableName, iRawVec);
+  try{return _pDataManager->Insert(sTableName, iRawVec);}
+  catch (Exception e){
+    throw e;
+  }
 }
 
 uint32_t Instance::Delete(const String& sTableName, Condition* pCond,

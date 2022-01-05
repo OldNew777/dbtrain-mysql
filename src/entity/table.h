@@ -62,6 +62,8 @@ class Table : public Entity {
   FieldID GetColPos(const String& sCol) const;
   FieldType GetType(const String& sCol) const;
   Size GetSize(const String& sCol) const;
+  bool GetIsNull(const String& sCol) const;
+  bool GetIsPrimary(const String& sCol) const;
   std::vector<Record*> GetTableInfos() const;
   std::vector<String> GetColumnNames() const;
 
