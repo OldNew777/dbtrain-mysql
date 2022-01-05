@@ -19,6 +19,7 @@ class TablePage : public ManagerPage {
   FieldID GetColPos(const String& sCol);
   FieldType GetType(const String& sCol);
   bool GetIsNull(const String& sCol);
+  bool GetIsPrimary(const String& sCol);
   Size GetSize(const String& sCol);
 
   // PageID GetIndexPageID(const String& sCol);

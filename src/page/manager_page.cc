@@ -107,12 +107,7 @@ void ManagerPage::Load() {
     uint8_t iNull = 0;
     GetData(&iNull, COLUMN_NOT_NULL_BYTES, 
       COLUMN_NOT_NULL_BYTES * i + COLUMN_STATUS_OFFSET);
-    if(iNull & 0b1 == 0b0){
-      _iStatusVec.push_back(false);
-    }
-    else{
-      _iStatusVec.push_back(true);
-    }
+    _iStatusVec.push_back(iNull);
   }
   Size sColNameLen = 0;
   GetHeader((uint8_t*)&sColNameLen, 4, COLUMN_NAME_LEN_OFFSET);

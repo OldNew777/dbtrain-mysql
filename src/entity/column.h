@@ -16,6 +16,7 @@ class Column {
   FieldType GetType() const;
   Size GetSize() const;
   bool GetIsNull() const;
+  bool GetIsPrimary() const;
 
  private:
   String _sName;

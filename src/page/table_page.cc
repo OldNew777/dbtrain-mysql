@@ -36,6 +36,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
     _iSizeVec.push_back(iCol.GetSize());
     uint8_t status = 0;
     if(iCol.GetIsNull()) status |= 0b1;
+    if(iCol.GetIsPrimary()) status |= 0b10;
     _iStatusVec.push_back(status);
   }
   assert(_iColMap.size() == _iTypeVec.size());
@@ -63,6 +64,9 @@ Size TablePage::GetSize(const String& sCol) {
 }
 bool TablePage::GetIsNull(const String& sCol){
   return (_iStatusVec[GetColPos(sCol)] & 0b1 == 0b1);
+}
+bool TablePage::GetIsPrimary(const String& sCol){
+  return (_iStatusVec[GetColPos(sCol)] & 0b10 == 0b10);
 }
 
 // void TablePage::DeleteIndex(const String& sCol) { AddIndex(sCol, NULL_PAGE);

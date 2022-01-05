@@ -478,22 +478,22 @@ antlrcpp::Any SystemVisitor::visitField_list(
     std::vector<String> tmp = it->accept(this);
     if(tmp[0][0] != '@'){
       // if(sColMap.find(tmp[0]) != sColMap.end()) throw Exception();
-      sColMap[tmp[0]] = sColVec.size();
       sColVec.push_back(tmp);
+      sColMap[tmp[0]] = sColVec.size() - 1;
     }
     else if(tmp[0][0] == '@'){ //primary key
       for(String& str : tmp){
-        printf("%s\n", str.substr(1).data());
+        // printf("%s\n", str.substr(1).data());
         if(sColMap.find(str.substr(1)) == sColMap.end()) throw Exception();
-        sColVec[sColMap[str.substr(1)]][3] = 1;
+        sColVec[sColMap[str.substr(1)]][3] = "1";
       }
     }
   }
   for(auto it = sColVec.begin(); it != sColVec.end(); it ++){
     FieldType type = FieldType::NULL_TYPE;
-    printf("%s %s %s %s %s %s\n", (*it)[0].data(), (*it)[1].data(),
-       (*it)[2].data(), (*it)[3].data(),(*it)[4].data(),
-       (*it)[5].data());
+    // printf("%s\t%s\t%s\t%s\t%s\t%s\n", (*it)[0].data(), (*it)[1].data(),
+    //    (*it)[2].data(), (*it)[3].data(),(*it)[4].data(),
+    //    (*it)[5].data());
     int size = 0;
     if ((*it)[1] == "INT") {
       type =  FieldType::INT_TYPE;
@@ -507,7 +507,7 @@ antlrcpp::Any SystemVisitor::visitField_list(
     }
     bool isNull = ((*it)[2] == "1")? true : false;
     bool isPrimary = ((*it)[3] == "1")? true : false;
-
+    if(isPrimary) printf("%s\n", (*it)[0].data());
     iColVec.push_back(Column((*it)[0], type, isNull,isPrimary, size));
   }
 

@@ -155,6 +155,10 @@ bool Table::GetIsNull(const String& sCol) const {
   return _pTablePage->GetIsNull(sCol);
 }
 
+bool Table::GetIsPrimary(const String& sCol) const {
+  return _pTablePage->GetIsPrimary(sCol);
+}
+
 std::vector<String> Table::GetColumnNames() const {
   std::vector<String> iVec{};
   std::vector<std::pair<String, FieldID>> iPairVec(

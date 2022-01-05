@@ -33,4 +33,6 @@ Size Column::GetSize() const { return _nSize; }
 
 bool Column::GetIsNull() const {return _isNull;}
 
+bool Column::GetIsPrimary() const {return _isPrimary;}
+
 }  // namespace dbtrain_mysql

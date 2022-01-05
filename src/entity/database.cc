@@ -201,7 +201,8 @@ PageSlotID Database::Insert(const String& sTableName,
     throw FieldListException();
   }
   for(int i = 0; i < colNames.size(); i ++){
-    if(iRawVec[i] == "NULL" && !pTable->GetIsNull(colNames[i])){
+    if(iRawVec[i] == "NULL" && 
+      (!pTable->GetIsNull(colNames[i]) || pTable->GetIsPrimary(colNames[i])) ){
       throw FieldListException();
     }
   }
