@@ -496,9 +496,9 @@ antlrcpp::Any SystemVisitor::visitField_list(
   }
   for (auto it = sColVec.begin(); it != sColVec.end(); it++) {
     FieldType type = FieldType::NULL_TYPE;
-    // printf("%s\t%s\t%s\t%s\t%s\t%s\n", (*it)[0].data(), (*it)[1].data(),
-    //    (*it)[2].data(), (*it)[3].data(),(*it)[4].data(),
-    //    (*it)[5].data());
+    printf("%s\t%s\t%s\t%s\t%s\t%s\n", (*it)[0].data(), (*it)[1].data(),
+       (*it)[2].data(), (*it)[3].data(),(*it)[4].data(),
+       (*it)[5].data());
     int size = 0;
     if ((*it)[1] == "INT") {
       type = FieldType::INT_TYPE;
