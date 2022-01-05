@@ -7,6 +7,7 @@
 #include "entity/schema.h"
 #include "entity/table.h"
 #include "exception/exceptions.h"
+#include "field/fields.h"
 #include "macros.h"
 #include "record/fixed_record.h"
 #include "record/transform.h"
@@ -471,12 +472,15 @@ antlrcpp::Any SystemVisitor::visitValue_list(
 }
 
 antlrcpp::Any SystemVisitor::visitValue(MYSQLParser::ValueContext *ctx) {
-  if (ctx->Integer()) return new IntField(std::stoi(ctx->Integer()->getText()));
-  if (ctx->Float()) return new FloatField(std::stod(ctx->Float()->getText()));
+  Field *pField = nullptr;
+  if (ctx->Integer())
+    pField = new IntField(std::stoi(ctx->Integer()->getText()));
+  if (ctx->Float()) pField = new FloatField(std::stod(ctx->Float()->getText()));
   if (ctx->String())
-    return new CharField(ctx->String()->getText().substr(
+    pField = new CharField(ctx->String()->getText().substr(
         1, ctx->String()->getText().size() - 2));
-  if (ctx->Null()) return new NullField();
+  if (ctx->Null()) pField = new NullField();
+  return pField;
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_and_clause(
@@ -528,7 +532,7 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
 
   if (_pDB->IsIndex(iPair.first, iPair.second)) {
     // Index
-    std::pair<String, Condition *>(
+    return std::pair<String, Condition *>(
         iPair.first,
         new IndexCondition(iPair.first, iPair.second, pLow, pHigh));
   } else {

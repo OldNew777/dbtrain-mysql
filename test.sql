@@ -63,8 +63,10 @@ INSERT INTO student VALUES(NULL,872);
 INSERT INTO student VALUES(NULL,872);
 
 SELECT * FROM student WHERE student.id > 30;
+SELECT * FROM student WHERE student.name = 'Jack';
 ALTER TABLE student ADD INDEX(id);
 SELECT * FROM student WHERE student.id > 30;
+SELECT * FROM student WHERE student.name = 'Jack';
 
 
 

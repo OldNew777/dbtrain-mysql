@@ -82,6 +82,15 @@ std::vector<PageSlotID> Instance::Search(
 
 PageSlotID Instance::Insert(const String& sTableName,
                             const std::vector<Field*>& iValueVec) {
+#ifdef RAW2FIELD_BUILD_DEBUG
+  printf("\n------------ Insert ------------\n");
+  printf("(");
+  for (auto pField : iValueVec) {
+    std::cout << pField->ToString() << ", ";
+  }
+  printf(")\n");
+  printf("------------- end --------------\n");
+#endif
   return _pDataManager->Insert(sTableName, iValueVec);
 }
 
