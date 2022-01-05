@@ -246,6 +246,7 @@ antlrcpp::Any SystemVisitor::visitInsert_into_table(
       ++inserted;
     }
   } catch (const std::exception &e) {
+    throw e;
   }
   Result *res = new MemResult({"Insert"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});

@@ -462,7 +462,12 @@ uint32_t DataManager::Update(const String& sTableName, Condition* pCond,
 PageSlotID DataManager::Insert(const String& sTableName,
                                const std::vector<String>& iRawVec) {
   CheckDatabaseUsed();
-  return _pDatabase->Insert(sTableName, iRawVec);
+  try{
+    return _pDatabase->Insert(sTableName, iRawVec);
+  }
+  catch (Exception e){
+    throw e;
+  }
 }
 
 void DataManager::CreateIndex(const String& sTableName,
