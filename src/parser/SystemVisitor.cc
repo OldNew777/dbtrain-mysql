@@ -11,6 +11,7 @@
 #include "record/fixed_record.h"
 #include "record/transform.h"
 #include "result/result.h"
+#include "string.h"
 #include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
@@ -184,7 +185,7 @@ antlrcpp::Any SystemVisitor::visitDescribe_table(
 
 antlrcpp::Any SystemVisitor::visitInsert_into_table(
     MYSQLParser::Insert_into_tableContext *ctx) {
-  std::vector<std::vector<String>> iValueListVec =
+  std::vector<std::vector<Field *>> iValueListVec =
       ctx->value_lists()->accept(this);
   String sTableName = ctx->Identifier()->getText();
   int inserted = 0;
@@ -316,7 +317,7 @@ antlrcpp::Any SystemVisitor::visitSelect_table(
   }
   std::pair<std::vector<String>, std::vector<Record *>> iHeadDataPair{};
   if (bJoin) iHeadDataPair = _pDB->Join(iResultMap, iJoinConds);
- 
+
   // Generate Result
   std::vector<PageSlotID> iData;
   if (!bJoin) {
@@ -454,7 +455,7 @@ antlrcpp::Any SystemVisitor::visitType_(MYSQLParser::Type_Context *ctx) {
 
 antlrcpp::Any SystemVisitor::visitValue_lists(
     MYSQLParser::Value_listsContext *ctx) {
-  std::vector<std::vector<String>> iValueListVec;
+  std::vector<std::vector<Field *>> iValueListVec;
   for (const auto &it : ctx->value_list())
     iValueListVec.push_back(it->accept(this));
   return iValueListVec;
@@ -462,13 +463,20 @@ antlrcpp::Any SystemVisitor::visitValue_lists(
 
 antlrcpp::Any SystemVisitor::visitValue_list(
     MYSQLParser::Value_listContext *ctx) {
-  std::vector<String> iValueList;
-  for (const auto &it : ctx->value()) iValueList.push_back(it->getText());
-  return iValueList;
+  std::vector<Field *> iValueVec;
+  for (const auto &it : ctx->value()) {
+    iValueVec.push_back(it->accept(this));
+  }
+  return iValueVec;
 }
 
 antlrcpp::Any SystemVisitor::visitValue(MYSQLParser::ValueContext *ctx) {
-  return visitChildren(ctx);
+  if (ctx->Integer()) return new IntField(std::stoi(ctx->Integer()->getText()));
+  if (ctx->Float()) return new FloatField(std::stod(ctx->Float()->getText()));
+  if (ctx->String())
+    return new CharField(ctx->String()->getText().substr(
+        1, ctx->String()->getText().size() - 2));
+  if (ctx->Null()) return new NullField();
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_and_clause(
@@ -496,63 +504,37 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
         "JOIN", new JoinCondition(iPair.first, iPair.second, iPairB.first,
                                   iPairB.second));
   }
-  if (_pDB->IsIndex(iPair.first, iPair.second)) {
-    float fValue = stod(ctx->expression()->value()->getText());
-    FieldType iType = _pDB->GetColType(iPair.first, iPair.second);
-    if (ctx->operator_()->getText() == "<") {
-      return std::pair<String, Condition *>(
-          iPair.first, new IndexCondition(iPair.first, iPair.second, DBL_MIN,
-                                          fValue, iType));
-    } else if (ctx->operator_()->getText() == ">") {
-      return std::pair<String, Condition *>(
-          iPair.first, new IndexCondition(iPair.first, iPair.second,
-                                          floatNext(fValue), DBL_MAX, iType));
-    } else if (ctx->operator_()->getText() == "=") {
-      return std::pair<String, Condition *>(
-          iPair.first, new IndexCondition(iPair.first, iPair.second, fValue,
-                                          floatNext(fValue), iType));
-    } else if (ctx->operator_()->getText() == "<=") {
-      return std::pair<String, Condition *>(
-          iPair.first, new IndexCondition(iPair.first, iPair.second, DBL_MIN,
-                                          floatNext(fValue), iType));
-    } else if (ctx->operator_()->getText() == ">=") {
-      return std::pair<String, Condition *>(
-          iPair.first, new IndexCondition(iPair.first, iPair.second, fValue,
-                                          DBL_MAX, iType));
-    } else if (ctx->operator_()->getText() == "<>") {
-      return std::pair<String, Condition *>(
-          iPair.first, new NotCondition(new RangeCondition(nColIndex, fValue,
-                                                           floatNext(fValue))));
-    } else {
-      throw CaseException();
-    }
+
+  // get [pLow, pHigh)
+  Field *pField = ctx->expression()->value()->accept(this);
+  Field *pLow = ctx->expression()->value()->accept(this),
+        *pHigh = pLow->Clone();
+  if (ctx->operator_()->getText() == "<") {
+    pLow->ToMin();
+  } else if (ctx->operator_()->getText() == ">") {
+    pLow->Add();
+    pHigh->ToMax();
+  } else if (ctx->operator_()->getText() == "=") {
+    pHigh->Add();
+  } else if (ctx->operator_()->getText() == "<=") {
+    pLow->ToMin();
+    pHigh->Add();
+  } else if (ctx->operator_()->getText() == ">=") {
+    pHigh->ToMax();
+  } else if (ctx->operator_()->getText() == "<>") {
   } else {
-    float fValue = stod(ctx->expression()->value()->getText());
-    if (ctx->operator_()->getText() == "<") {
-      return std::pair<String, Condition *>(
-          iPair.first, new RangeCondition(nColIndex, DBL_MIN, fValue));
-    } else if (ctx->operator_()->getText() == ">") {
-      return std::pair<String, Condition *>(
-          iPair.first,
-          new RangeCondition(nColIndex, floatNext(fValue), DBL_MAX));
-    } else if (ctx->operator_()->getText() == "=") {
-      return std::pair<String, Condition *>(
-          iPair.first,
-          new RangeCondition(nColIndex, fValue, floatNext(fValue)));
-    } else if (ctx->operator_()->getText() == "<=") {
-      return std::pair<String, Condition *>(
-          iPair.first,
-          new RangeCondition(nColIndex, DBL_MIN, floatNext(fValue)));
-    } else if (ctx->operator_()->getText() == ">=") {
-      return std::pair<String, Condition *>(
-          iPair.first, new RangeCondition(nColIndex, fValue, DBL_MAX));
-    } else if (ctx->operator_()->getText() == "<>") {
-      return std::pair<String, Condition *>(
-          iPair.first, new NotCondition(new RangeCondition(nColIndex, fValue,
-                                                           floatNext(fValue))));
-    } else {
-      throw CaseException();
-    }
+    throw CaseException();
+  }
+
+  if (_pDB->IsIndex(iPair.first, iPair.second)) {
+    // Index
+    std::pair<String, Condition *>(
+        iPair.first,
+        new IndexCondition(iPair.first, iPair.second, pLow, pHigh));
+  } else {
+    // no Index
+    return std::pair<String, Condition *>(
+        iPair.first, new RangeCondition(nColIndex, pLow, pHigh));
   }
   return iPair;
 }
@@ -569,6 +551,42 @@ antlrcpp::Any SystemVisitor::visitWhere_null(
 
 antlrcpp::Any SystemVisitor::visitWhere_in_list(
     MYSQLParser::Where_in_listContext *ctx) {
+  // // WHERE XXX IN (...)
+  // std::pair<String, String> iPair = ctx->column()->accept(this);
+  // FieldID nColIndex = _pDB->GetColID(iPair.first, iPair.second);
+
+  // // get [pLow, pHigh)
+  // Field *pField = ctx->expression()->value()->accept(this);
+  // Field *pLow = ctx->expression()->value()->accept(this),
+  //       *pHigh = pLow->Clone();
+  // if (ctx->operator_()->getText() == "<") {
+  //   pLow->ToMin();
+  // } else if (ctx->operator_()->getText() == ">") {
+  //   pLow->Add();
+  //   pHigh->ToMax();
+  // } else if (ctx->operator_()->getText() == "=") {
+  //   pHigh->Add();
+  // } else if (ctx->operator_()->getText() == "<=") {
+  //   pLow->ToMin();
+  //   pHigh->Add();
+  // } else if (ctx->operator_()->getText() == ">=") {
+  //   pHigh->ToMax();
+  // } else if (ctx->operator_()->getText() == "<>") {
+  // } else {
+  //   throw CaseException();
+  // }
+
+  // if (_pDB->IsIndex(iPair.first, iPair.second)) {
+  //   // Index
+  //   std::pair<String, Condition *>(
+  //       iPair.first,
+  //       new IndexCondition(iPair.first, iPair.second, pLow, pHigh));
+  // } else {
+  //   // no Index
+  //   return std::pair<String, Condition *>(
+  //       iPair.first, new RangeCondition(nColIndex, pLow, pHigh));
+  // }
+  // return iPair;
   throw UnimplementedException();
 }
 
@@ -595,9 +613,10 @@ antlrcpp::Any SystemVisitor::visitExpression(
 
 antlrcpp::Any SystemVisitor::visitSet_clause(
     MYSQLParser::Set_clauseContext *ctx) {
-  std::vector<std::pair<String, String>> iVec;
+  std::vector<std::pair<String, Field *>> iVec;
   for (Size i = 0; i < ctx->Identifier().size(); ++i) {
-    iVec.push_back({ctx->Identifier(i)->getText(), ctx->value(i)->getText()});
+    iVec.push_back(
+        {ctx->Identifier(i)->getText(), ctx->value(i)->accept(this)});
   }
   return iVec;
 }

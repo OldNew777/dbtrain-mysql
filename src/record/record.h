@@ -23,6 +23,7 @@ class Record {
   virtual Size Load(const uint8_t *src) = 0;
   virtual Size Store(uint8_t *dst) const = 0;
   virtual void Build(const std::vector<String> &iRawVec) = 0;
+  virtual void Build(const std::vector<Field *> &iValueVec) = 0;
   /**
    * @brief 记录的深拷贝
    */

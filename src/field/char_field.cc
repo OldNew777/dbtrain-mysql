@@ -1,5 +1,6 @@
 #include "char_field.h"
 
+#include "macros.h"
 #include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
@@ -39,6 +40,10 @@ FieldType CharField::GetType() const { return FieldType::CHAR_TYPE; }
 Size CharField::GetSize() const { return len; }
 
 void CharField::Add() { charData = stringNext(charData); }
+
+void CharField::ToMax() { charData = String(FIELD_SIZE_MAX, 127); }
+
+void CharField::ToMin() { charData = String(""); }
 
 String CharField::ToString() const { return charData; }
 

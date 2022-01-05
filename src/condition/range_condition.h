@@ -14,13 +14,13 @@ namespace dbtrain_mysql {
  */
 class RangeCondition : public Condition {
  public:
-  RangeCondition(FieldID nPos, const double& fMin, const double& fMax);
+  RangeCondition(FieldID nPos, Field *pLow, Field *pHigh);
   ~RangeCondition() = default;
-  bool Match(const Record& iRecord) const override;
+  bool Match(const Record &iRecord) const override;
 
  private:
   uint32_t _nPos = 0xFFFF;
-  double _fMin = DBL_MIN, _fMax = DBL_MAX;
+  Field *_pLow, *_pHigh;
 };
 
 }  // namespace dbtrain_mysql

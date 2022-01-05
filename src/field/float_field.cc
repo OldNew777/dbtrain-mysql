@@ -37,6 +37,10 @@ Field* FloatField::Clone() const { return new FloatField(floatData); }
 
 void FloatField::Add() { floatData = floatNext(floatData); }
 
+void FloatField::ToMax() { floatData = __FLT_MAX__; }
+
+void FloatField::ToMin() { floatData = -__FLT_MAX__; }
+
 uint32_t FloatField::Hash() const { return *(uint32_t*)(&floatData); }
 
 bool FloatField::operator==(const FloatField& b) const {

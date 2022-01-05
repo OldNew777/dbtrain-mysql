@@ -47,7 +47,7 @@ class Instance {
                   const std::vector<Condition *> &iIndexCond,
                   const std::vector<Transform> &iTrans);
   PageSlotID Insert(const String &sTableName,
-                    const std::vector<String> &iRawVec);
+                    const std::vector<Field *> &iValueVec);
 
   Record *GetRecord(const String &sTableName,
                     const PageSlotID &nPageSlotID) const;

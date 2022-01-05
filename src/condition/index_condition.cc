@@ -6,20 +6,11 @@
 namespace dbtrain_mysql {
 
 IndexCondition::IndexCondition(const String &sTableName, const String &sColName,
-                               double fMin, double fMax, FieldType iType)
-    : _sTableName(sTableName), _sColName(sColName) {
-  if (iType == FieldType::INT_TYPE) {
-    int dMin = (fMin < INT32_MIN) ? INT32_MIN : (ceil(fMin));
-    int dMax = (fMax > INT32_MAX) ? INT32_MAX : (ceil(fMax));
-    _pLow = new IntField(dMin);
-    _pHigh = new IntField(dMax);
-  } else if (iType == FieldType::FLOAT_TYPE) {
-    _pLow = new FloatField(fMin);
-    _pHigh = new FloatField(fMax);
-  } else {
-    assert(false);
-  }
-}
+                               Field *pLow, Field *pHigh)
+    : _sTableName(sTableName),
+      _sColName(sColName),
+      _pLow(pLow),
+      _pHigh(pHigh) {}
 
 IndexCondition::~IndexCondition() {
   delete _pLow;

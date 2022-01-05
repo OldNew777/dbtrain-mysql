@@ -117,7 +117,7 @@ class DataManager {
                   const std::vector<Condition*>& iIndexCond,
                   const std::vector<Transform>& iTrans);
   PageSlotID Insert(const String& sTableName,
-                    const std::vector<String>& iRawVec);
+                    const std::vector<Field*>& iValueVec);
 
   // ------------------------ INDEX ------------------------
   void CreateIndex(const String& sTableName, const String& sColName);

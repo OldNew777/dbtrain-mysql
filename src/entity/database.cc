@@ -195,14 +195,14 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
 }
 
 PageSlotID Database::Insert(const String& sTableName,
-                            const std::vector<String>& iRawVec) {
+                            const std::vector<Field*>& iValueVec) {
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) throw TableNotExistException(sTableName);
 
   Record* pRecord = pTable->EmptyRecord();
 
   try {
-    pRecord->Build(iRawVec);
+    pRecord->Build(iValueVec);
   } catch (const Exception& e) {
     delete pRecord;
     throw e;

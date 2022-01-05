@@ -25,6 +25,8 @@ class IntField : public Field {
   virtual Field* Clone() const override;
 
   virtual void Add() override;
+  virtual void ToMax();
+  virtual void ToMin();
 
   bool operator==(const IntField& b) const;
   bool operator<(const IntField& b) const;

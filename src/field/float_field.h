@@ -24,6 +24,8 @@ class FloatField : public Field {
 
   virtual Field* Clone() const override;
   virtual void Add() override;
+  virtual void ToMax();
+  virtual void ToMin();
 
   /**
    * @brief equal function. should consider again between Add() and precisely

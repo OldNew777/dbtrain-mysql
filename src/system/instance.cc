@@ -81,8 +81,8 @@ std::vector<PageSlotID> Instance::Search(
 }
 
 PageSlotID Instance::Insert(const String& sTableName,
-                            const std::vector<String>& iRawVec) {
-  return _pDataManager->Insert(sTableName, iRawVec);
+                            const std::vector<Field*>& iValueVec) {
+  return _pDataManager->Insert(sTableName, iValueVec);
 }
 
 uint32_t Instance::Delete(const String& sTableName, Condition* pCond,

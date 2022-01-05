@@ -2,8 +2,9 @@
 
 namespace dbtrain_mysql {
 
-bool Less(Field *pA, Field *pB, FieldType iType);
-bool Equal(Field *pA, Field *pB, FieldType iType);
-bool Greater(Field *pA, Field *pB, FieldType iType);
+bool Less(Field *pA, Field *pB);
+bool Equal(Field *pA, Field *pB);
+bool Greater(Field *pA, Field *pB);
+bool LessEqual(Field *pA, Field *pB);
 
 }  // namespace dbtrain_mysql

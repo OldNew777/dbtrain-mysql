@@ -1,6 +1,7 @@
 #include "condition/not_condition.h"
 
 namespace dbtrain_mysql {
+
 NotCondition::NotCondition(Condition* pCond) : _pCond(pCond) {}
 
 NotCondition::~NotCondition() { delete _pCond; }

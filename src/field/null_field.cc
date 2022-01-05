@@ -22,6 +22,10 @@ Field* NullField::Clone() const { return new NullField(); }
 
 void NullField::Add() {}
 
+void NullField::ToMax() {}
+
+void NullField::ToMin() {}
+
 uint32_t NullField::Hash() const { return 0; }
 
 }  // namespace dbtrain_mysql

@@ -29,6 +29,7 @@ const PageOffset INDEX_NAME_SIZE = TABLE_NAME_SIZE + 1 + COLUMN_NAME_SIZE;
 
 const Size FIELD_TYPE_BYTES = 1;
 const Size FIELD_SIZE_MAX_BYTES = 2;
+const Size FIELD_SIZE_MAX = (1 << ((FIELD_SIZE_MAX_BYTES << 3) - 1)) - 1;
 const Size COLUMN_NUM_MAX = 32;
 
 }  // namespace dbtrain_mysql

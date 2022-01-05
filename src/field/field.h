@@ -29,6 +29,14 @@ class Field {
    * @brief add a small value to get the precise "next"
    */
   virtual void Add() = 0;
+  /**
+   * @brief change to max value
+   */
+  virtual void ToMax() = 0;
+  /**
+   * @brief change to min value
+   */
+  virtual void ToMin() = 0;
 
   virtual ~Field() = default;
 };

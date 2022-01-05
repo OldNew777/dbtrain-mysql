@@ -33,6 +33,7 @@ class FixedRecord : public Record {
    * @param iRawVec Insert语句中的String数组
    */
   virtual void Build(const std::vector<String>& iRawVec) override;
+  virtual void Build(const std::vector<Field*>& iValueVec) override;
 
   virtual Record* Clone() const override;
 
