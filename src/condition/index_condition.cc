@@ -7,10 +7,10 @@ namespace dbtrain_mysql {
 
 IndexCondition::IndexCondition(const String &sTableName, const String &sColName,
                                Field *pLow, Field *pHigh)
-    : _sTableName(sTableName),
-      _sColName(sColName),
-      _pLow(pLow),
-      _pHigh(pHigh) {}
+    : _sTableName(sTableName), _sColName(sColName), _pLow(pLow), _pHigh(pHigh) {
+  assert(pLow != nullptr);
+  assert(pHigh != nullptr);
+}
 
 IndexCondition::~IndexCondition() {
   delete _pLow;

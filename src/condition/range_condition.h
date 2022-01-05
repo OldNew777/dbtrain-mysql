@@ -1,10 +1,9 @@
 #ifndef DBTRAIN_MYSQL_RANGE_CONDITION_H
 #define DBTRAIN_MYSQL_RANGE_CONDITION_H
 
-#include <float.h>
-
 #include "condition/condition.h"
 #include "defines.h"
+#include "field/fields.h"
 
 namespace dbtrain_mysql {
 
@@ -14,12 +13,15 @@ namespace dbtrain_mysql {
  */
 class RangeCondition : public Condition {
  public:
+  RangeCondition(FieldID nPos);
   RangeCondition(FieldID nPos, Field *pLow, Field *pHigh);
-  ~RangeCondition() = default;
-  bool Match(const Record &iRecord) const override;
+  ~RangeCondition();
+  virtual bool Match(const Record &iRecord) const override;
+
+ protected:
+  uint32_t _nPos = 0xFFFF;
 
  private:
-  uint32_t _nPos = 0xFFFF;
   Field *_pLow, *_pHigh;
 };
 

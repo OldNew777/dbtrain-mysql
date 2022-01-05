@@ -11,13 +11,14 @@ DROP DATABASE THU1;
 
 
 
+CREATE DATABASE THU1;
+USE THU1;
+CREATE TABLE student(name VARCHAR(1800), id INT);
+
 CREATE DATABASE THU;
 USE THU;
 CREATE TABLE student(name VARCHAR(1800), id INT);
 
-CREATE DATABASE THU1;
-USE THU1;
-CREATE TABLE student(name VARCHAR(1800), id INT);
 
 INSERT INTO student VALUES('Jack',20);
 INSERT INTO student VALUES('Jack',20);
@@ -67,6 +68,8 @@ SELECT * FROM student WHERE student.name = 'Jack';
 ALTER TABLE student ADD INDEX(id);
 SELECT * FROM student WHERE student.id > 30;
 SELECT * FROM student WHERE student.name = 'Jack';
+
+SELECT * FROM student WHERE student.name IN ('Jack', 'Mike');
 
 
 
@@ -147,3 +150,5 @@ CREATE TABLE student67(name VARCHAR(2000), id INT);
 CREATE TABLE student68(name VARCHAR(2000), id INT);
 CREATE TABLE student69(name VARCHAR(2000), id INT);
 CREATE TABLE student70(name VARCHAR(2000), id INT);
+
+SHOW TABLES;

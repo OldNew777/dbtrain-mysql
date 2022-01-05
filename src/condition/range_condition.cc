@@ -1,13 +1,22 @@
 #include "condition/range_condition.h"
 
-#include <cmath>
-
-#include "exception/exceptions.h"
-#include "field/fields.h"
+#include "assert.h"
 
 namespace dbtrain_mysql {
+
 RangeCondition::RangeCondition(FieldID nPos, Field* pLow, Field* pHigh)
-    : _nPos(nPos), _pLow(pLow), _pHigh(pHigh) {}
+    : _nPos(nPos), _pLow(pLow), _pHigh(pHigh) {
+  assert(pLow != nullptr);
+  assert(pHigh != nullptr);
+}
+
+RangeCondition::RangeCondition(FieldID nPos)
+    : _nPos(nPos), _pLow(nullptr), _pHigh(nullptr) {}
+
+RangeCondition::~RangeCondition() {
+  if (_pLow) delete _pLow;
+  if (_pHigh) delete _pHigh;
+}
 
 bool RangeCondition::Match(const Record& iRecord) const {
   Field* pField = iRecord.GetField(_nPos);

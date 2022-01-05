@@ -540,7 +540,6 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
     return std::pair<String, Condition *>(
         iPair.first, new RangeCondition(nColIndex, pLow, pHigh));
   }
-  return iPair;
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_operator_select(
@@ -555,42 +554,12 @@ antlrcpp::Any SystemVisitor::visitWhere_null(
 
 antlrcpp::Any SystemVisitor::visitWhere_in_list(
     MYSQLParser::Where_in_listContext *ctx) {
-  // // WHERE XXX IN (...)
-  // std::pair<String, String> iPair = ctx->column()->accept(this);
-  // FieldID nColIndex = _pDB->GetColID(iPair.first, iPair.second);
+  // WHERE XXX IN (...)
+  std::pair<String, String> iPair = ctx->column()->accept(this);
+  FieldID nColIndex = _pDB->GetColID(iPair.first, iPair.second);
 
-  // // get [pLow, pHigh)
-  // Field *pField = ctx->expression()->value()->accept(this);
-  // Field *pLow = ctx->expression()->value()->accept(this),
-  //       *pHigh = pLow->Clone();
-  // if (ctx->operator_()->getText() == "<") {
-  //   pLow->ToMin();
-  // } else if (ctx->operator_()->getText() == ">") {
-  //   pLow->Add();
-  //   pHigh->ToMax();
-  // } else if (ctx->operator_()->getText() == "=") {
-  //   pHigh->Add();
-  // } else if (ctx->operator_()->getText() == "<=") {
-  //   pLow->ToMin();
-  //   pHigh->Add();
-  // } else if (ctx->operator_()->getText() == ">=") {
-  //   pHigh->ToMax();
-  // } else if (ctx->operator_()->getText() == "<>") {
-  // } else {
-  //   throw CaseException();
-  // }
-
-  // if (_pDB->IsIndex(iPair.first, iPair.second)) {
-  //   // Index
-  //   std::pair<String, Condition *>(
-  //       iPair.first,
-  //       new IndexCondition(iPair.first, iPair.second, pLow, pHigh));
-  // } else {
-  //   // no Index
-  //   return std::pair<String, Condition *>(
-  //       iPair.first, new RangeCondition(nColIndex, pLow, pHigh));
-  // }
-  // return iPair;
+  return std::pair<String, Condition *>(
+      iPair.first, new InCondition(nColIndex, ctx->value_list()->accept(this)));
   throw UnimplementedException();
 }
 
