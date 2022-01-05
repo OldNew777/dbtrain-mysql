@@ -130,7 +130,6 @@ void ManagerPage::Load() {
       _iNullVec.push_back(true);
     }
   }
-
   Size sColNameLen = 0;
   GetHeader((uint8_t*)&sColNameLen, 4, COLUMN_NAME_LEN_OFFSET);
   char* pTemp = new char[sColNameLen + 1];

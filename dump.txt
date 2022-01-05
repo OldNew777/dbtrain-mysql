@@ -1,8 +1,6 @@
 'Jack',20
 'Mike',NULL
-NULL,872
 'a',1
 'b',2
 'c',3
 'd',NULL
-NULL,5
