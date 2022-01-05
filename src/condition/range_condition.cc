@@ -13,6 +13,12 @@ RangeCondition::RangeCondition(FieldID nPos, Field* pLow, Field* pHigh)
 RangeCondition::RangeCondition(FieldID nPos)
     : _nPos(nPos), _pLow(nullptr), _pHigh(nullptr) {}
 
+RangeCondition::RangeCondition(const RangeCondition& t) {
+  _nPos = t._nPos;
+  _pLow = t._pLow->Clone();
+  _pHigh = t._pHigh->Clone();
+}
+
 RangeCondition::~RangeCondition() {
   if (_pLow) delete _pLow;
   if (_pHigh) delete _pHigh;

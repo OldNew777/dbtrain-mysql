@@ -15,6 +15,7 @@ class RangeCondition : public Condition {
  public:
   RangeCondition(FieldID nPos);
   RangeCondition(FieldID nPos, Field *pLow, Field *pHigh);
+  RangeCondition(const RangeCondition &t);
   ~RangeCondition();
   virtual bool Match(const Record &iRecord) const override;
 

@@ -9,6 +9,10 @@ InCondition::InCondition(FieldID nPos, const std::vector<Field*>& iFieldVec)
   for (auto pField : iFieldVec) assert(pField != nullptr);
 }
 
+InCondition::InCondition(const InCondition& t) : RangeCondition(t._nPos) {
+  for (auto pField : t._iFieldVec) _iFieldVec.push_back(pField->Clone());
+}
+
 InCondition::~InCondition() {
   for (auto pField : _iFieldVec)
     if (pField) delete pField;

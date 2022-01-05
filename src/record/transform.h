@@ -8,16 +8,16 @@ namespace dbtrain_mysql {
 
 class Transform {
  public:
-  Transform(FieldID nFieldID, FieldType iType, const String& sRaw);
-  ~Transform() = default;
+  Transform(FieldID nFieldID, FieldType iType, Field* pField);
+  Transform(const Transform& t);
+  ~Transform();
 
   Field* GetField() const;
   FieldID GetColPos() const;
 
  private:
   FieldID _nFieldID;
-  FieldType _iType;
-  String _sRaw;
+  Field* _pField;
 };
 
 }  // namespace dbtrain_mysql

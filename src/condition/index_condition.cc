@@ -12,6 +12,13 @@ IndexCondition::IndexCondition(const String &sTableName, const String &sColName,
   assert(pHigh != nullptr);
 }
 
+IndexCondition::IndexCondition(const IndexCondition &t) {
+  _sTableName = t._sTableName;
+  _sColName = t._sColName;
+  _pLow = t._pLow->Clone();
+  _pHigh = t._pHigh->Clone();
+}
+
 IndexCondition::~IndexCondition() {
   delete _pLow;
   delete _pHigh;

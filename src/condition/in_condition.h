@@ -16,6 +16,7 @@ namespace dbtrain_mysql {
 class InCondition : public RangeCondition {
  public:
   InCondition(FieldID nPos, const std::vector<Field *> &iFieldVec);
+  InCondition(const InCondition &t);
   ~InCondition();
   virtual bool Match(const Record &iRecord) const override;
 

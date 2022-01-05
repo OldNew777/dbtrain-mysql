@@ -240,16 +240,16 @@ antlrcpp::Any SystemVisitor::visitDelete_from_table(
 antlrcpp::Any SystemVisitor::visitUpdate_table(
     MYSQLParser::Update_tableContext *ctx) {
   String sTableName = ctx->Identifier()->getText();
-  std::vector<std::pair<String, String>> iSetVec =
+  std::vector<std::pair<String, Field *>> iSetVec =
       ctx->set_clause()->accept(this);
   std::map<String, std::vector<Condition *>> iMap =
       ctx->where_and_clause()->accept(this);
   assert(iMap.size() == 1);
-  std::vector<Transform> iTrans{};
+  std::vector<Transform> iTrans;
   for (Size i = 0; i < iSetVec.size(); ++i) {
     FieldID nFieldID = _pDB->GetColID(sTableName, iSetVec[i].first);
     FieldType iType = _pDB->GetColType(sTableName, iSetVec[i].first);
-    iTrans.push_back({nFieldID, iType, iSetVec[i].second});
+    iTrans.emplace_back(Transform(nFieldID, iType, iSetVec[i].second));
   }
   std::vector<Condition *> iIndexCond{};
   std::vector<Condition *> iOtherCond{};
@@ -261,6 +261,7 @@ antlrcpp::Any SystemVisitor::visitUpdate_table(
   Condition *pCond = nullptr;
   if (iOtherCond.size() > 0) pCond = new AndCondition(iOtherCond);
   Size nSize = _pDB->Update(sTableName, pCond, iIndexCond, iTrans);
+
   // Clear Condition
   if (pCond) delete pCond;
   for (const auto &it : iIndexCond)
@@ -475,11 +476,13 @@ antlrcpp::Any SystemVisitor::visitValue(MYSQLParser::ValueContext *ctx) {
   Field *pField = nullptr;
   if (ctx->Integer())
     pField = new IntField(std::stoi(ctx->Integer()->getText()));
-  if (ctx->Float()) pField = new FloatField(std::stod(ctx->Float()->getText()));
-  if (ctx->String())
+  else if (ctx->Float())
+    pField = new FloatField(std::stod(ctx->Float()->getText()));
+  else if (ctx->String())
     pField = new CharField(ctx->String()->getText().substr(
         1, ctx->String()->getText().size() - 2));
-  if (ctx->Null()) pField = new NullField();
+  else if (ctx->Null())
+    pField = new NullField();
   return pField;
 }
 

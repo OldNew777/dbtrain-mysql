@@ -10,6 +10,7 @@ class IndexCondition : public Condition {
  public:
   IndexCondition(const String &sTableName, const String &sColName, Field *pLow,
                  Field *pHigh);
+  IndexCondition(const IndexCondition &t);
   ~IndexCondition();
 
   bool Match(const Record &iRecord) const override;
