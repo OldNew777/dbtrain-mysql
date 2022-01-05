@@ -90,6 +90,15 @@ void FixedRecord::Build(const std::vector<String>& iRawVec) {
   }
 }
 
+void FixedRecord::Build(const std::vector<Field*>& iValueVec) {
+  assert(iValueVec.size() == _iTypeVec.size());
+  Clear();
+  for (FieldID i = 0; i < _iFields.size(); ++i) {
+    FieldType iType = _iTypeVec[i];
+    SetField(i, iValueVec[i]);
+  }
+}
+
 Record* FixedRecord::Clone() const {
   Record* pRecord = new FixedRecord(GetSize(), _iTypeVec, _iSizeVec);
   for (Size i = 0; i < GetSize(); ++i)

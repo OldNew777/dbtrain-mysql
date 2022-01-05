@@ -1,29 +1,28 @@
 #include "record/transform.h"
 
+#include "assert.h"
 #include "exception/exceptions.h"
 #include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
 
-Transform::Transform(FieldID nFieldID, FieldType iType, const String& sRaw)
-    : _nFieldID(nFieldID), _iType(iType), _sRaw(sRaw) {}
+Transform::Transform(FieldID nFieldID, FieldType iType, Field* pField)
+    : _nFieldID(nFieldID), _pField(pField) {
+  assert(iType == pField->GetType() ||
+         pField->GetType() == FieldType::NULL_TYPE);
+}
+
+Transform::Transform(const Transform& t) {
+  _nFieldID = t._nFieldID;
+  _pField = t._pField->Clone();
+}
+
+Transform::~Transform() {
+  if (_pField) delete _pField;
+}
 
 FieldID Transform::GetColPos() const { return _nFieldID; }
 
-Field* Transform::GetField() const {
-  Field* pField = nullptr;
-  if (toUpper(_sRaw) == "NULL") {
-    pField = new NullField();
-  } else if (_iType == FieldType::INT_TYPE) {
-    pField = new IntField(std::stoi(_sRaw));
-  } else if (_iType == FieldType::FLOAT_TYPE) {
-    pField = new FloatField(std::stod(_sRaw));
-  } else if (_iType == FieldType::CHAR_TYPE) {
-    pField = new CharField(_sRaw.substr(1, _sRaw.size() - 2));
-  } else {
-    throw Exception();
-  }
-  return pField;
-}
+Field* Transform::GetField() const { return _pField->Clone(); }
 
 }  // namespace dbtrain_mysql

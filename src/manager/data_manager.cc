@@ -321,11 +321,11 @@ std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
 
 #ifdef JOIN_DEBUG
             std::cout << "Field :  " << fieldA->ToString()
-                      << (Equal(fieldA, fieldB, fieldType) ? " = " : " != ")
+                      << (Equal(fieldA, fieldB) ? " = " : " != ")
                       << fieldB->ToString() << "\n";
 #endif
 
-            if (Equal(fieldA, fieldB, fieldType))
+            if (Equal(fieldA, fieldB))
               ++recordVecIter;
             else {
               delete *recordVecIter;
@@ -392,7 +392,7 @@ std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
             Field* fieldA = recordA->GetField(fieldID_A);
             // 对每个recordB，遍历相等的recordA，并join起来
             // 对应duplicate实现的功能
-            if (Equal(fieldA, fieldB, fieldType)) {
+            if (Equal(fieldA, fieldB)) {
               Record* recordNew = recordA->Clone();
               if (joinFlag) recordNew->Add(recordB);
               recordVec.push_back(recordNew);
@@ -460,14 +460,14 @@ uint32_t DataManager::Update(const String& sTableName, Condition* pCond,
 }
 
 PageSlotID DataManager::Insert(const String& sTableName,
-                               const std::vector<String>& iRawVec) {
+                               const std::vector<Field*>& iValueVec) {
   CheckDatabaseUsed();
-  try{
-    return _pDatabase->Insert(sTableName, iRawVec);
-  }
-  catch (Exception e){
-    throw e;
-  }
+  return _pDatabase->Insert(sTableName, iValueVec);
+}
+
+PageSlotID DataManager::Insert(const String& sTableName,
+                               const std::vector<String>& iRawVec) {
+  return _pDatabase->Insert(sTableName, iRawVec);
 }
 
 void DataManager::CreateIndex(const String& sTableName,

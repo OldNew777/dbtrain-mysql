@@ -79,6 +79,14 @@ void Table::UpdateRecord(PageID nPageID, SlotID nSlotID,
   Record* record = GetRecord(nPageID, nSlotID);
   // Trasform::GetColPos表示更新位置，GetField表示更新后的字段
   for (const auto& iter : iTrans) {
+#ifdef UPDATE_DEBUG
+    printf("Update\n");
+    Field* pField = iter.GetField();
+    printf("GetField\n");
+    printf("%p\n", pField);
+    std::cout << "Update to " << pField->ToString() << std::endl;
+    delete pField;
+#endif
     record->SetField(iter.GetColPos(), iter.GetField());
   }
 

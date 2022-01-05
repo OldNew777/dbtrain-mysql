@@ -130,7 +130,7 @@ bool NodePage::Insert(Field *pKey, const PageSlotID &iPair) {
     // child_index一定需要检查
     // 这是大部分情况仅有的需要检查的部分，因此占耗时很大部分
     // 不放在check_index中统一处理，可以节约一次构造页面的时间
-    if (!Equal(_iKeyVec[child_index], childNodePage->LastKey(), _iKeyType)) {
+    if (!Equal(_iKeyVec[child_index], childNodePage->LastKey())) {
       delete _iKeyVec[child_index];
       _iKeyVec[child_index] = childNodePage->LastKey()->Clone();
     }
@@ -141,7 +141,7 @@ bool NodePage::Insert(Field *pKey, const PageSlotID &iPair) {
       Size index = check_index[i];
       if (index < size()) {
         NodePage node(_iChildVec[index].first);
-        if (!Equal(_iKeyVec[index], node.LastKey(), _iKeyType)) {
+        if (!Equal(_iKeyVec[index], node.LastKey())) {
           delete _iKeyVec[index];
           _iKeyVec[index] = node.LastKey()->Clone();
         }
@@ -167,8 +167,7 @@ Size NodePage::Delete(Field *pKey) {
   // 1.确定删除位置后删除数据即可
   if (_bLeaf) {
     Size left_index = LowerBound(pKey), right_index = UpperBound(pKey);
-    if (left_index == right_index &&
-        !Equal(pKey, _iKeyVec[left_index], _iKeyType))
+    if (left_index == right_index && !Equal(pKey, _iKeyVec[left_index]))
       return 0;
     for (Size i = left_index; i <= right_index; ++i) {
       delete _iKeyVec[i];
@@ -198,10 +197,9 @@ Size NodePage::Delete(Field *pKey) {
     ans += leaf_ans;
 
     // 按链表向右寻找符合条件的，直到某个页面不全符合条件
-    while (
-        leaf_ans > 0 &&
-        Equal(pKey, pPage->_iKeyVec[pPage->_iKeyVec.size() - 1], _iKeyType) &&
-        pPage->GetNextID() != NULL_PAGE) {
+    while (leaf_ans > 0 &&
+           Equal(pKey, pPage->_iKeyVec[pPage->_iKeyVec.size() - 1]) &&
+           pPage->GetNextID() != NULL_PAGE) {
       PageID pageID_next = pPage->GetNextID();
       delete pPage;
       pPage = new NodePage(pageID_next);
@@ -227,7 +225,7 @@ bool NodePage::Delete(Field *pKey, const PageSlotID &iPair) {
   // 1.确定删除位置后删除数据即可
   if (_bLeaf) {
     for (Size i = LowerBound(pKey); i < size(); ++i) {
-      if (!Equal(pKey, _iKeyVec[i], _iKeyType)) return ans;
+      if (!Equal(pKey, _iKeyVec[i])) return ans;
       if (iPair == _iChildVec[i]) {
         delete _iKeyVec[i];
         _iChildVec.erase(_iChildVec.begin() + i);
@@ -313,8 +311,7 @@ bool NodePage::Delete(Field *pKey, const PageSlotID &iPair) {
     // child_index一定需要检查
     // 这是大部分情况仅有的需要检查的部分，因此占耗时很大部分
     // 不放在check_index中统一处理，可以节约一次构造页面的时间
-    if (!deleted &&
-        !Equal(_iKeyVec[child_index], childNodePage->LastKey(), _iKeyType)) {
+    if (!deleted && !Equal(_iKeyVec[child_index], childNodePage->LastKey())) {
       delete _iKeyVec[child_index];
       _iKeyVec[child_index] = childNodePage->LastKey()->Clone();
     }
@@ -325,7 +322,7 @@ bool NodePage::Delete(Field *pKey, const PageSlotID &iPair) {
       Size index = check_index[i];
       if (index < size()) {
         NodePage node(_iChildVec[index].first);
-        if (!Equal(_iKeyVec[index], node.LastKey(), _iKeyType)) {
+        if (!Equal(_iKeyVec[index], node.LastKey())) {
           delete _iKeyVec[index];
           _iKeyVec[index] = node.LastKey()->Clone();
         }
@@ -348,7 +345,7 @@ bool NodePage::Update(Field *pKey, const PageSlotID &iOld,
   // 1.确定更新位置后更新数据即可
   if (_bLeaf) {
     for (Size i = LowerBound(pKey); i < size(); ++i) {
-      if (!Equal(pKey, _iKeyVec[i], _iKeyType)) return ans;
+      if (!Equal(pKey, _iKeyVec[i])) return ans;
       if (iOld == _iChildVec[i]) {
         _iChildVec[i] = iNew;
         ans = true;
@@ -367,7 +364,7 @@ bool NodePage::Update(Field *pKey, const PageSlotID &iOld,
     _bModified = _bModified || ans;
     if (!ans) return false;
     // 若更新了子节点的LastKey，需要刷新_iKeyVec
-    if (!Equal(_iKeyVec[child_index], childNodePage.LastKey(), _iKeyType)) {
+    if (!Equal(_iKeyVec[child_index], childNodePage.LastKey())) {
       delete _iKeyVec[child_index];
       _iKeyVec[child_index] = childNodePage.LastKey()->Clone();
     }
@@ -442,9 +439,8 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
 #endif
 
     Size left_index = LowerBound(pLow), right_index = LessBound(pHigh);
-    if (left_index == right_index &&
-        (Less(_iKeyVec[left_index], pLow, _iKeyType) ||
-         !Less(_iKeyVec[right_index], pHigh, _iKeyType)))
+    if (left_index == right_index && (Less(_iKeyVec[left_index], pLow) ||
+                                      !Less(_iKeyVec[right_index], pHigh)))
       return ans;
     ans.insert(ans.end(), _iChildVec.begin() + left_index,
                _iChildVec.begin() + right_index + 1);
@@ -680,7 +676,7 @@ Size NodePage::LowerBound(Field *pField) {
   Size nBegin = 0, nEnd = size();
   while (nBegin < nEnd) {
     Size nMid = (nBegin + nEnd) / 2;
-    if (!Less(_iKeyVec[nMid], pField, _iKeyType)) {
+    if (!Less(_iKeyVec[nMid], pField)) {
       nEnd = nMid;
     } else {
       nBegin = nMid + 1;
@@ -695,7 +691,7 @@ Size NodePage::MoreBound(Field *pField) {
   Size nBegin = 0, nEnd = size();
   while (nBegin < nEnd) {
     Size nMid = (nBegin + nEnd) / 2;
-    if (Greater(_iKeyVec[nMid], pField, _iKeyType)) {
+    if (Greater(_iKeyVec[nMid], pField)) {
       nEnd = nMid;
     } else {
       nBegin = nMid + 1;
@@ -709,12 +705,12 @@ Size NodePage::LessBound(Field *pField) {
   while (nBegin < nEnd) {
     Size nMid = (nBegin + nEnd) / 2;
     if (unlikely(nBegin == nEnd - 1)) {
-      if (nEnd < size() && Less(_iKeyVec[nEnd], pField, _iKeyType))
+      if (nEnd < size() && Less(_iKeyVec[nEnd], pField))
         return nEnd;
       else
         return nBegin;
     }
-    if (Less(_iKeyVec[nMid], pField, _iKeyType)) {
+    if (Less(_iKeyVec[nMid], pField)) {
       nBegin = nMid;
     } else {
       nEnd = nMid - 1;
@@ -728,12 +724,12 @@ Size NodePage::UpperBound(Field *pField) {
   while (nBegin < nEnd) {
     Size nMid = (nBegin + nEnd) / 2;
     if (unlikely(nBegin == nEnd - 1)) {
-      if (nEnd < size() && !Greater(_iKeyVec[nEnd], pField, _iKeyType))
+      if (nEnd < size() && !Greater(_iKeyVec[nEnd], pField))
         return nEnd;
       else
         return nBegin;
     }
-    if (!Greater(_iKeyVec[nMid], pField, _iKeyType)) {
+    if (!Greater(_iKeyVec[nMid], pField)) {
       nBegin = nMid;
     } else {
       nEnd = nMid - 1;

@@ -81,11 +81,22 @@ std::vector<PageSlotID> Instance::Search(
 }
 
 PageSlotID Instance::Insert(const String& sTableName,
-                            const std::vector<String>& iRawVec) {
-  try{return _pDataManager->Insert(sTableName, iRawVec);}
-  catch (Exception e){
-    throw e;
+                            const std::vector<Field*>& iValueVec) {
+#ifdef RAW2FIELD_BUILD_DEBUG
+  printf("\n------------ Insert ------------\n");
+  printf("(");
+  for (auto pField : iValueVec) {
+    std::cout << pField->ToString() << ", ";
   }
+  printf(")\n");
+  printf("------------- end --------------\n");
+#endif
+  return _pDataManager->Insert(sTableName, iValueVec);
+}
+
+PageSlotID Instance::Insert(const String& sTableName,
+                            const std::vector<String>& iRawVec) {
+  return _pDataManager->Insert(sTableName, iRawVec);
 }
 
 uint32_t Instance::Delete(const String& sTableName, Condition* pCond,

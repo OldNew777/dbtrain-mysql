@@ -8,8 +8,9 @@ namespace dbtrain_mysql {
 
 class IndexCondition : public Condition {
  public:
-  IndexCondition(const String &sTableName, const String &sColName, double fMin,
-                 double fMax, FieldType iType);
+  IndexCondition(const String &sTableName, const String &sColName, Field *pLow,
+                 Field *pHigh);
+  IndexCondition(const IndexCondition &t);
   ~IndexCondition();
 
   bool Match(const Record &iRecord) const override;

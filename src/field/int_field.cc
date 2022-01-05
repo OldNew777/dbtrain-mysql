@@ -31,6 +31,10 @@ Field* IntField::Clone() const { return new IntField(dataInt); }
 
 void IntField::Add() { dataInt = intNext(dataInt); }
 
+void IntField::ToMax() { dataInt = INT32_MAX; }
+
+void IntField::ToMin() { dataInt = INT32_MIN; }
+
 uint32_t IntField::Hash() const { return dataInt; }
 
 bool IntField::operator==(const IntField& b) const {
