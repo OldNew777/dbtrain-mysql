@@ -172,11 +172,17 @@ std::vector<Record*> Table::GetTableInfos() const {
   std::vector<Record*> iVec{};
   for (const auto& sColName : GetColumnNames()) {
     FixedRecord* pDesc = new FixedRecord(
-        3, {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::INT_TYPE},
-        {COLUMN_NAME_SIZE, 10, 4});
+        5, {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::INT_TYPE,
+        FieldType::CHAR_TYPE, FieldType::CHAR_TYPE},
+        {COLUMN_NAME_SIZE, 10, 4, 3, 3});
     pDesc->SetField(0, new CharField(sColName));
     pDesc->SetField(1, new CharField(toString(GetType(sColName))));
     pDesc->SetField(2, new IntField(GetSize(sColName)));
+    pDesc->SetField(3, new CharField((_pTablePage->GetIsNull(sColName) 
+      && !_pTablePage->GetIsPrimary(sColName))
+      ? "YES" : "NO"));
+    pDesc->SetField(4, new CharField((_pTablePage->GetIsPrimary(sColName)) 
+      ? "YES" : "NO"));
     iVec.push_back(pDesc);
   }
   return iVec;

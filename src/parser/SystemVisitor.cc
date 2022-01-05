@@ -225,7 +225,7 @@ antlrcpp::Any SystemVisitor::visitDrop_table(
 
 antlrcpp::Any SystemVisitor::visitDescribe_table(
     MYSQLParser::Describe_tableContext *ctx) {
-  Result *res = new MemResult({"Column Name", "Column Type", "Column Size"});
+  Result *res = new MemResult({"Column Name", "Column Type", "Column Size", "Can Be Null?", "Is Primary?"});
   String sTableName = ctx->Identifier()->getText();
   try {
     for (const auto &pRecord : _pDB->GetTableInfos(sTableName))

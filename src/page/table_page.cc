@@ -47,7 +47,21 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
 }
 
 TablePage::TablePage(PageID nPageID) : ManagerPage(nPageID) {
-  throw UnimplementedException();
+  for(int i = 0; i < _iTypeVec.size(); i ++){
+    uint8_t iNull = 0;
+    GetData(&iNull, COLUMN_NOT_NULL_BYTES, 
+      COLUMN_NOT_NULL_BYTES * i + COLUMN_STATUS_OFFSET);
+    _iStatusVec.push_back(iNull);
+  }
+  // printf("TablePage()\n");
+}
+TablePage::~TablePage(){
+  for(int i = 0; i < _iStatusVec.size(); i ++){
+    uint8_t iNull = _iStatusVec[i];
+    SetData(&iNull, COLUMN_NOT_NULL_BYTES, 
+      COLUMN_NOT_NULL_BYTES * i + COLUMN_STATUS_OFFSET);
+  }
+  // printf("~TablePage\n");
 }
 
 FieldID TablePage::GetColPos(const String& sCol) {
