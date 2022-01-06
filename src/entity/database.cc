@@ -230,16 +230,17 @@ PageSlotID Database::Insert(const String& sTableName,
     throw e;
   }
 
-  std::vector<std::string> colNames = pTable->GetColumnNames();
-  if (colNames.size() != iRawVec.size()) {
+  std::vector<std::string> iColNameVec = pTable->GetColumnNames();
+  if (iColNameVec.size() != iRawVec.size()) {
     auto e = FieldListException("Column num does not correspond");
     std::cout << e.what() << "\n";
     throw e;
   }
   // check null
-  for (int i = 0; i < colNames.size(); i++) {
-    if (iRawVec[i] == "NULL" && (!pTable->GetCanBeNull(colNames[i]) ||
-                                 pTable->GetIsPrimary(colNames[i]))) {
+  for (int i = 0; i < iColNameVec.size(); i++) {
+    const String& sColName = iColNameVec[i];
+    if (iRawVec[i] == "NULL" &&
+        (!pTable->GetCanBeNull(sColName) || pTable->GetIsPrimary(sColName))) {
       auto e = FieldListException("Column should not be NULL");
       std::cout << e.what() << "\n";
       throw e;
@@ -247,17 +248,25 @@ PageSlotID Database::Insert(const String& sTableName,
   }
   // check primary key
   bool primaryKeyConflict = false;
-  for (int i = 0; i < colNames.size(); i++) {
-    if (pTable->GetIsPrimary(colNames[i])) {
+  for (int i = 0; i < iColNameVec.size(); i++) {
+    const String& sColName = iColNameVec[i];
+    if (pTable->GetIsPrimary(sColName)) {
       // check whether primary key conflicts with other records
       primaryKeyConflict = true;
-      FieldID colPos = pTable->GetColPos(colNames[i]);
-      FieldType colType = pTable->GetType(colNames[i]);
-      Field* low = BuildField(iRawVec[i], colType);
-      Field* high = low->Clone();
-      high->Add();
-      Condition* pCond = new RangeCondition(colPos, low, high);
-      std::vector<PageSlotID> pageSlotIDVec = pTable->SearchRecord(pCond);
+      FieldID colPos = pTable->GetColPos(sColName);
+      FieldType colType = pTable->GetType(sColName);
+      Field* pLow = BuildField(iRawVec[i], colType);
+      Field* pHigh = pLow->Clone();
+      pHigh->Add();
+      Condition* pCond = nullptr;
+      std::vector<Condition*> iIndexCond{};
+      if (IsIndex(sTableName, sColName))
+        iIndexCond.push_back(
+            new IndexCondition(sTableName, sColName, pLow, pHigh));
+      else
+        pCond = new RangeCondition(colPos, pLow, pHigh);
+      std::vector<PageSlotID> pageSlotIDVec =
+          Search(sTableName, pCond, iIndexCond);
       if (pageSlotIDVec.size() == 0) {
         primaryKeyConflict = false;
         break;
@@ -303,17 +312,17 @@ PageSlotID Database::Insert(const String& sTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
-  std::vector<std::string> colNames = pTable->GetColumnNames();
-  if (colNames.size() != iValueVec.size()) {
+  std::vector<std::string> iColNameVec = pTable->GetColumnNames();
+  if (iColNameVec.size() != iValueVec.size()) {
     auto e = FieldListException("Column num does not correspond");
     std::cout << e.what() << "\n";
     throw e;
   }
 
-  for (int i = 0; i < colNames.size(); i++) {
+  for (int i = 0; i < iColNameVec.size(); i++) {
+    const String& sColName = iColNameVec[i];
     if (iValueVec[i]->GetType() == FieldType::NULL_TYPE &&
-        (!pTable->GetCanBeNull(colNames[i]) ||
-         pTable->GetIsPrimary(colNames[i]))) {
+        (!pTable->GetCanBeNull(sColName) || pTable->GetIsPrimary(sColName))) {
       auto e = FieldListException("Column should not be NULL");
       std::cout << e.what() << "\n";
       throw e;
@@ -321,16 +330,24 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
   bool primaryKeyConflict = false;
-  for (int i = 0; i < colNames.size(); i++) {
-    if (pTable->GetIsPrimary(colNames[i])) {
+  for (int i = 0; i < iColNameVec.size(); i++) {
+    const String& sColName = iColNameVec[i];
+    if (pTable->GetIsPrimary(sColName)) {
       primaryKeyConflict = true;
-      FieldID colPos = pTable->GetColPos(colNames[i]);
-      FieldType colType = pTable->GetType(colNames[i]);
-      Field* low = iValueVec[i]->Clone();
-      Field* high = low->Clone();
-      high->Add();
-      Condition* pCond = new RangeCondition(colPos, low, high);
-      std::vector<PageSlotID> pageSlotIDVec = pTable->SearchRecord(pCond);
+      FieldID colPos = pTable->GetColPos(sColName);
+      FieldType colType = pTable->GetType(sColName);
+      Field* pLow = iValueVec[i]->Clone();
+      Field* pHigh = pLow->Clone();
+      pHigh->Add();
+      Condition* pCond = nullptr;
+      std::vector<Condition*> iIndexCond{};
+      if (IsIndex(sTableName, sColName))
+        iIndexCond.push_back(
+            new IndexCondition(sTableName, sColName, pLow, pHigh));
+      else
+        pCond = new RangeCondition(colPos, pLow, pHigh);
+      std::vector<PageSlotID> pageSlotIDVec =
+          Search(sTableName, pCond, iIndexCond);
       if (pageSlotIDVec.size() == 0) {
         primaryKeyConflict = false;
         break;
