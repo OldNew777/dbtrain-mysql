@@ -43,8 +43,9 @@ antlrcpp::Any SystemVisitor::visitStatement(
   else if (ctx->alter_statement())
     res = ctx->alter_statement()->accept(this);
   else {
-    printf("%s\n", ctx->getText().c_str());
-    throw CaseException();
+    auto e = CaseException(ctx->getText());
+    std::cout << e.what() << "\n";
+    throw e;
   }
   return res;
 }
@@ -139,7 +140,9 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
   std::fstream fin(path, std::ios::in);
   printf("path:%s\n", path.data());
   if (!fin) {
-    throw FileNotExistException();
+    auto e = FileNotExistException();
+    std::cout << e.what() << "\n";
+    throw e;
   }
   std::string str = "";
   while (std::getline(fin, str)) {
@@ -188,7 +191,11 @@ antlrcpp::Any SystemVisitor::visitDump_data(
   for (const auto &it : pageslotvec)
     pResult->PushBack(_pDB->GetRecord(tablename, it));
   std::ofstream fout(path);
-  if (!fout) throw FileNotExistException();
+  if (!fout) {
+    auto e = FileNotExistException();
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   fout.write(pResult->Dump().data(), pResult->Dump().size());
   fout.close();
   return pResult;
@@ -506,13 +513,22 @@ antlrcpp::Any SystemVisitor::visitField_list(
   for (const auto &it : ctx->field()) {
     std::vector<String> tmp = it->accept(this);
     if (tmp[0][0] != '@') {
-      // if(sColMap.find(tmp[0]) != sColMap.end()) throw Exception();
+      // if(sColMap.find(tmp[0]) != sColMap.end()) {
+      //   auto e = Exception();
+      //   std::cout << e.what() << "\n";
+      //   throw e;
+      // }
+
       sColVec.push_back(tmp);
       sColMap[tmp[0]] = sColVec.size() - 1;
     } else if (tmp[0][0] == '@') {  // primary key
       for (String &str : tmp) {
         // printf("%s\n", str.substr(1).data());
-        if (sColMap.find(str.substr(1)) == sColMap.end()) throw Exception();
+        if (sColMap.find(str.substr(1)) == sColMap.end()) {
+          auto e = Exception();
+          std::cout << e.what() << "\n";
+          throw e;
+        }
         sColVec[sColMap[str.substr(1)]][3] = "1";
       }
     }
@@ -678,7 +694,9 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
     pHigh->ToMax();
   } else if (ctx->operator_()->getText() == "<>") {
   } else {
-    throw CaseException();
+    auto e = CaseException();
+    std::cout << e.what() << "\n";
+    throw e;
   }
 
   if (_pDB->IsIndex(iPair.first, iPair.second)) {

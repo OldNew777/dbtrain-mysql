@@ -9,6 +9,9 @@ namespace dbtrain_mysql {
 class CaseException : public Exception {
  public:
   CaseException() : Exception() { _className = "CaseException"; }
+  CaseException(const String& msg) : Exception(msg) {
+    _className = "CaseException";
+  }
 };
 
 }  // namespace dbtrain_mysql

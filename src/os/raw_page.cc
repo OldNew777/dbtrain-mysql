@@ -15,14 +15,20 @@ RawPage::RawPage() {
 RawPage::~RawPage() { delete[] _pData; }
 
 void RawPage::Read(uint8_t* dst, PageOffset nSize, PageOffset nOffset) {
-  if ((nSize + nOffset) > PAGE_SIZE)
-    throw PageOutOfSizeException(nSize + nOffset);
+  if ((nSize + nOffset) > PAGE_SIZE) {
+    auto e = PageOutOfSizeException(nSize + nOffset);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   memcpy(dst, _pData + nOffset, nSize);
 }
 
 void RawPage::Write(const uint8_t* src, PageOffset nSize, PageOffset nOffset) {
-  if ((nSize + nOffset) > PAGE_SIZE)
-    throw PageOutOfSizeException(nSize + nOffset);
+  if ((nSize + nOffset) > PAGE_SIZE) {
+    auto e = PageOutOfSizeException(nSize + nOffset);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   memcpy(_pData + nOffset, src, nSize);
 }
 

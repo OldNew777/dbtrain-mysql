@@ -22,8 +22,9 @@ void DataManager::UseDatabase(const String& sDatabaseName) {
   // it will be done by _pWhole
   _pDatabase = _pWhole->GetDatabase(sDatabaseName);
   if (_pDatabase == nullptr) {
-    printf("Database '%s' not existed\n", sDatabaseName.c_str());
-    throw DatabaseNotExistException(sDatabaseName);
+    auto e = DatabaseNotExistException(sDatabaseName);
+    std::cout << e.what() << "\n";
+    throw e;
   }
 }
 
@@ -48,7 +49,11 @@ std::vector<String> DataManager::GetDatabaseNames() const {
 Table* DataManager::GetTable(const String& sTableName) const {
   CheckDatabaseUsed();
   Table* pTable = _pDatabase->GetTable(sTableName);
-  if (pTable == nullptr) throw TableNotExistException(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   return pTable;
 }
 
@@ -302,8 +307,11 @@ std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
         Table* tableA = GetTable(condition->sTableA);
         Table* tableB = GetTable(condition->sTableB);
         FieldType fieldType = tableA->GetType(condition->sColA);
-        if (fieldType != tableB->GetType(condition->sColB))
-          throw RecordTypeException();
+        if (fieldType != tableB->GetType(condition->sColB)) {
+          auto e = RecordTypeException();
+          std::cout << e.what() << "\n";
+          throw e;
+        }
         Size fieldID_A, fieldID_B;
 
         // 都join过了，需要遍历并检验
@@ -500,8 +508,9 @@ std::vector<Record*> DataManager::GetIndexInfos() const {
 
 void DataManager::CheckDatabaseUsed() const {
   if (_pDatabase == nullptr) {
-    printf("Please USE (DATABASE) first\n");
-    throw DatabaseUnusedException();
+    auto e = DatabaseUnusedException("Please USE (DATABASE) first");
+    std::cout << e.what() << "\n";
+    throw e;
   }
 }
 

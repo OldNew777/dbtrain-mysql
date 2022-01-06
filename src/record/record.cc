@@ -65,7 +65,9 @@ String Record::ToString() {
     if (pField) {
       result += pField->ToString() + " ";
     } else {
-      throw NullptrException("Record::ToString()", "Record field nullptr");
+      auto e = NullptrException("Record::ToString()", "Record field nullptr");
+      std::cout << e.what() << "\n";
+      throw e;
     }
   }
   return result;

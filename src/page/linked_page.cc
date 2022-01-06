@@ -69,7 +69,11 @@ PageID LinkedPage::PopBack() {
   // 删除下一个链表结点，返回删除结点的PageID
   // 需要判断当前页面是否存在后续页面
   PageID pageID_next = GetNextID();
-  if (pageID_next == NULL_PAGE) throw PageException();
+  if (pageID_next == NULL_PAGE) {
+    auto e = PageException();
+    std::cout << e.what() << "\n";
+    throw e;
+  }
 
   // 正确设置当前页面的NextID，如果后一个结点不是空页，需要讨论是否存在后两页的PrevID问题
   LinkedPage* page_next = new LinkedPage(pageID_next);

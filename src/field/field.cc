@@ -18,7 +18,9 @@ String toString(FieldType iType) {
       return "Error";
   }
 
-  throw Exception();
+  auto e = Exception("Type error");
+  std::cout << e.what() << "\n";
+  throw e;
 }
 
 }  // namespace dbtrain_mysql

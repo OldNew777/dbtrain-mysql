@@ -106,10 +106,20 @@ void RecordPage::Print() const {
 }
 
 SlotID RecordPage::InsertRecord(const uint8_t* src) {
-  if (src == nullptr) throw NullptrException("RecordPage::InsertRecord");
+  if (src == nullptr) {
+    auto e = NullptrException("RecordPage::InsertRecord");
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+
   _bModified = true;
 
-  if (_pUsed->Full()) throw RecordPageFullException(_nPageID);
+  if (_pUsed->Full()) {
+    auto e = RecordPageFullException(_nPageID);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+
   // 寻找空的槽位，插入数据
   // 利用_pUsed位图判断槽位是否使用，插入后需要更新_pUsed
   // 需要优化查找空槽的算法
@@ -125,7 +135,11 @@ SlotID RecordPage::InsertRecord(const uint8_t* src) {
 
 uint8_t* RecordPage::GetRecord(SlotID nSlotID) {
   // 先检查是否有该Record
-  if (!_pUsed->Get(nSlotID)) throw RecordPageSlotUnusedException(nSlotID);
+  if (!_pUsed->Get(nSlotID)) {
+    auto e = RecordPageSlotUnusedException(nSlotID);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
 
   uint8_t* data = new uint8_t[_nFixed];
   // 使用GetData实现读数据
@@ -137,7 +151,12 @@ bool RecordPage::HasRecord(SlotID nSlotID) { return _pUsed->Get(nSlotID); }
 
 void RecordPage::DeleteRecord(SlotID nSlotID) {
   // 先检查是否有该Record
-  if (!_pUsed->Get(nSlotID)) throw RecordPageSlotUnusedException(nSlotID);
+  if (!_pUsed->Get(nSlotID)) {
+    auto e = RecordPageSlotUnusedException(nSlotID);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+
   _bModified = true;
 
   // 需要设置_pUsed
@@ -152,9 +171,18 @@ void RecordPage::DeleteRecord(SlotID nSlotID) {
 }
 
 void RecordPage::UpdateRecord(SlotID nSlotID, const uint8_t* src) {
-  if (src == nullptr) throw NullptrException("RecordPage::UpdateRecord");
+  if (src == nullptr) {
+    auto e = NullptrException("RecordPage::UpdateRecord");
+    std::cout << e.what() << "\n";
+    throw e;
+  }
 
-  if (!_pUsed->Get(nSlotID)) throw RecordPageSlotUnusedException(nSlotID);
+  if (!_pUsed->Get(nSlotID)) {
+    auto e = RecordPageSlotUnusedException(nSlotID);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+
   SetData(src, _nFixed, BITMAP_OFFSET + BITMAP_SIZE + nSlotID * _nFixed);
 }
 

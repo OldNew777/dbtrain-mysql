@@ -44,8 +44,9 @@ Table* Database::GetTable(const String& sTableName) {
 void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   // Table existed before
   if (GetTable(sTableName) != nullptr) {
-    printf("Table '%s' existed\n", sTableName.c_str());
-    throw TableExistException(sTableName);
+    auto e = TableExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
   }
 
   // Create table and cache it
@@ -62,8 +63,9 @@ void Database::DropTable(const String& sTableName) {
   Table* pTable = GetTable(sTableName);
   _pIndexManager->DropIndex(sTableName);
   if (pTable == nullptr) {
-    printf("Table '%s' not existed\n", sTableName.c_str());
-    throw TableNotExistException(sTableName);
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
   }
   pTable->Clear();
   delete pTable;
@@ -78,12 +80,14 @@ void Database::RenameTable(const String& sOldTableName,
                            const String& sNewTableName) {
   Table* pTable = GetTable(sOldTableName);
   if (pTable == nullptr) {
-    printf("Table '%s' not existed\n", sOldTableName.c_str());
-    throw TableNotExistException(sOldTableName);
+    auto e = TableNotExistException(sOldTableName);
+    std::cout << e.what() << "\n";
+    throw e;
   }
   if (GetTable(sNewTableName) != nullptr) {
-    printf("Table '%s' existed\n", sNewTableName.c_str());
-    throw TableExistException(sNewTableName);
+    auto e = TableExistException(sNewTableName);
+    std::cout << e.what() << "\n";
+    throw e;
   }
 
   DeleteEntity(sOldTableName, _iEntityPageSlotIDMap[sOldTableName]);
@@ -106,16 +110,21 @@ std::vector<PageSlotID> Database::Search(
     const String& sTableName, Condition* pCond,
     const std::vector<Condition*>& iIndexCond) {
   if (pCond != nullptr && iIndexCond.size() > 0) {
-    printf("Search function accept exclusive arguments\n");
-    throw Exception("Search function accept exclusive arguments");
+    auto e = Exception("Search function accept exclusive arguments");
+    std::cout << e.what() << "\n";
+    throw e;
   }
 
   Table* pTable = GetTable(sTableName);
   std::vector<PageSlotID> ans;
   if (iIndexCond.size() > 0) {
     IndexCondition* pIndexCond = dynamic_cast<IndexCondition*>(iIndexCond[0]);
-    if (pIndexCond == nullptr)
-      throw NullptrException("Search", "IndexCondition should not be nullptr");
+    if (pIndexCond == nullptr) {
+      auto e =
+          NullptrException("Search", "IndexCondition should not be nullptr");
+      std::cout << e.what() << "\n";
+      throw e;
+    }
     auto iName = pIndexCond->GetIndexName();
     auto iRange = pIndexCond->GetIndexRange();
     std::vector<PageSlotID> iRes =
@@ -197,19 +206,25 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
 PageSlotID Database::Insert(const String& sTableName,
                             const std::vector<String>& iRawVec) {
   Table* pTable = GetTable(sTableName);
-  if (pTable == nullptr) throw TableNotExistException(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
 
   std::vector<std::string> colNames = pTable->GetColumnNames();
   if (colNames.size() != iRawVec.size()) {
-    printf("Column num does not correspond\n");
-    throw FieldListException();
+    auto e = FieldListException("Column num does not correspond");
+    std::cout << e.what() << "\n";
+    throw e;
   }
   // check null
   for (int i = 0; i < colNames.size(); i++) {
     if (iRawVec[i] == "NULL" && (!pTable->GetCanBeNull(colNames[i]) ||
                                  pTable->GetIsPrimary(colNames[i]))) {
-      printf("Column should not be NULL\n");
-      throw FieldListException();
+      auto e = FieldListException("Column should not be NULL");
+      std::cout << e.what() << "\n";
+      throw e;
     }
   }
   // check primary key
@@ -233,8 +248,9 @@ PageSlotID Database::Insert(const String& sTableName,
   }
   if (primaryKeyConflict) {
     // add exception here
-    printf("Primary key existed\n");
-    throw Exception("Primary key existed");
+    auto e = Exception("Primary key existed");
+    std::cout << e.what() << "\n";
+    throw e;
   }
 
   Record* pRecord = pTable->EmptyRecord();
@@ -264,20 +280,25 @@ PageSlotID Database::Insert(const String& sTableName,
 PageSlotID Database::Insert(const String& sTableName,
                             const std::vector<Field*>& iValueVec) {
   Table* pTable = GetTable(sTableName);
-  if (pTable == nullptr) throw TableNotExistException(sTableName);
-
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   std::vector<std::string> colNames = pTable->GetColumnNames();
   if (colNames.size() != iValueVec.size()) {
-    printf("Column num does not correspond\n");
-    throw FieldListException();
+    auto e = FieldListException("Column num does not correspond");
+    std::cout << e.what() << "\n";
+    throw e;
   }
 
   for (int i = 0; i < colNames.size(); i++) {
     if (iValueVec[i]->GetType() == FieldType::NULL_TYPE &&
         (!pTable->GetCanBeNull(colNames[i]) ||
          pTable->GetIsPrimary(colNames[i]))) {
-      printf("Column should not be NULL\n");
-      throw FieldListException();
+      auto e = FieldListException("Column should not be NULL");
+      std::cout << e.what() << "\n";
+      throw e;
     }
   }
 
@@ -301,8 +322,9 @@ PageSlotID Database::Insert(const String& sTableName,
   }
   if (primaryKeyConflict) {
     // add exception here
-    printf("Primary key existed\n");
-    throw Exception("Primary key existed");
+    auto e = Exception("Primary key existed");
+    std::cout << e.what() << "\n";
+    throw e;
   }
 
   Record* pRecord = pTable->EmptyRecord();

@@ -9,7 +9,11 @@ bool Less(Field *pA, Field *pB) {
   if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
     return false;
   FieldType iType = pA->GetType();
-  if (iType != pB->GetType()) throw CompareException();
+  if (iType != pB->GetType()) {
+    auto e = CompareException();
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   if (iType == FieldType::INT_TYPE) {
     IntField *pIntA = dynamic_cast<IntField *>(pA);
     IntField *pIntB = dynamic_cast<IntField *>(pB);
@@ -31,7 +35,11 @@ bool Equal(Field *pA, Field *pB) {
   if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
     return false;
   FieldType iType = pA->GetType();
-  if (iType != pB->GetType()) throw CompareException();
+  if (iType != pB->GetType()) {
+    auto e = CompareException();
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   if (iType == FieldType::INT_TYPE) {
     IntField *pIntA = dynamic_cast<IntField *>(pA);
     IntField *pIntB = dynamic_cast<IntField *>(pB);
@@ -53,7 +61,11 @@ bool Greater(Field *pA, Field *pB) {
   if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
     return false;
   FieldType iType = pA->GetType();
-  if (iType != pB->GetType()) throw CompareException();
+  if (iType != pB->GetType()) {
+    auto e = CompareException();
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   if (iType == FieldType::INT_TYPE) {
     IntField *pIntA = dynamic_cast<IntField *>(pA);
     IntField *pIntB = dynamic_cast<IntField *>(pB);
@@ -75,7 +87,11 @@ bool LessEqual(Field *pA, Field *pB) {
   if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
     return false;
   FieldType iType = pA->GetType();
-  if (iType != pB->GetType()) throw CompareException();
+  if (iType != pB->GetType()) {
+    auto e = CompareException();
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   if (iType == FieldType::INT_TYPE) {
     IntField *pIntA = dynamic_cast<IntField *>(pA);
     IntField *pIntB = dynamic_cast<IntField *>(pB);

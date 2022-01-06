@@ -46,6 +46,9 @@ class DatabaseUnusedException : public DatabaseException {
   DatabaseUnusedException() : DatabaseException() {
     _className = "DatabaseUnusedException";
   }
+  DatabaseUnusedException(const String& msg) : DatabaseException(msg) {
+    _className = "DatabaseUnusedException";
+  }
 };
 
 }  // namespace dbtrain_mysql

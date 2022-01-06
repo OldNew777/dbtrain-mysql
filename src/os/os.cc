@@ -24,9 +24,9 @@ void OS::WriteBack() {
   }
 }
 
-void OS::CheckFileExist(){
+void OS::CheckFileExist() {
   std::ifstream fin(DB_PAGE_NAME, std::ios::binary);
-  if(!fin) {
+  if (!fin) {
     printf("OS::CheckFileExist: DB_Page.dat not exists\n");
     std::ofstream fout(DB_PAGE_NAME, std::ios::binary);
     uint8_t* ptemp = new uint8_t[PAGE_SIZE * MEM_PAGES];
@@ -34,8 +34,7 @@ void OS::CheckFileExist(){
     fout.write((char*)ptemp, PAGE_SIZE * MEM_PAGES);
     fout.close();
     delete ptemp;
-  }
-  else{
+  } else {
     fin.close();
   }
 }
@@ -68,13 +67,14 @@ PageID OS::NewPage() {
   Size tmp = _nClock;
   do {
     if (!_pUsed->Get(_nClock)) {
-      while(_nClock > _maxSize  && _maxSize < MAX_MEM_PAGES){
+      while (_nClock > _maxSize && _maxSize < MAX_MEM_PAGES) {
         printf("1\n");
-        std::fstream fout(DB_PAGE_NAME, std::ios::binary | std::ios::in | std::ios::out);
+        std::fstream fout(DB_PAGE_NAME,
+                          std::ios::binary | std::ios::in | std::ios::out);
         uint8_t* ptemp = new uint8_t[PAGE_SIZE * MEM_PAGES];
         memset(ptemp, 0, PAGE_SIZE * MEM_PAGES);
         fout.seekp(0, std::ios::end);
-        fout.write((char*) ptemp, PAGE_SIZE * MEM_PAGES);
+        fout.write((char*)ptemp, PAGE_SIZE * MEM_PAGES);
         fout.close();
         delete ptemp;
         _maxSize += MEM_PAGES;
@@ -88,24 +88,38 @@ PageID OS::NewPage() {
       _nClock %= MAX_MEM_PAGES;
     }
   } while (_nClock != tmp);
-  throw NewPageException();
+  auto e = NewPageException();
+  std::cout << e.what() << "\n";
+  throw e;
 }
 
 void OS::DeletePage(PageID pid) {
-  if (!_pUsed->Get(pid)) throw PageNotInitException(pid);
+  if (!_pUsed->Get(pid)) {
+    auto e = PageNotInitException(pid);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   _getCacheGroup(pid)->DeletePage(pid);
   _pUsed->Unset(pid);
 }
 
 void OS::ReadPage(PageID pid, uint8_t* dst, PageOffset nSize,
                   PageOffset nOffset) {
-  if (!_pUsed->Get(pid)) throw PageNotInitException(pid);
+  if (!_pUsed->Get(pid)) {
+    auto e = PageNotInitException(pid);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   _getCacheGroup(pid)->ReadPage(pid, dst, nSize, nOffset);
 }
 
 void OS::WritePage(PageID pid, const uint8_t* src, PageOffset nSize,
                    PageOffset nOffset) {
-  if (!_pUsed->Get(pid)) throw PageNotInitException(pid);
+  if (!_pUsed->Get(pid)) {
+    auto e = PageNotInitException(pid);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   // printf("write page\n");
   _getCacheGroup(pid)->WritePage(pid, src, nSize, nOffset);
 }
@@ -129,25 +143,28 @@ void OS::StoreBitmap() {
 }
 
 Size OS::GetUsedSize() const {
-  if (!_pUsed) throw OsException();
+  if (!_pUsed) {
+    auto e = OsException();
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   return _pUsed->GetSize();
 }
 
 void OS::initDBPage() {
-
   std::ifstream fin(DB_PAGE_NAME, std::ios::binary);
-  if(fin) {
+  if (fin) {
     // printf("OS::initDBPage: DB_Page.dat exists\n");
-    fin.seekg(0, fin.end);  
-    Size size = fin.tellg(); 
-    if(size % PAGE_SIZE != 0) {
-      printf("size should be divisible by pagesize");
-      throw CacheInvalideException();
+    fin.seekg(0, fin.end);
+    Size size = fin.tellg();
+    if (size % PAGE_SIZE != 0) {
+      auto e = CacheInvalideException("size should be divisible by pagesize");
+      std::cout << e.what() << "\n";
+      throw e;
     }
     _maxSize = size / PAGE_SIZE;
     fin.close();
-  }
-  else{
+  } else {
     // printf("OS::initDBPage: DB_Page.dat not exists\n");
     std::ofstream fout(DB_PAGE_NAME, std::ios::binary);
     uint8_t* ptemp = new uint8_t[PAGE_SIZE * MEM_PAGES];

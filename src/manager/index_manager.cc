@@ -60,7 +60,11 @@ Index *IndexManager::GetIndex(const String &sTableName,
 
 Index *IndexManager::AddIndex(const String &sTableName, const String &sColName,
                               FieldType iType) {
-  if (IsIndex(sTableName, sColName)) throw IndexException();
+  if (IsIndex(sTableName, sColName)) {
+    auto e = IndexException("Index not exist");
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   String sIndexName = GetIndexName(sTableName, sColName);
   Index *pIndex = new Index(iType);
   PageID nRoot = pIndex->GetRootID();
@@ -77,7 +81,11 @@ Index *IndexManager::AddIndex(const String &sTableName, const String &sColName,
 }
 
 void IndexManager::DropIndex(const String &sTableName, const String &sColName) {
-  if (!IsIndex(sTableName, sColName)) throw IndexException();
+  if (!IsIndex(sTableName, sColName)) {
+    auto e = IndexException("Index not exist");
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   String sIndexName = GetIndexName(sTableName, sColName);
   Index *pIndex = GetIndex(sTableName, sColName);
   pIndex->Clear();

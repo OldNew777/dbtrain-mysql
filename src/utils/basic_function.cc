@@ -92,8 +92,9 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
       pField = new NullField();
     } else if (iTargetFieldType == FieldType::INT_TYPE) {
       if (sRaw.find(".") != String::npos) {
-        printf("RecordTypeException\n");
-        throw RecordTypeException();
+        auto e = RecordTypeException("RecordTypeException");
+        std::cout << e.what() << "\n";
+        throw e;
       }
       try {
         int nVal = std::stoi(sRaw);
@@ -120,8 +121,9 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
       // erase \' and \"
       pField = new CharField(sRaw.substr(1, sRaw.size() - 2));
     } else {
-      printf("RecordTypeException\n");
-      throw RecordTypeException();
+      auto e = RecordTypeException();
+      std::cout << e.what() << "\n";
+      throw e;
     }
   }
   return pField;

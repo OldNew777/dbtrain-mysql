@@ -48,7 +48,9 @@ Size FixedRecord::Load(const uint8_t* src) {
           field_f = new CharField(fieldSize);
           break;
         default:
-          throw RecordTypeException();
+          auto e = RecordTypeException();
+          std::cout << e.what() << "\n";
+          throw e;
           break;
       }
       field_f->SetData(src + size, fieldSize);
@@ -69,7 +71,11 @@ Size FixedRecord::Store(uint8_t* dst) const {
   for (FieldID i = 0; i < _iFields.size(); ++i) {
     Size fieldSize = _iSizeVec[i];
     Field* field_f = _iFields[i];
-    if (field_f == nullptr) throw NullptrException("FixedRecord::Load");
+    if (field_f == nullptr) {
+      auto e = NullptrException("FixedRecord::Load");
+      std::cout << e.what() << "\n";
+      throw e;
+    }
     field_f->GetData(dst + size, fieldSize);
     if (dynamic_cast<NullField*>(field_f)) bitNULL.Set(i);
     size += fieldSize;
