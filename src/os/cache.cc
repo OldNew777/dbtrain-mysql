@@ -5,7 +5,10 @@ namespace dbtrain_mysql{
         _pid = pid;
 
         std::ifstream fin(DB_PAGE_NAME, std::ios::binary);
-        if(!fin) throw CacheInvalideException();
+        if(!fin) {
+            printf("CacheLine::CacheLine: DB_Page.dat not exist\n");
+            throw CacheInvalideException();
+        }
         uint8_t pTemp[PAGE_SIZE];
         fin.seekg(pid * PAGE_SIZE, std::ios::beg);
         fin.read((char*)pTemp, PAGE_SIZE);
@@ -24,7 +27,10 @@ namespace dbtrain_mysql{
     }
     void CacheLine::_writeBack(){
         std::fstream fout(DB_PAGE_NAME, std::ios::binary | std::ios::out | std::ios::in);
-        if(!fout) throw CacheInvalideException();
+        if(!fout) {
+            printf("CacheLine::_writeBack(): DB_Page.dat not exist\n");
+            throw CacheInvalideException();
+        }
         uint8_t pTemp[PAGE_SIZE];
         _rawPage->Read(pTemp, PAGE_SIZE);
         fout.seekp(_pid * PAGE_SIZE, std::ios::beg);
@@ -33,12 +39,14 @@ namespace dbtrain_mysql{
     }
     void CacheLine::Read(uint8_t* dst, PageOffset nSize, PageOffset nOffset){
         if(_rawPage == nullptr){
+            printf("CacheLine::Read: _rawPage == nullptr\n");
             throw CacheInvalideException();
         }
         _rawPage->Read(dst, nSize, nOffset);
     }
     void CacheLine::Write(const uint8_t* src, PageOffset nSize, PageOffset nOffset){
         if(_rawPage == nullptr){
+            printf("CacheLine::Write: _rawPage == nullptr\n");
             throw CacheInvalideException();
         }
         _rawPage->Write(src, nSize, nOffset);
@@ -66,6 +74,7 @@ namespace dbtrain_mysql{
         // printf("cache:\n");
         for(auto it = _cacheGroup.begin(); it != _cacheGroup.end(); it ++){
             if(*it == nullptr){
+                printf("CacheGroup::_getPage: Cacheline not exist\n");
                 throw CacheInvalideException();
             }
             // printf("pid: %d\n", (*it)->getPageID());
@@ -78,7 +87,10 @@ namespace dbtrain_mysql{
         // printf("new cache line: %d\n", pid);
         _cacheGroup.push_front(new CacheLine(pid));// get a new page
         if(_cacheGroup.size() > CACHE_GROUP_NUM){//LRU
-            if(_cacheGroup.back() == nullptr){throw CacheInvalideException();}
+            if(_cacheGroup.back() == nullptr){
+                printf("CacheGroup::_getPage: Cacheline not exist\n");
+                throw CacheInvalideException();
+            }
             delete _cacheGroup.back();
             _cacheGroup.pop_back();
         }
@@ -110,7 +122,10 @@ namespace dbtrain_mysql{
     void CacheGroup::NewPage(PageID pid){
         _cacheGroup.push_front(new CacheLine(pid));// get a new page
         if(_cacheGroup.size() > CACHE_GROUP_NUM){//LRU
-            if(_cacheGroup.back() == nullptr){throw CacheInvalideException();}
+            if(_cacheGroup.back() == nullptr){
+                printf("CacheGroup::NewPage: Cacheline not exist\n");
+                throw CacheInvalideException();
+            }
             delete _cacheGroup.back();
             _cacheGroup.pop_back();
         }

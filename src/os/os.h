@@ -16,6 +16,7 @@ class OS {
  public:
   static OS* GetOS();
   static void WriteBack();
+  static void CheckFileExist();
 
   PageID NewPage();
   void DeletePage(PageID pid);

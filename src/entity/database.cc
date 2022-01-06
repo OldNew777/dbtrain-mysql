@@ -313,7 +313,7 @@ PageSlotID Database::Insert(const String& sTableName,
       FieldID colPos = pTable->GetColPos(colNames[i]);
       FieldType colType = pTable->GetType(colNames[i]);
       Condition* pCond = nullptr;
-      Field* low = iValueVec[i];
+      Field* low = iValueVec[i]->Clone();
       Field* high = low->Clone();
       high->Add();
       pCond = new RangeCondition(colPos, low, high);
@@ -322,6 +322,7 @@ PageSlotID Database::Insert(const String& sTableName,
         primaryKeyConflict = false;
         break;
       }
+      if(pCond) delete pCond;
     }
   }
   if (primaryKeyConflict) {
