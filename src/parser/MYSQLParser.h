@@ -20,10 +20,10 @@ public:
     T__32 = 33, T__33 = 34, T__34 = 35, T__35 = 36, T__36 = 37, T__37 = 38, 
     T__38 = 39, T__39 = 40, T__40 = 41, T__41 = 42, T__42 = 43, T__43 = 44, 
     T__44 = 45, T__45 = 46, T__46 = 47, T__47 = 48, T__48 = 49, T__49 = 50, 
-    T__50 = 51, T__51 = 52, EqualOrAssign = 53, Less = 54, LessEqual = 55, 
-    Greater = 56, GreaterEqual = 57, NotEqual = 58, Count = 59, Average = 60, 
-    Max = 61, Min = 62, Sum = 63, Null = 64, Date = 65, Identifier = 66, 
-    Integer = 67, String = 68, Float = 69, Whitespace = 70, Annotation = 71
+    T__50 = 51, T__51 = 52, T__52 = 53, EqualOrAssign = 54, Less = 55, LessEqual = 56, 
+    Greater = 57, GreaterEqual = 58, NotEqual = 59, Count = 60, Average = 61, 
+    Max = 62, Min = 63, Sum = 64, Null = 65, Date = 66, Identifier = 67, 
+    Integer = 68, String = 69, Float = 70, Whitespace = 71, Annotation = 72
   };
 
   enum {

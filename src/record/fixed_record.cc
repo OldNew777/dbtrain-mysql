@@ -47,6 +47,9 @@ Size FixedRecord::Load(const uint8_t* src) {
         case FieldType::CHAR_TYPE:
           field_f = new CharField(fieldSize);
           break;
+        case FieldType::DATE_TYPE:
+          field_f = new DateField();
+          break;
         default:
           auto e = RecordTypeException();
           std::cout << e.what() << "\n";

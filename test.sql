@@ -25,6 +25,12 @@ CREATE DATABASE THU;
 USE THU;
 CREATE TABLE order(id INT, customer VARCHAR(64), date DATE NOT NULL, PRIMARY KEY(id));
 
+INSERT INTO order VALUES(1, 'Jack', 2022-01-07);
+
+SELECT * FROM order WHERE order.date = 2022-01-07;
+SELECT * FROM order WHERE order.date > 2022-02-29;
+SELECT * FROM order WHERE order.date < 2023-01-07;
+
 CREATE TABLE student(name VARCHAR(64), id INT, PRIMARY KEY(id));
 CREATE TABLE math(id INT, score FLOAT NOT NULL, PRIMARY KEY(id));
 

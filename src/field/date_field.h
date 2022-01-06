@@ -38,8 +38,8 @@ class DateField : public Field {
   bool operator!=(const DateField& b) const;
 
  private:
-  uint16_t year;
-  uint8_t month, day;
+  uint16_t year = 1000;
+  uint8_t month = 1, day = 1;
 };
 
 }  // namespace dbtrain_mysql

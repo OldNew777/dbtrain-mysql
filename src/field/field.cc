@@ -14,6 +14,8 @@ String toString(FieldType iType) {
       return "FLOAT";
     case FieldType::CHAR_TYPE:
       return "CHAR";
+    case FieldType::DATE_TYPE:
+      return "DATE";
     default:
       return "Error";
   }

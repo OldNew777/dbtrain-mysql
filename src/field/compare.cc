@@ -27,6 +27,10 @@ bool Less(Field *pA, Field *pB) {
     CharField *pCharA = dynamic_cast<CharField *>(pA);
     CharField *pCharB = dynamic_cast<CharField *>(pB);
     return *pCharA < *pCharB;
+  } else if (iType == FieldType::DATE_TYPE) {
+    DateField *pDateA = dynamic_cast<DateField *>(pA);
+    DateField *pDateB = dynamic_cast<DateField *>(pB);
+    return *pDateA < *pDateB;
   } else {
     return false;
   }
@@ -54,6 +58,10 @@ bool Equal(Field *pA, Field *pB) {
     CharField *pCharA = dynamic_cast<CharField *>(pA);
     CharField *pCharB = dynamic_cast<CharField *>(pB);
     return *pCharA == *pCharB;
+  } else if (iType == FieldType::DATE_TYPE) {
+    DateField *pDateA = dynamic_cast<DateField *>(pA);
+    DateField *pDateB = dynamic_cast<DateField *>(pB);
+    return *pDateA == *pDateB;
   } else {
     return false;
   }
@@ -81,6 +89,10 @@ bool Greater(Field *pA, Field *pB) {
     CharField *pCharA = dynamic_cast<CharField *>(pA);
     CharField *pCharB = dynamic_cast<CharField *>(pB);
     return *pCharA > *pCharB;
+  } else if (iType == FieldType::DATE_TYPE) {
+    DateField *pDateA = dynamic_cast<DateField *>(pA);
+    DateField *pDateB = dynamic_cast<DateField *>(pB);
+    return *pDateA > *pDateB;
   } else {
     return false;
   }
@@ -108,6 +120,10 @@ bool LessEqual(Field *pA, Field *pB) {
     CharField *pCharA = dynamic_cast<CharField *>(pA);
     CharField *pCharB = dynamic_cast<CharField *>(pB);
     return *pCharA <= *pCharB;
+  } else if (iType == FieldType::DATE_TYPE) {
+    DateField *pDateA = dynamic_cast<DateField *>(pA);
+    DateField *pDateB = dynamic_cast<DateField *>(pB);
+    return *pDateA <= *pDateB;
   } else {
     return false;
   }
