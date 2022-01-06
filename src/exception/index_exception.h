@@ -8,9 +8,13 @@ namespace dbtrain_mysql {
 
 class IndexException : public Exception {
  public:
-  IndexException() : Exception() { _className = "IndexException"; }
+  IndexException() : Exception() {
+    _className = "IndexException";
+    _msg = _className + ": " + _msg.substr(_msg.find(":") + 2);
+  }
   IndexException(const String& msg) : Exception(msg) {
     _className = "IndexException";
+    _msg = _className + ": " + _msg.substr(_msg.find(":") + 2);
   }
 };
 

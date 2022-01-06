@@ -10,9 +10,13 @@ namespace dbtrain_mysql {
 
 class OsException : public Exception {
  public:
-  OsException() : Exception() { _className = "OsException"; }
+  OsException() : Exception() {
+    _className = "OsException";
+    _msg = _className + ": " + _msg.substr(_msg.find(":") + 2);
+  }
   OsException(const String& msg) : Exception(msg) {
     _className = "OsException";
+    _msg = _className + ": " + _msg.substr(_msg.find(":") + 2);
   }
 };
 
@@ -24,6 +28,7 @@ class NewPageException : public OsException {
   NewPageException() {
     _className = "NewPageException";
     _msg = "Cannot allocate new page";
+    _msg = _className + ": " + _msg;
   }
 };
 
@@ -36,6 +41,7 @@ class PageNotInitException : public OsException {
   PageNotInitException(int pageID) : _nPageID(pageID) {
     _className = "PageNotInitException";
     _msg = "Page " + std::to_string(pageID) + " does not initialize";
+    _msg = _className + ": " + _msg;
   }
 
  private:
@@ -51,6 +57,7 @@ class PageOutOfSizeException : public OsException {
   PageOutOfSizeException(PageOffset nPageOffset) : _nPageOffset(nPageOffset) {
     _className = "PageOutOfSizeException";
     _msg = "Page out of size : " + std::to_string((int)_nPageOffset);
+    _msg = _className + ": " + _msg;
   }
 
  private:

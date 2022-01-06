@@ -8,7 +8,10 @@ namespace dbtrain_mysql {
 
 class FileNotExistException : public Exception {
  public:
-  FileNotExistException() : Exception() { _className = "FileNotExistException"; }
+  FileNotExistException() : Exception() {
+    _className = "FileNotExistException";
+    _msg = _className + ": " + _msg.substr(_msg.find(":") + 2);
+  }
 };
 
 }  // namespace dbtrain_mysql

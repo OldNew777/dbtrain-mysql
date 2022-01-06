@@ -22,8 +22,8 @@ public:
     T__44 = 45, T__45 = 46, T__46 = 47, T__47 = 48, T__48 = 49, T__49 = 50, 
     T__50 = 51, T__51 = 52, EqualOrAssign = 53, Less = 54, LessEqual = 55, 
     Greater = 56, GreaterEqual = 57, NotEqual = 58, Count = 59, Average = 60, 
-    Max = 61, Min = 62, Sum = 63, Null = 64, Identifier = 65, Integer = 66, 
-    String = 67, Float = 68, Whitespace = 69, Annotation = 70
+    Max = 61, Min = 62, Sum = 63, Null = 64, Date = 65, Identifier = 66, 
+    Integer = 67, String = 68, Float = 69, Whitespace = 70, Annotation = 71
   };
 
   MYSQLLexer(antlr4::CharStream *input);

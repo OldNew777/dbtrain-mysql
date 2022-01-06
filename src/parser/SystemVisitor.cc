@@ -558,6 +558,9 @@ antlrcpp::Any SystemVisitor::visitField_list(
     } else if ((*it)[1] == "FLOAT") {
       type = FieldType::FLOAT_TYPE;
       size = 4;
+    } else if ((*it)[1] == "DATE") {
+      type = FieldType::DATE_TYPE;
+      size = 3;
     } else {
       type = FieldType::CHAR_TYPE;
       size = std::stoi((*it)[5]);
@@ -655,6 +658,8 @@ antlrcpp::Any SystemVisitor::visitValue(MYSQLParser::ValueContext *ctx) {
     text = ctx->String()->getText();
   } else if (ctx->Null()) {
     text = ctx->Null()->getText();
+  } else if (ctx->Date()) {
+    text = ctx->Date()->getText();
   }
   return text;
 }

@@ -14,6 +14,7 @@ Min: 'MIN';
 Sum: 'SUM';
 Null: 'NULL';
 
+Date: [1-9][0-9][0-9][0-9]'-' [01][0-9]'-' [0-3][0-9];
 Identifier: [a-zA-Z_] [a-zA-Z_0-9]*;
 Integer: [0-9]+;
 String: '\'' (~'\'')* '\'';
@@ -60,32 +61,32 @@ select_table:
 	)?;
 
 alter_statement:
-	'ALTER' 'TABLE' Identifier 'ADD' 'INDEX' '(' identifiers ')'	# alter_add_index
-	| 'ALTER' 'TABLE' Identifier 'DROP' 'INDEX' '(' identifiers ')'	# alter_drop_index
-	| 'ALTER' 'TABLE' Identifier 'DROP' 'PRIMARY' 'KEY' '(' identifiers ')'			# alter_table_drop_pk
-	| 'ALTER' 'TABLE' Identifier 'DROP' 'FOREIGN' 'KEY' Identifier									# alter_table_drop_foreign_key
-	| 'ALTER' 'TABLE' Identifier 'ADD' ('CONSTRAINT' Identifier)? 'PRIMARY' 'KEY' '(' identifiers ')'	#alter_table_add_pk
+	'ALTER' 'TABLE' Identifier 'ADD' 'INDEX' '(' identifiers ')'			# alter_add_index
+	| 'ALTER' 'TABLE' Identifier 'DROP' 'INDEX' '(' identifiers ')'			# alter_drop_index
+	| 'ALTER' 'TABLE' Identifier 'DROP' 'PRIMARY' 'KEY' '(' identifiers ')'	# alter_table_drop_pk
+	| 'ALTER' 'TABLE' Identifier 'DROP' 'FOREIGN' 'KEY' Identifier			# alter_table_drop_foreign_key
+	| 'ALTER' 'TABLE' Identifier 'ADD' ('CONSTRAINT' Identifier)? 'PRIMARY' 'KEY' '(' identifiers
+		')' # alter_table_add_pk
 	| 'ALTER' 'TABLE' Identifier 'ADD' 'CONSTRAINT' Identifier 'FOREIGN' 'KEY' '(' identifiers ')'
 		'REFERENCES' Identifier '(' identifiers ')'					# alter_table_add_foreign_key
 	| 'ALTER' 'TABLE' Identifier 'ADD' 'UNIQUE' '(' identifiers ')'	# alter_table_add_unique
-	| 'ALTER' 'TABLE' Identifier 'RENAME' 'TO' Identifier # alter_table_rename
-	;
-	
+	| 'ALTER' 'TABLE' Identifier 'RENAME' 'TO' Identifier			# alter_table_rename;
 
 field_list: field (',' field)*;
 
 field:
 	Identifier type_ ('NOT' Null)? ('DEFAULT' value)?												# normal_field
 	| 'PRIMARY' 'KEY' (Identifier)? '(' identifiers ')'												# primary_key_field
-	| 'FOREIGN' 'KEY' (Identifier)? '(' identifiers ')' 'REFERENCES' Identifier '(' identifiers ')'	# foreign_key_field;
+	| 'FOREIGN' 'KEY' (Identifier)? '(' identifiers ')' 'REFERENCES' Identifier '(' identifiers ')'	#
+		foreign_key_field;
 
-type_: 'INT' | 'VARCHAR' '(' Integer ')' | 'FLOAT';
+type_: 'INT' | 'VARCHAR' '(' Integer ')' | 'FLOAT' | 'DATE';
 
 value_lists: value_list (',' value_list)*;
 
 value_list: '(' value (',' value)* ')';
 
-value: Integer | String | Float | Null;
+value: Integer | String | Float | Null | Date;
 
 where_and_clause: where_clause ('AND' where_clause)*;
 

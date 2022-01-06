@@ -8,9 +8,13 @@ namespace dbtrain_mysql {
 
 class ParserException : public Exception {
  public:
-  ParserException() : Exception() { _className = "ParserException"; }
+  ParserException() : Exception() {
+    _className = "ParserException";
+    _msg = _className + ": " + _msg.substr(_msg.find(":") + 2);
+  }
   ParserException(const String& msg) : Exception(msg) {
     _className = "ParserException";
+    _msg = _className + ": " + _msg.substr(_msg.find(":") + 2);
   }
 };
 

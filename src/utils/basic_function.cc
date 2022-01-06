@@ -118,6 +118,25 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
         printf("FLOAT out of range\n");
         throw e;
       }
+    } else if (iTargetFieldType == FieldType::DATE_TYPE) {
+      try {
+        if (sRaw.size() != 10) throw Exception("DATA format error");
+        if (sRaw[4] != '-' || sRaw[7] != '-')
+          throw Exception("DATA format error");
+        for (int i = 0; i < 10; ++i) {
+          if (i == 4 || i == 7) continue;
+          if (sRaw[i] < '0' || sRaw[i] > '9')
+            throw Exception("DATA format error");
+        }
+        int year = std::stoi(sRaw.substr(0, 4));
+        int month = std::stoi(sRaw.substr(5, 2));
+        int day = std::stoi(sRaw.substr(8, 2));
+        if (!LeagalDate(year, month, day)) throw Exception("DATA format error");
+        pField = new DateField(year, month, day);
+      } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw e;
+      }
     } else if (iTargetFieldType == FieldType::CHAR_TYPE) {
       // erase \' and \"
       pField = new CharField(sRaw.substr(1, sRaw.size() - 2));
@@ -130,10 +149,10 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
   return pField;
 }
 
-bool LeagalDate(uint16_t year, uint8_t month, uint8_t day) {
+bool LeagalDate(int year, int month, int day) {
   static std::unordered_set<uint8_t> smallMonth = {4, 6, 9, 11};
   if (year < 1000 || year >= 10000) return false;
-  if (month == 0 || month > 12) return false;
+  if (month <= 0 || month > 12) return false;
   uint8_t dayMax = 31;
   if (smallMonth.find(dayMax) != smallMonth.end())
     dayMax = 30;
@@ -147,7 +166,7 @@ bool LeagalDate(uint16_t year, uint8_t month, uint8_t day) {
     else
       dayMax = 28;
   }
-  if (day == 0 || day > dayMax) return false;
+  if (day <= 0 || day > dayMax) return false;
   return true;
 }
 
