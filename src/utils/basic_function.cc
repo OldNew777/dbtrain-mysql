@@ -116,6 +116,7 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
       // erase \' and \"
       pField = new CharField(sRaw.substr(1, sRaw.size() - 2));
     } else {
+      printf("RecordTypeException\n");
       throw RecordTypeException();
     }
   }

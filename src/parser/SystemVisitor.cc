@@ -186,17 +186,33 @@ antlrcpp::Any SystemVisitor::visitDescribe_table(
 
 antlrcpp::Any SystemVisitor::visitInsert_into_table(
     MYSQLParser::Insert_into_tableContext *ctx) {
-  std::vector<std::vector<Field *>> iValueListVec =
+  // std::vector<std::vector<Field *>> iValueListVec =
+  //     ctx->value_lists()->accept(this);
+  // String sTableName = ctx->Identifier()->getText();
+  // int inserted = 0;
+  // for (const auto &iValueList : iValueListVec) {
+  //   try {
+  //     _pDB->Insert(sTableName, iValueList);
+  //     ++inserted;
+  //   } catch (const std::exception &e) {
+  //   }
+  // }
+
+  std::vector<std::vector<String>> iRawListVec =
       ctx->value_lists()->accept(this);
   String sTableName = ctx->Identifier()->getText();
   int inserted = 0;
-  try {
-    for (const auto &iValueList : iValueListVec) {
-      _pDB->Insert(sTableName, iValueList);
+  std::vector<Field *> iValueVec;
+  for (const auto &iRawVec : iRawListVec) {
+    try {
+      for (const String &sRaw : iRawVec)
+        iValueVec.push_back(BuildField(sRaw, ));
+      _pDB->Insert(sTableName, iValueVec);
       ++inserted;
+    } catch (const std::exception &e) {
     }
-  } catch (const std::exception &e) {
   }
+
   Result *res = new MemResult({"Insert"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
   pRes->SetField(0, new IntField(inserted));
@@ -242,6 +258,7 @@ antlrcpp::Any SystemVisitor::visitUpdate_table(
   String sTableName = ctx->Identifier()->getText();
   std::vector<std::pair<String, Field *>> iSetVec =
       ctx->set_clause()->accept(this);
+  // TODO
   std::map<String, std::vector<Condition *>> iMap =
       ctx->where_and_clause()->accept(this);
   assert(iMap.size() == 1);
@@ -457,33 +474,57 @@ antlrcpp::Any SystemVisitor::visitType_(MYSQLParser::Type_Context *ctx) {
 
 antlrcpp::Any SystemVisitor::visitValue_lists(
     MYSQLParser::Value_listsContext *ctx) {
-  std::vector<std::vector<Field *>> iValueListVec;
+  // std::vector<std::vector<Field *>> iValueListVec;
+  // for (const auto &it : ctx->value_list())
+  //   iValueListVec.push_back(it->accept(this));
+  // return iValueListVec;
+
+  std::vector<std::vector<String>> iRawListVec;
   for (const auto &it : ctx->value_list())
-    iValueListVec.push_back(it->accept(this));
-  return iValueListVec;
+    iRawListVec.push_back(it->accept(this));
+  return iRawListVec;
 }
 
 antlrcpp::Any SystemVisitor::visitValue_list(
     MYSQLParser::Value_listContext *ctx) {
-  std::vector<Field *> iValueVec;
+  // std::vector<Field *> iValueVec;
+  // for (const auto &it : ctx->value()) {
+  //   iValueVec.push_back(it->accept(this));
+  // }
+  // return iValueVec;
+
+  std::vector<String> iRawVec;
   for (const auto &it : ctx->value()) {
-    iValueVec.push_back(it->accept(this));
+    iRawVec.push_back(it->accept(this));
   }
-  return iValueVec;
+  return iRawVec;
 }
 
 antlrcpp::Any SystemVisitor::visitValue(MYSQLParser::ValueContext *ctx) {
-  Field *pField = nullptr;
-  if (ctx->Integer())
-    pField = new IntField(std::stoi(ctx->Integer()->getText()));
-  else if (ctx->Float())
-    pField = new FloatField(std::stod(ctx->Float()->getText()));
-  else if (ctx->String())
-    pField = new CharField(ctx->String()->getText().substr(
-        1, ctx->String()->getText().size() - 2));
-  else if (ctx->Null())
-    pField = new NullField();
-  return pField;
+  // Field *pField = nullptr;
+  // if (ctx->Integer()) {
+  //   pField = new IntField(std::stoi(ctx->Integer()->getText()));
+  // } else if (ctx->Float()) {
+  //   pField = new FloatField(std::stod(ctx->Float()->getText()));
+  // } else if (ctx->String()) {
+  //   pField = new CharField(ctx->String()->getText().substr(
+  //       1, ctx->String()->getText().size() - 2));
+  // } else if (ctx->Null()) {
+  //   pField = new NullField();
+  // }
+  // return pField;
+
+  String text = "";
+  if (ctx->Integer()) {
+    text = ctx->Integer()->getText();
+  } else if (ctx->Float()) {
+    text = ctx->Float()->getText();
+  } else if (ctx->String()) {
+    text = ctx->String()->getText();
+  } else if (ctx->Null()) {
+    text = ctx->Null()->getText();
+  }
+  return text;
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_and_clause(
@@ -513,9 +554,12 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
   }
 
   // get [pLow, pHigh)
-  Field *pField = ctx->expression()->value()->accept(this);
-  Field *pLow = ctx->expression()->value()->accept(this),
-        *pHigh = pLow->Clone();
+  // Field *pLow = ctx->expression()->value()->accept(this);
+
+  Field *pLow = BuildField(ctx->expression()->value()->accept(this),
+                           _pDB->GetColType(iPair.first, iPair.second));
+  Field *pHigh = pLow->Clone();
+
   if (ctx->operator_()->getText() == "<") {
     pLow->ToMin();
   } else if (ctx->operator_()->getText() == ">") {
@@ -589,7 +633,14 @@ antlrcpp::Any SystemVisitor::visitExpression(
 
 antlrcpp::Any SystemVisitor::visitSet_clause(
     MYSQLParser::Set_clauseContext *ctx) {
-  std::vector<std::pair<String, Field *>> iVec;
+  // std::vector<std::pair<String, Field *>> iVec;
+  // for (Size i = 0; i < ctx->Identifier().size(); ++i) {
+  //   iVec.push_back(
+  //       {ctx->Identifier(i)->getText(), ctx->value(i)->accept(this)});
+  // }
+  // return iVec;
+
+  std::vector<std::pair<String, String>> iVec;
   for (Size i = 0; i < ctx->Identifier().size(); ++i) {
     iVec.push_back(
         {ctx->Identifier(i)->getText(), ctx->value(i)->accept(this)});
