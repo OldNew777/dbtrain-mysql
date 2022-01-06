@@ -91,11 +91,15 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
     if (iTargetFieldType == FieldType::NULL_TYPE) {
       pField = new NullField();
     } else if (iTargetFieldType == FieldType::INT_TYPE) {
+      if (sRaw.find(".") != String::npos) {
+        printf("RecordTypeException\n");
+        throw RecordTypeException();
+      }
       try {
         int nVal = std::stoi(sRaw);
         pField = new IntField(nVal);
       } catch (const std::invalid_argument& e) {
-        printf("INT format error sRaw:%s\n", sRaw.data());
+        printf("INT format error %s\n");
         throw e;
       } catch (const std::out_of_range& e) {
         printf("INT out of range\n");
@@ -103,7 +107,7 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
       }
     } else if (iTargetFieldType == FieldType::FLOAT_TYPE) {
       try {
-        double fVal = std::stod(sRaw);
+        float fVal = std::stof(sRaw);
         pField = new FloatField(fVal);
       } catch (const std::invalid_argument& e) {
         printf("FLOAT format error\n");

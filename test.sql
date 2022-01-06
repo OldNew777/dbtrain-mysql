@@ -1,6 +1,12 @@
---CREATE TABLE tmp(name VARCHAR(128), id INT, PRIMARY KEY (id, name));
---INSERT INTO tmp VALUES ('peichen', 2018013400),('chenxin', 2018013401);
---SELECT * FROM tmp;
+CREATE TABLE tmp(name VARCHAR(128), id INT, PRIMARY KEY (id));
+INSERT INTO tmp VALUES ('peichen', 2018013400),('chenxin', 2018013401);
+SELECT * FROM tmp;
+
+INSERT INTO tmp VALUES('peichen', NULL);
+INSERT INTO tmp VALUES(NULL, 2018013443);
+INSERT INTO tmp VALUES('zhangsan', 2018013400);
+INSERT INTO tmp VALUES('peichen', 0);
+
 --SELECT AVG(tmp.name),MAX(tmp.id),COUNT(*) FROM tmp WHERE tmp.name < 30 AND tmp.name < (SELECT * FROM tmp) AND tmp.name IS NULL;
 
 -- CREATE DATABASE THU;
@@ -26,6 +32,8 @@ INSERT INTO math VALUES(872, 0);
 INSERT INTO math VALUES(872, 60);
 INSERT INTO math VALUES(872, 30);
 INSERT INTO math VALUES(872, 78.5);
+
+SELECT * FROM math;
 
 INSERT INTO student VALUES('Jack',20);
 INSERT INTO student VALUES('Jack',20);
@@ -54,8 +62,6 @@ SELECT * FROM student, math WHERE student.id = math.id;
 
 SELECT * FROM student WHERE student.name IN ('Jack', 'Mike');
 
-SELECT * FROM student WHERE student.name IN ('Jack', 'Mike');
-
 UPDATE student SET id = 777 WHERE student.name IN ('Jack', 'Mike');
 
 SELECT * FROM student WHERE student.id > 30;
@@ -65,6 +71,7 @@ SELECT * FROM student WHERE student.id > 30;
 
 
 DUMP TO FILE 'dump.txt' FROM TABLE student;
+LOAD FROM FILE 'dump.txt' TO TABLE student;
 
 SELECT * FROM student WHERE student.name = 'Jack';
 

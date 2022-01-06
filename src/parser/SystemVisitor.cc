@@ -230,7 +230,7 @@ antlrcpp::Any SystemVisitor::visitDrop_table(
 antlrcpp::Any SystemVisitor::visitDescribe_table(
     MYSQLParser::Describe_tableContext *ctx) {
   Result *res = new MemResult({"Column Name", "Column Type", "Column Size",
-                               "Can Be Null?", "Is Primary?"});
+                               "Can Be Null", "Primary Key"});
   String sTableName = ctx->Identifier()->getText();
   try {
     for (const auto &pRecord : _pDB->GetTableInfos(sTableName))
@@ -309,18 +309,31 @@ antlrcpp::Any SystemVisitor::visitDelete_from_table(
 antlrcpp::Any SystemVisitor::visitUpdate_table(
     MYSQLParser::Update_tableContext *ctx) {
   String sTableName = ctx->Identifier()->getText();
-  std::vector<std::pair<String, Field *>> iSetVec =
+
+  // std::vector<std::pair<String, Field *>> iSetVec =
+  //     ctx->set_clause()->accept(this);
+
+  std::vector<std::pair<String, String>> iSetVec =
       ctx->set_clause()->accept(this);
-  // TODO
+
   std::map<String, std::vector<Condition *>> iMap =
       ctx->where_and_clause()->accept(this);
   assert(iMap.size() == 1);
   std::vector<Transform> iTrans;
+
+  // for (Size i = 0; i < iSetVec.size(); ++i) {
+  //   FieldID nFieldID = _pDB->GetColID(sTableName, iSetVec[i].first);
+  //   FieldType iType = _pDB->GetColType(sTableName, iSetVec[i].first);
+  //   iTrans.emplace_back(Transform(nFieldID, iType, iSetVec[i].second));
+  // }
+
   for (Size i = 0; i < iSetVec.size(); ++i) {
     FieldID nFieldID = _pDB->GetColID(sTableName, iSetVec[i].first);
     FieldType iType = _pDB->GetColType(sTableName, iSetVec[i].first);
-    iTrans.emplace_back(Transform(nFieldID, iType, iSetVec[i].second));
+    iTrans.emplace_back(
+        Transform(nFieldID, iType, BuildField(iSetVec[i].second, iType)));
   }
+
   std::vector<Condition *> iIndexCond{};
   std::vector<Condition *> iOtherCond{};
   for (const auto &pCond : iMap[sTableName])
@@ -533,11 +546,11 @@ antlrcpp::Any SystemVisitor::visitField_list(
 antlrcpp::Any SystemVisitor::visitNormal_field(
     MYSQLParser::Normal_fieldContext *ctx) {
   std::vector<String> vec;
-  vec.push_back(ctx->Identifier()->getText());          // 0
-  vec.push_back(ctx->type_()->getText());               // 1
-  vec.push_back((ctx->Null() == nullptr) ? "1" : "0");  // 2 NULL
+  vec.push_back(ctx->Identifier()->getText());          // 0 Identifier
+  vec.push_back(ctx->type_()->getText());               // 1 TYPE
+  vec.push_back((ctx->Null() == nullptr) ? "1" : "0");  // 2 CAN BE NULL
   vec.push_back("0");                                   // 3 PRIMARY
-  vec.push_back("NULL");                                // 4 DEFUALT
+  vec.push_back("NULL");                                // 4 DEFAULT
   vec.push_back((ctx->type_()->Integer() == nullptr)
                     ? "0"
                     : ctx->type_()->Integer()->getText());  // 5 SIZE
@@ -696,9 +709,28 @@ antlrcpp::Any SystemVisitor::visitWhere_in_list(
   std::pair<String, String> iPair = ctx->column()->accept(this);
   FieldID nColIndex = _pDB->GetColID(iPair.first, iPair.second);
 
-  return std::pair<String, Condition *>(
-      iPair.first, new InCondition(nColIndex, ctx->value_list()->accept(this)));
-  throw UnimplementedException();
+  // std::vector<Field *> iFieldVec = ctx->value_list()->accept(this);
+  // return std::pair<String, Condition *>(iPair.first,
+  //                                       new InCondition(nColIndex,
+  //                                       iFieldVec));
+
+  std::vector<String> iRawVec = ctx->value_list()->accept(this);
+  std::vector<Field *> iFieldVec;
+  FieldType iType = _pDB->GetColType(iPair.first, iPair.second);
+  try {
+    for (const String &iRaw : iRawVec) {
+      Field *pField = BuildField(iRaw, iType);
+      iFieldVec.push_back(pField);
+    }
+  } catch (const std::exception &e) {
+    for (Field *pField : iFieldVec) {
+      delete pField;
+    }
+    throw e;
+  }
+
+  return std::pair<String, Condition *>(iPair.first,
+                                        new InCondition(nColIndex, iFieldVec));
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_in_select(
