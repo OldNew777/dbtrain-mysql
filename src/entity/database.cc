@@ -61,6 +61,11 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
 void Database::DropTable(const String& sTableName) {
   Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   _pIndexManager->DropIndex(sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
@@ -103,6 +108,11 @@ std::vector<String> Database::GetTableNames() { return GetEntityNames(); }
 
 std::vector<String> Database::GetColumnNames(const String& sTableName) {
   Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   return pTable->GetColumnNames();
 }
 
@@ -116,6 +126,12 @@ std::vector<PageSlotID> Database::Search(
   }
 
   Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+
   std::vector<PageSlotID> ans;
   if (iIndexCond.size() > 0) {
     IndexCondition* pIndexCond = dynamic_cast<IndexCondition*>(iIndexCond[0]);
@@ -172,6 +188,11 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
                           const std::vector<Transform>& iTrans) {
   auto iResVec = Search(sTableName, pCond, iIndexCond);
   Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   bool bHasIndex = _pIndexManager->HasIndex(sTableName);
   for (const auto& iPair : iResVec) {
     // Handle Delete on Index
@@ -354,6 +375,11 @@ PageSlotID Database::Insert(const String& sTableName,
 void Database::CreateIndex(const String& sTableName, const String& sColName) {
   auto iAll = Search(sTableName, nullptr, {});
   Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   FieldType iType = pTable->GetType(sColName);
   _pIndexManager->AddIndex(sTableName, sColName, iType);
   // Handle Exists Data
@@ -369,6 +395,11 @@ void Database::CreateIndex(const String& sTableName, const String& sColName) {
 void Database::DropIndex(const String& sTableName, const String& sColName) {
   auto iAll = Search(sTableName, nullptr, {});
   Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
   for (const auto& iPair : iAll) {
     FieldID nPos = pTable->GetColPos(sColName);
     Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);

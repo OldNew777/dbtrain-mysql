@@ -381,9 +381,9 @@ antlrcpp::Any SystemVisitor::visitSelect_table(
     iCondMap = iTempMap;
   }
   for (const auto &sTableName : iTableNameVec) {
-    if (iCondMap.find(sTableName) == iCondMap.end())
+    if (iCondMap.find(sTableName) == iCondMap.end()) {
       iResultMap[sTableName] = _pDB->Search(sTableName, nullptr, {});
-    else {
+    } else {
       std::vector<Condition *> iIndexCond{};
       std::vector<Condition *> iOtherCond{};
       for (const auto &pCond : iCondMap[sTableName])
