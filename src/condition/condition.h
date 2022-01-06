@@ -5,7 +5,12 @@
 
 namespace dbtrain_mysql {
 
-enum class ConditionType { SIMPLE_TYPE = 0, JOIN_TYPE = 1, INDEX_TYPE = 2 };
+enum class ConditionType {
+  SIMPLE_TYPE = 0,
+  JOIN_TYPE = 1,
+  INDEX_TYPE = 2,
+  NULL_TYPE = 3,
+};
 
 /**
  * @brief 条件检索的条件

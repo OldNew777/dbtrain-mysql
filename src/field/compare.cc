@@ -6,7 +6,8 @@
 namespace dbtrain_mysql {
 
 bool Less(Field *pA, Field *pB) {
-  if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
+  if (pA->GetType() == FieldType::NULL_TYPE ||
+      pB->GetType() == FieldType::NULL_TYPE)
     return false;
   FieldType iType = pA->GetType();
   if (iType != pB->GetType()) {
@@ -32,7 +33,8 @@ bool Less(Field *pA, Field *pB) {
 }
 
 bool Equal(Field *pA, Field *pB) {
-  if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
+  if (pA->GetType() == FieldType::NULL_TYPE ||
+      pB->GetType() == FieldType::NULL_TYPE)
     return false;
   FieldType iType = pA->GetType();
   if (iType != pB->GetType()) {
@@ -58,7 +60,8 @@ bool Equal(Field *pA, Field *pB) {
 }
 
 bool Greater(Field *pA, Field *pB) {
-  if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
+  if (pA->GetType() == FieldType::NULL_TYPE ||
+      pB->GetType() == FieldType::NULL_TYPE)
     return false;
   FieldType iType = pA->GetType();
   if (iType != pB->GetType()) {
@@ -84,7 +87,8 @@ bool Greater(Field *pA, Field *pB) {
 }
 
 bool LessEqual(Field *pA, Field *pB) {
-  if (dynamic_cast<NullField *>(pA) || dynamic_cast<NullField *>(pB))
+  if (pA->GetType() == FieldType::NULL_TYPE ||
+      pB->GetType() == FieldType::NULL_TYPE)
     return false;
   FieldType iType = pA->GetType();
   if (iType != pB->GetType()) {

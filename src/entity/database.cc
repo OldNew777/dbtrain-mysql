@@ -119,12 +119,6 @@ std::vector<String> Database::GetColumnNames(const String& sTableName) {
 std::vector<PageSlotID> Database::Search(
     const String& sTableName, Condition* pCond,
     const std::vector<Condition*>& iIndexCond) {
-  if (pCond != nullptr && iIndexCond.size() > 0) {
-    auto e = Exception("Search function accept exclusive arguments");
-    std::cout << e.what() << "\n";
-    throw e;
-  }
-
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
@@ -134,29 +128,28 @@ std::vector<PageSlotID> Database::Search(
 
   std::vector<PageSlotID> ans;
   if (iIndexCond.size() > 0) {
-    IndexCondition* pIndexCond = dynamic_cast<IndexCondition*>(iIndexCond[0]);
-    if (pIndexCond == nullptr) {
-      auto e =
-          NullptrException("Search", "IndexCondition should not be nullptr");
-      std::cout << e.what() << "\n";
-      throw e;
+    int start = 0;
+    if (pCond != nullptr) {
+      ans = pTable->SearchRecord(pCond);
+    } else {
+      start = 1;
+      IndexCondition* pIndexCond = dynamic_cast<IndexCondition*>(iIndexCond[0]);
+      auto iName = pIndexCond->GetIndexName();
+      auto iRange = pIndexCond->GetIndexRange();
+      ans = _pIndexManager->GetIndex(iName.first, iName.second)
+                ->Range(iRange.first, iRange.second);
     }
-    auto iName = pIndexCond->GetIndexName();
-    auto iRange = pIndexCond->GetIndexRange();
-    std::vector<PageSlotID> iRes =
-        _pIndexManager->GetIndex(iName.first, iName.second)
-            ->Range(iRange.first, iRange.second);
-    for (Size i = 1; i < iIndexCond.size(); ++i) {
+    for (Size i = start; i < iIndexCond.size(); ++i) {
       IndexCondition* pIndexCond = dynamic_cast<IndexCondition*>(iIndexCond[i]);
       auto iName = pIndexCond->GetIndexName();
       auto iRange = pIndexCond->GetIndexRange();
-      iRes =
-          Intersection(iRes, _pIndexManager->GetIndex(iName.first, iName.second)
-                                 ->Range(iRange.first, iRange.second));
+      ans =
+          Intersection(ans, _pIndexManager->GetIndex(iName.first, iName.second)
+                                ->Range(iRange.first, iRange.second));
     }
-    ans = iRes;
-  } else
+  } else {
     ans = pTable->SearchRecord(pCond);
+  }
 
   return ans;
 }

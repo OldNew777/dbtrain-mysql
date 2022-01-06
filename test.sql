@@ -47,7 +47,7 @@ INSERT INTO student VALUES('Mike',NULL);
 INSERT INTO student VALUES(NULL,872);
 
 SELECT * FROM student, math WHERE student.id = math.id;
-
+SELECT * FROM student WHERE student.name = 'Jack' AND student.id = 20;
 SELECT * FROM student WHERE student.name IN ('Jack', 'Mike');
 
 UPDATE student SET id = 777 WHERE student.name IN ('Jack', 'Mike');

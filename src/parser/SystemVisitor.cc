@@ -466,7 +466,6 @@ antlrcpp::Any SystemVisitor::visitAlter_drop_index(
       _pDB->DropIndex(sTableName, sColName);
       ++nSize;
     } catch (const std::exception &e) {
-      // TODO
     }
   }
   Result *res = new MemResult({"Drop Index"});
@@ -675,14 +674,14 @@ antlrcpp::Any SystemVisitor::visitWhere_and_clause(
 
 antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
     MYSQLParser::Where_operator_expressionContext *ctx) {
-  std::pair<String, String> iPair = ctx->column()->accept(this);
-  FieldID nColIndex = _pDB->GetColID(iPair.first, iPair.second);
+  std::pair<String, String> column = ctx->column()->accept(this);
+  FieldID nColIndex = _pDB->GetColID(column.first, column.second);
   if (ctx->expression()->column()) {
     // JOIN CONDITION
     std::pair<String, String> iPairB =
         ctx->expression()->column()->accept(this);
     return std::pair<String, Condition *>(
-        "JOIN", new JoinCondition(iPair.first, iPair.second, iPairB.first,
+        "JOIN", new JoinCondition(column.first, column.second, iPairB.first,
                                   iPairB.second));
   }
 
@@ -690,7 +689,7 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
   // Field *pLow = ctx->expression()->value()->accept(this);
 
   Field *pLow = BuildField(ctx->expression()->value()->accept(this),
-                           _pDB->GetColType(iPair.first, iPair.second));
+                           _pDB->GetColType(column.first, column.second));
   Field *pHigh = pLow->Clone();
 
   if (ctx->operator_()->getText() == "<") {
@@ -712,15 +711,15 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
     throw e;
   }
 
-  if (_pDB->IsIndex(iPair.first, iPair.second)) {
+  if (_pDB->IsIndex(column.first, column.second)) {
     // Index
     return std::pair<String, Condition *>(
-        iPair.first,
-        new IndexCondition(iPair.first, iPair.second, pLow, pHigh));
+        column.first,
+        new IndexCondition(column.first, column.second, pLow, pHigh));
   } else {
     // no Index
     return std::pair<String, Condition *>(
-        iPair.first, new RangeCondition(nColIndex, pLow, pHigh));
+        column.first, new RangeCondition(nColIndex, pLow, pHigh));
   }
 }
 
@@ -731,23 +730,32 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_select(
 
 antlrcpp::Any SystemVisitor::visitWhere_null(
     MYSQLParser::Where_nullContext *ctx) {
-  throw UnimplementedException();
+  std::pair<String, String> column = ctx->column()->accept(this);
+  FieldID nColIndex = _pDB->GetColID(column.first, column.second);
+
+  if (ctx->getText().find("NOT") != String::npos) {
+    return std::pair<String, Condition *>(column.first,
+                                          new NullCondition(nColIndex, false));
+  } else {
+    return std::pair<String, Condition *>(column.first,
+                                          new NullCondition(nColIndex, true));
+  }
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_in_list(
     MYSQLParser::Where_in_listContext *ctx) {
   // WHERE XXX IN (...)
-  std::pair<String, String> iPair = ctx->column()->accept(this);
-  FieldID nColIndex = _pDB->GetColID(iPair.first, iPair.second);
+  std::pair<String, String> column = ctx->column()->accept(this);
+  FieldID nColIndex = _pDB->GetColID(column.first, column.second);
 
   // std::vector<Field *> iFieldVec = ctx->value_list()->accept(this);
-  // return std::pair<String, Condition *>(iPair.first,
+  // return std::pair<String, Condition *>(column.first,
   //                                       new InCondition(nColIndex,
   //                                       iFieldVec));
 
   std::vector<String> iRawVec = ctx->value_list()->accept(this);
   std::vector<Field *> iFieldVec;
-  FieldType iType = _pDB->GetColType(iPair.first, iPair.second);
+  FieldType iType = _pDB->GetColType(column.first, column.second);
   try {
     for (const String &iRaw : iRawVec) {
       Field *pField = BuildField(iRaw, iType);
@@ -760,7 +768,7 @@ antlrcpp::Any SystemVisitor::visitWhere_in_list(
     throw e;
   }
 
-  return std::pair<String, Condition *>(iPair.first,
+  return std::pair<String, Condition *>(column.first,
                                         new InCondition(nColIndex, iFieldVec));
 }
 

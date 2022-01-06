@@ -10,7 +10,7 @@ class NotCondition : public Condition {
   ~NotCondition();
   bool Match(const Record& iRecord) const override;
 
- private:
+ protected:
   Condition* _pCond;
 };
 }  // namespace dbtrain_mysql

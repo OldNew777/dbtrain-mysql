@@ -10,9 +10,6 @@ RangeCondition::RangeCondition(FieldID nPos, Field* pLow, Field* pHigh)
   assert(pHigh != nullptr);
 }
 
-RangeCondition::RangeCondition(FieldID nPos)
-    : _nPos(nPos), _pLow(nullptr), _pHigh(nullptr) {}
-
 RangeCondition::RangeCondition(const RangeCondition& t) {
   _nPos = t._nPos;
   _pLow = t._pLow->Clone();

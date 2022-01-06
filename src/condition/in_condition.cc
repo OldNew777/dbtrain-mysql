@@ -5,11 +5,11 @@
 namespace dbtrain_mysql {
 
 InCondition::InCondition(FieldID nPos, const std::vector<Field*>& iFieldVec)
-    : RangeCondition(nPos), _iFieldVec(iFieldVec) {
+    : _nPos(nPos), _iFieldVec(iFieldVec) {
   for (auto pField : iFieldVec) assert(pField != nullptr);
 }
 
-InCondition::InCondition(const InCondition& t) : RangeCondition(t._nPos) {
+InCondition::InCondition(const InCondition& t) : _nPos(t._nPos) {
   for (auto pField : t._iFieldVec) _iFieldVec.push_back(pField->Clone());
 }
 

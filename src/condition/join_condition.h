@@ -13,6 +13,7 @@ class JoinCondition : public Condition {
   ~JoinCondition() = default;
   bool Match(const Record &iRecord) const override;
   ConditionType GetType() const override;
+
   String sTableA, sTableB;
   String sColA, sColB;
 };

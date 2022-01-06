@@ -13,16 +13,13 @@ namespace dbtrain_mysql {
  */
 class RangeCondition : public Condition {
  public:
-  RangeCondition(FieldID nPos);
   RangeCondition(FieldID nPos, Field *pLow, Field *pHigh);
   RangeCondition(const RangeCondition &t);
-  ~RangeCondition();
+  virtual ~RangeCondition();
   virtual bool Match(const Record &iRecord) const override;
 
  protected:
   uint32_t _nPos = 0xFFFF;
-
- private:
   Field *_pLow, *_pHigh;
 };
 

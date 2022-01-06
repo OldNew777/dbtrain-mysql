@@ -12,7 +12,7 @@ class OrCondition : public Condition {
   bool Match(const Record& iRecord) const override;
   void PushBack(Condition* pCond);
 
- private:
+ protected:
   std::vector<Condition*> _iCondVec;
 };
 

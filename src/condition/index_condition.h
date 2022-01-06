@@ -11,7 +11,7 @@ class IndexCondition : public Condition {
   IndexCondition(const String &sTableName, const String &sColName, Field *pLow,
                  Field *pHigh);
   IndexCondition(const IndexCondition &t);
-  ~IndexCondition();
+  virtual ~IndexCondition();
 
   bool Match(const Record &iRecord) const override;
   ConditionType GetType() const override;
@@ -19,7 +19,7 @@ class IndexCondition : public Condition {
   std::pair<String, String> GetIndexName() const;
   std::pair<Field *, Field *> GetIndexRange() const;
 
- private:
+ protected:
   String _sTableName, _sColName;
   Field *_pLow, *_pHigh;
 };

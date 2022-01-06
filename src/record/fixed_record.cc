@@ -77,7 +77,7 @@ Size FixedRecord::Store(uint8_t* dst) const {
       throw e;
     }
     field_f->GetData(dst + size, fieldSize);
-    if (dynamic_cast<NullField*>(field_f)) bitNULL.Set(i);
+    if (field_f->GetType() == FieldType::NULL_TYPE) bitNULL.Set(i);
     size += fieldSize;
   }
 
