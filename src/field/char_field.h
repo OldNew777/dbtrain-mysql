@@ -43,8 +43,8 @@ class CharField : public Field {
   bool operator!=(const CharField& b) const;
 
  private:
-  String charData;
-  Size len;
+  String _charData;
+  Size _len;
 };
 
 }  // namespace dbtrain_mysql

@@ -17,7 +17,7 @@
 
 CREATE DATABASE THU;
 USE THU;
-CREATE TABLE student(name VARCHAR(1800), id INT);
+CREATE TABLE student(name VARCHAR(1800), id INT, PRIMARY KEY (id));
 
 
 INSERT INTO student VALUES('Jack',20);
@@ -61,7 +61,7 @@ SELECT * FROM student WHERE student.id > 30;
 
 
 -- SELECT * FROM student;
--- DESC student;
+DESC student;
 DROP DATABASE THU;
 
 

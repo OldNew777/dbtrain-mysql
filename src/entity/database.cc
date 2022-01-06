@@ -212,10 +212,45 @@ PageSlotID Database::Insert(const String& sTableName,
       printf("Column should not be NULL\n");
       throw FieldListException();
     }
+    printf("%d\n", pTable->GetIsPrimary(colNames[i]));
     if (pTable->GetIsPrimary(colNames[i])) {
-      // TODO : check whether primary key conflicts with other records
-      // primaryKeyConflict = true;
-      // break;
+      // TODO: check whether primary key conflicts with other records
+      FieldID colPos = pTable->GetColPos(colNames[i]);
+      FieldType colType = pTable->GetType(colNames[i]);
+      Condition* pCond = nullptr;
+      Field* low = nullptr;
+      Field* high = nullptr;
+      switch (colType)
+      {
+      case FieldType::INT_TYPE :
+        low = new IntField(std::stoi(iRawVec[i]));
+        high = new IntField(std::stoi(iRawVec[i]));
+        printf("%s\n", iRawVec[i].data());
+        high->Add();
+        pCond = new RangeCondition(colPos, low, high);
+        break;
+      case FieldType::FLOAT_TYPE:
+        low = new FloatField(std::stof(iRawVec[i]));
+        high = new FloatField(std::stof(iRawVec[i]));
+        high->Add();
+        pCond = new RangeCondition(colPos, low, high);
+        break;
+      case FieldType::CHAR_TYPE:
+        low = new CharField(iRawVec[i]);
+        high = new CharField(iRawVec[i]);
+        high->Add();
+        pCond = new RangeCondition(colPos, low, high);
+        break;
+      default:
+        printf("cannot be null type\n");
+        throw FieldListException();
+        break;
+      }
+      std::vector<PageSlotID> pageSlotIDVec= pTable->SearchRecord(pCond);
+      if(pageSlotIDVec.size() != 0){
+        printf("primary key conflict with other\n");
+        throw FieldListException();
+      }
     }
   }
   if (primaryKeyConflict) {
@@ -268,9 +303,19 @@ PageSlotID Database::Insert(const String& sTableName,
       throw FieldListException();
     }
     if (pTable->GetIsPrimary(colNames[i])) {
-      // TODO : check whether primary key conflicts with other records
-      // primaryKeyConflict = true;
-      // break;
+      // TODO: check whether primary key conflicts with other records
+      FieldID colPos = pTable->GetColPos(colNames[i]);
+      FieldType colType = pTable->GetType(colNames[i]);
+      Condition* pCond = nullptr;
+      Field* low = iValueVec[i];
+      Field* high = low->Clone();
+      high->Add();
+      pCond = new RangeCondition(colPos, low, high);
+      std::vector<PageSlotID> pageSlotIDVec= pTable->SearchRecord(pCond);
+      if(pageSlotIDVec.size() != 0){
+        printf("primary key conflict with other\n");
+        throw FieldListException();
+      }
     }
   }
   if (primaryKeyConflict) {
