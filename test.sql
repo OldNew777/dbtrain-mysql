@@ -34,6 +34,9 @@ INSERT INTO math VALUES(874, 30);
 INSERT INTO math VALUES(875, 78.5);
 INSERT INTO math VALUES(875, 78.5);
 
+UPDATE math SET score = NULL WHERE math.id > 1;
+UPDATE math SET id = 20 WHERE math.score = 0;
+
 SELECT * FROM math;
 SELECT * FROM math LIMIT 2 OFFSET 1;
 

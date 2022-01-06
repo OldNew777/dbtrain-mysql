@@ -82,6 +82,9 @@ class Database : public EntityManager {
 
  protected:
   IndexManager* _pIndexManager;
+
+  std::vector<PageSlotID> GetDuplicated(const String& sTableName,
+                                        const String& sColName, Field* pField);
 };
 
 }  // namespace dbtrain_mysql

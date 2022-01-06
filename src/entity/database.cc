@@ -57,6 +57,12 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
   // insert entity to page
   InsertEntity(sTableName);
+
+  // insert index
+  for (int i = 0; i < iSchema.GetSize(); ++i) {
+    const Column& column = iSchema.GetColumn(i);
+    if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
+  }
 }
 
 void Database::DropTable(const String& sTableName) {
@@ -188,7 +194,44 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
   }
 
   // check NOT-NULL / PRIMARY-KEY
-  // TODO
+  std::vector<String> iColNameVec = GetColumnNames(sTableName);
+  for (int i = 0; i < iTrans.size(); ++i) {
+    const String& sColName = iColNameVec[iTrans[i].GetColPos()];
+    if (iTrans[i].GetField()->GetType() == FieldType::NULL_TYPE &&
+        (!pTable->GetCanBeNull(sColName) || pTable->GetIsPrimary(sColName))) {
+      auto e = FieldListException("Column should not be NULL");
+      std::cout << e.what() << "\n";
+      throw e;
+    }
+  }
+  bool primaryKeyConflict = false;
+  for (int i = 0; i < iTrans.size(); ++i) {
+    const String& sColName = iColNameVec[iTrans[i].GetColPos()];
+    if (pTable->GetIsPrimary(sColName)) {
+      primaryKeyConflict = true;
+      // check whether primary key conflicts with other records
+      std::vector<PageSlotID> iDuplicated =
+          GetDuplicated(sTableName, sColName, iTrans[i].GetField());
+#ifdef PRIMARY_KEY_DEBUG
+      printf("iResVec.size() = %d\n", iResVec.size());
+      printf("iDuplicated.size() = %d\n", iDuplicated.size());
+      printf("Intersection(iResVec, iDuplicated).size() = %d\n",
+             Intersection(iResVec, iDuplicated).size());
+#endif
+      if (iResVec.size() + iDuplicated.size() -
+              Intersection(iResVec, iDuplicated).size() <=
+          1) {
+        primaryKeyConflict = false;
+        break;
+      }
+    }
+  }
+  if (primaryKeyConflict) {
+    // add exception here
+    auto e = Exception("Primary key existed");
+    std::cout << e.what() << "\n";
+    throw e;
+  }
 
   bool bHasIndex = _pIndexManager->HasIndex(sTableName);
   for (const auto& iPair : iResVec) {
@@ -253,24 +296,14 @@ PageSlotID Database::Insert(const String& sTableName,
     if (pTable->GetIsPrimary(sColName)) {
       // check whether primary key conflicts with other records
       primaryKeyConflict = true;
-      FieldID colPos = pTable->GetColPos(sColName);
       FieldType colType = pTable->GetType(sColName);
-      Field* pLow = BuildField(iRawVec[i], colType);
-      Field* pHigh = pLow->Clone();
-      pHigh->Add();
-      Condition* pCond = nullptr;
-      std::vector<Condition*> iIndexCond{};
-      if (IsIndex(sTableName, sColName))
-        iIndexCond.push_back(
-            new IndexCondition(sTableName, sColName, pLow, pHigh));
-      else
-        pCond = new RangeCondition(colPos, pLow, pHigh);
-      std::vector<PageSlotID> pageSlotIDVec =
-          Search(sTableName, pCond, iIndexCond);
-      if (pageSlotIDVec.size() == 0) {
+      Field* pField = BuildField(iRawVec[i], colType);
+      if (GetDuplicated(sTableName, sColName, pField).size() == 0) {
         primaryKeyConflict = false;
+        delete pField;
         break;
       }
+      delete pField;
     }
   }
   if (primaryKeyConflict) {
@@ -334,25 +367,10 @@ PageSlotID Database::Insert(const String& sTableName,
     const String& sColName = iColNameVec[i];
     if (pTable->GetIsPrimary(sColName)) {
       primaryKeyConflict = true;
-      FieldID colPos = pTable->GetColPos(sColName);
-      FieldType colType = pTable->GetType(sColName);
-      Field* pLow = iValueVec[i]->Clone();
-      Field* pHigh = pLow->Clone();
-      pHigh->Add();
-      Condition* pCond = nullptr;
-      std::vector<Condition*> iIndexCond{};
-      if (IsIndex(sTableName, sColName))
-        iIndexCond.push_back(
-            new IndexCondition(sTableName, sColName, pLow, pHigh));
-      else
-        pCond = new RangeCondition(colPos, pLow, pHigh);
-      std::vector<PageSlotID> pageSlotIDVec =
-          Search(sTableName, pCond, iIndexCond);
-      if (pageSlotIDVec.size() == 0) {
+      if (GetDuplicated(sTableName, sColName, iValueVec[i]).size() == 0) {
         primaryKeyConflict = false;
         break;
       }
-      delete pCond;
     }
   }
   if (primaryKeyConflict) {
@@ -384,6 +402,40 @@ PageSlotID Database::Insert(const String& sTableName,
 
   delete pRecord;
   return iPair;
+}
+
+std::vector<PageSlotID> Database::GetDuplicated(const String& sTableName,
+                                                const String& sColName,
+                                                Field* pField) {
+  Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  FieldID colPos = pTable->GetColPos(sColName);
+  Field *pLow = pField->Clone(), *pHigh = pField->Clone();
+  pHigh->Add();
+  Condition* pCond = nullptr;
+  std::vector<Condition*> iIndexCond{};
+  if (IsIndex(sTableName, sColName)) {
+    iIndexCond.push_back(new IndexCondition(sTableName, sColName, pLow, pHigh));
+  } else {
+    pCond = new RangeCondition(colPos, pLow, pHigh);
+  }
+  std::vector<PageSlotID> iPageSlotIDVec =
+      Search(sTableName, pCond, iIndexCond);
+
+#ifdef PRIMARY_KEY_DEBUG
+  printf("\n%s.%s\n", sTableName.c_str(), sColName.c_str());
+  printf("[%s, %s)\n", pLow->ToString().c_str(), pHigh->ToString().c_str());
+  printf("Size = %d\n\n", int(iPageSlotIDVec.size()));
+#endif
+
+  if (pCond) delete pCond;
+  for (auto pCond : iIndexCond) delete pCond;
+
+  return iPageSlotIDVec;
 }
 
 void Database::CreateIndex(const String& sTableName, const String& sColName) {
