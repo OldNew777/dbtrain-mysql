@@ -193,6 +193,10 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
     std::cout << e.what() << "\n";
     throw e;
   }
+
+  // check NOT-NULL / PRIMARY-KEY
+  // TODO
+
   bool bHasIndex = _pIndexManager->HasIndex(sTableName);
   for (const auto& iPair : iResVec) {
     // Handle Delete on Index

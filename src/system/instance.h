@@ -40,7 +40,8 @@ class Instance {
   Size GetColSize(const String &sTableName, const String &sColName) const;
 
   std::vector<PageSlotID> Search(const String &sTableName, Condition *pCond,
-                                 const std::vector<Condition *> &iIndexCond);
+                                 const std::vector<Condition *> &iIndexCond,
+                                 int limit = INT32_MAX, int offset = 0);
   uint32_t Delete(const String &sTableName, Condition *pCond,
                   const std::vector<Condition *> &iIndexCond);
   uint32_t Update(const String &sTableName, Condition *pCond,

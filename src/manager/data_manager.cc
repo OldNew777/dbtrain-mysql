@@ -473,9 +473,13 @@ std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
 
 std::vector<PageSlotID> DataManager::Search(
     const String& sTableName, Condition* pCond,
-    const std::vector<Condition*>& iIndexCond) {
+    const std::vector<Condition*>& iIndexCond, int limit, int offset) {
   CheckDatabaseUsed();
-  return _pDatabase->Search(sTableName, pCond, iIndexCond);
+  std::vector<PageSlotID> ans =
+      _pDatabase->Search(sTableName, pCond, iIndexCond);
+  ans.erase(ans.begin(), ans.begin() + offset);
+  if (limit < ans.size()) ans.erase(ans.begin() + limit, ans.end());
+  return ans;
 }
 
 uint32_t DataManager::Delete(const String& sTableName, Condition* pCond,

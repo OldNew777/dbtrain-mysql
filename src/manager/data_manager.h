@@ -110,7 +110,8 @@ class DataManager {
       std::map<String, std::vector<PageSlotID>>& iResultMap,
       std::vector<Condition*>& iJoinConds);
   std::vector<PageSlotID> Search(const String& sTableName, Condition* pCond,
-                                 const std::vector<Condition*>& iIndexCond);
+                                 const std::vector<Condition*>& iIndexCond,
+                                 int limit, int offset);
   uint32_t Delete(const String& sTableName, Condition* pCond,
                   const std::vector<Condition*>& iIndexCond);
   uint32_t Update(const String& sTableName, Condition* pCond,

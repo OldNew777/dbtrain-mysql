@@ -380,9 +380,21 @@ antlrcpp::Any SystemVisitor::visitSelect_table(
         ctx->where_and_clause()->accept(this);
     iCondMap = iTempMap;
   }
+  // limit && offset
+  int limit = INT32_MAX, offset = 0;
+  if (ctx->Integer().size() > 0) {
+    String temp = ctx->Integer(0)->getText();
+    limit = std::stoi(temp);
+    if (ctx->Integer().size() == 2) {
+      String temp = ctx->Integer(1)->getText();
+      offset = std::stoi(temp);
+    }
+  }
+
   for (const auto &sTableName : iTableNameVec) {
     if (iCondMap.find(sTableName) == iCondMap.end()) {
-      iResultMap[sTableName] = _pDB->Search(sTableName, nullptr, {});
+      iResultMap[sTableName] =
+          _pDB->Search(sTableName, nullptr, {}, limit, offset);
     } else {
       std::vector<Condition *> iIndexCond{};
       std::vector<Condition *> iOtherCond{};
@@ -393,7 +405,8 @@ antlrcpp::Any SystemVisitor::visitSelect_table(
           iOtherCond.push_back(pCond);
       Condition *pCond = nullptr;
       if (iOtherCond.size() > 0) pCond = new AndCondition(iOtherCond);
-      iResultMap[sTableName] = _pDB->Search(sTableName, pCond, iIndexCond);
+      iResultMap[sTableName] =
+          _pDB->Search(sTableName, pCond, iIndexCond, limit, offset);
       if (pCond) delete pCond;
       for (const auto &it : iIndexCond)
         if (it) delete it;

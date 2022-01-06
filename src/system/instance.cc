@@ -76,8 +76,8 @@ Size Instance::GetColSize(const String& sTableName,
 
 std::vector<PageSlotID> Instance::Search(
     const String& sTableName, Condition* pCond,
-    const std::vector<Condition*>& iIndexCond) {
-  return _pDataManager->Search(sTableName, pCond, iIndexCond);
+    const std::vector<Condition*>& iIndexCond, int limit, int offset) {
+  return _pDataManager->Search(sTableName, pCond, iIndexCond, limit, offset);
 }
 
 PageSlotID Instance::Insert(const String& sTableName,
