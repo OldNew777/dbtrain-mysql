@@ -8,18 +8,22 @@ using namespace dbtrain_mysql;
 
 int main() {
   Instance *pDB = new Instance();
-  String sSQL;
+  String sSQL = "", sBuffer;
   std::cout << "> ";
-  while (getline(std::cin, sSQL)) {
-    if (toUpper(sSQL) == "\\Q" || toUpper(sSQL) == "QUIT" ||
-        toUpper(sSQL) == "EXIT") {
+  while (getline(std::cin, sBuffer)) {
+    sSQL += " " + sBuffer;
+    if (toUpper(sBuffer) == "\\Q" || toUpper(sBuffer) == "QUIT" ||
+        toUpper(sBuffer) == "EXIT") {
       break;
     } else {
-      try {
-        std::vector<Result *> iResVec = Execute(pDB, sSQL);
-        PrintTable(iResVec);
-      } catch (const std::exception &e) {
-        std::cerr << e.what() << '\n';
+      if (sBuffer[sBuffer.size() - 1] == ';') {
+        try {
+          std::vector<Result *> iResVec = Execute(pDB, sSQL);
+          PrintTable(iResVec);
+        } catch (const std::exception &e) {
+          std::cerr << e.what() << '\n';
+        }
+        sSQL = "";
       }
     }
     std::cout << "> ";
