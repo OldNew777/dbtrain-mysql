@@ -195,12 +195,91 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
 }
 
 PageSlotID Database::Insert(const String& sTableName,
+                            const std::vector<String>& iRawVec) {
+  Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) throw TableNotExistException(sTableName);
+
+  std::vector<std::string> colNames = pTable->GetColumnNames();
+  if (colNames.size() != iRawVec.size()) {
+    printf("Column num does not correspond\n");
+    throw FieldListException();
+  }
+
+  bool primaryKeyConflict = false;
+  for (int i = 0; i < colNames.size(); i++) {
+    if (iRawVec[i] == "NULL" && (!pTable->GetCanBeNull(colNames[i]) ||
+                                 pTable->GetIsPrimary(colNames[i]))) {
+      printf("Column should not be NULL\n");
+      throw FieldListException();
+    }
+    if (pTable->GetIsPrimary(colNames[i])) {
+      // TODO : check whether primary key conflicts with other records
+      // primaryKeyConflict = true;
+      // break;
+    }
+  }
+  if (primaryKeyConflict) {
+    // TODO : add exception here
+    printf("Primary key existed\n");
+    throw Exception("Primary key existed");
+  }
+
+  Record* pRecord = pTable->EmptyRecord();
+  try {
+    pRecord->Build(iRawVec);
+  } catch (const Exception& e) {
+    delete pRecord;
+    throw e;
+  }
+
+  PageSlotID iPair = pTable->InsertRecord(pRecord);
+
+  // Handle Insert on Index
+  if (_pIndexManager->HasIndex(sTableName)) {
+    auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
+    for (const auto& sCol : iColNames) {
+      FieldID nPos = pTable->GetColPos(sCol);
+      Field* pKey = pRecord->GetField(nPos);
+      _pIndexManager->GetIndex(sTableName, sCol)->Insert(pKey, iPair);
+    }
+  }
+
+  delete pRecord;
+  return iPair;
+}
+
+PageSlotID Database::Insert(const String& sTableName,
                             const std::vector<Field*>& iValueVec) {
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) throw TableNotExistException(sTableName);
 
-  Record* pRecord = pTable->EmptyRecord();
+  std::vector<std::string> colNames = pTable->GetColumnNames();
+  if (colNames.size() != iValueVec.size()) {
+    printf("Column num does not correspond\n");
+    throw FieldListException();
+  }
 
+  bool primaryKeyConflict = false;
+  for (int i = 0; i < colNames.size(); i++) {
+    if (iValueVec[i]->GetType() == FieldType::NULL_TYPE &&
+        (!pTable->GetCanBeNull(colNames[i]) ||
+         pTable->GetIsPrimary(colNames[i]))) {
+      printf("Column should not be NULL\n");
+      throw FieldListException();
+    }
+    if (pTable->GetIsPrimary(colNames[i])) {
+      // TODO : check whether primary key conflicts with other records
+      // primaryKeyConflict = true;
+      // break;
+    }
+  }
+  if (primaryKeyConflict) {
+    // TODO : add exception here
+    printf("Primary key existed\n");
+    throw Exception("Primary key existed");
+  }
+
+  Record* pRecord = pTable->EmptyRecord();
   try {
     pRecord->Build(iValueVec);
   } catch (const Exception& e) {

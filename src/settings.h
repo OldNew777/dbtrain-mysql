@@ -13,6 +13,6 @@
 // #define DATABASE_DEBUG
 // #define DELETE_DEBUG
 // #define RAW2FIELD_BUILD_DEBUG
-#define UPDATE_DEBUG
+// #define UPDATE_DEBUG
 
 #endif

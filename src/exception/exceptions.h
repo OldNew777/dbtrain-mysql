@@ -12,3 +12,6 @@
 #include "parser_exception.h"
 #include "table_exception.h"
 #include "unimplemented_exception.h"
+#include "cache_invalide_exception.h"
+#include "file_not_exist_exception.h"
+#include "field_list_exception.h"

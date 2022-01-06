@@ -14,7 +14,8 @@ const PageOffset PAGE_SIZE = 4096;
 const PageOffset HEADER_SIZE = 64;
 const PageOffset DATA_SIZE = PAGE_SIZE - HEADER_SIZE;
 
-const PageID MEM_PAGES = 1U << 18;
+const PageID MAX_MEM_PAGES = 1U << 18;
+const PageID MEM_PAGES = 1U << 10;
 const PageID DB_PAGES = 1U << 28;
 
 const PageID NULL_PAGE = 0xFFFFFFFF;
@@ -31,6 +32,11 @@ const Size FIELD_TYPE_BYTES = 1;
 const Size FIELD_SIZE_MAX_BYTES = 2;
 const Size FIELD_SIZE_MAX = (1 << ((FIELD_SIZE_MAX_BYTES << 3) - 1)) - 1;
 const Size COLUMN_NUM_MAX = 32;
+
+const Size COLUMN_NOT_NULL_BYTES = 1;
+
+const uint32_t CACHE_ASSOCIATIVE = 16;
+const uint32_t CACHE_GROUP_NUM = 1024;
 
 }  // namespace dbtrain_mysql
 

@@ -17,6 +17,13 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
     _iColMap[iCol.GetName()] = i;
     _iTypeVec.push_back(iCol.GetType());
     _iSizeVec.push_back(iCol.GetSize());
+    uint8_t status = 0;
+    if(iCol.GetCanBeNull()) status |= 0b1;
+    if(iCol.GetIsPrimary()) {
+      // printf("name: %s\n", iCol.GetName());
+      status |= 0b10;
+    }
+    _iStatusVec.push_back(status);
   }
   assert(_iColMap.size() == _iTypeVec.size());
   RecordPage* pPage = new RecordPage(GetTotalSize(), true);
@@ -25,7 +32,23 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
   _bModified = true;
 }
 
-TablePage::TablePage(PageID nPageID) : ManagerPage(nPageID) {}
+TablePage::TablePage(PageID nPageID) : ManagerPage(nPageID) {
+  for(int i = 0; i < _iTypeVec.size(); i ++){
+    uint8_t iNull = 0;
+    GetData(&iNull, COLUMN_NOT_NULL_BYTES, 
+      COLUMN_NOT_NULL_BYTES * i + COLUMN_STATUS_OFFSET);
+    _iStatusVec.push_back(iNull);
+  }
+  // printf("TablePage()\n");
+}
+TablePage::~TablePage(){
+  for(int i = 0; i < _iStatusVec.size(); i ++){
+    uint8_t iNull = _iStatusVec[i];
+    SetData(&iNull, COLUMN_NOT_NULL_BYTES, 
+      COLUMN_NOT_NULL_BYTES * i + COLUMN_STATUS_OFFSET);
+  }
+  // printf("~TablePage\n");
+}
 
 FieldID TablePage::GetColPos(const String& sCol) {
   if (_iColMap.find(sCol) == _iColMap.end()) throw TableException();
@@ -38,6 +61,12 @@ FieldType TablePage::GetType(const String& sCol) {
 
 Size TablePage::GetSize(const String& sCol) {
   return _iSizeVec[GetColPos(sCol)];
+}
+bool TablePage::GetCanBeNull(const String& sCol){
+  return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1);
+}
+bool TablePage::GetIsPrimary(const String& sCol){
+  return ((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10);
 }
 
 ManagerPageType TablePage::GetManagerPageType() const {

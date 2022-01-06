@@ -7,7 +7,6 @@
 #include "field/fields.h"
 
 namespace dbtrain_mysql {
-
 void PrintPageSlotID(const PageSlotID& nPageSlotID);
 bool CmpPageSlotID(const PageSlotID& iA, const PageSlotID& iB);
 

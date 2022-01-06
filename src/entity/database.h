@@ -66,6 +66,8 @@ class Database : public EntityManager {
                   const std::vector<Transform>& iTrans);
   PageSlotID Insert(const String& sTableName,
                     const std::vector<Field*>& iValueVec);
+  PageSlotID Insert(const String& sTableName,
+                    const std::vector<String>& iRawVec);
 
   // ------------------------ INDEX ------------------------
   void CreateIndex(const String& sTableName, const String& sColName);

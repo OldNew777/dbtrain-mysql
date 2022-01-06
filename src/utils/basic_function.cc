@@ -95,7 +95,7 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
         int nVal = std::stoi(sRaw);
         pField = new IntField(nVal);
       } catch (const std::invalid_argument& e) {
-        printf("INT format error\n");
+        printf("INT format error sRaw:%s\n", sRaw.data());
         throw e;
       } catch (const std::out_of_range& e) {
         printf("INT out of range\n");
