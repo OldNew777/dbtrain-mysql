@@ -3,33 +3,23 @@
 --SELECT * FROM tmp;
 --SELECT AVG(tmp.name),MAX(tmp.id),COUNT(*) FROM tmp WHERE tmp.name < 30 AND tmp.name < (SELECT * FROM tmp) AND tmp.name IS NULL;
 
-CREATE DATABASE THU;
-CREATE DATABASE THU1;
+-- CREATE DATABASE THU;
+-- CREATE DATABASE THU1;
 
-DROP DATABASE THU;
-DROP DATABASE THU1;
+-- DROP DATABASE THU;
+-- DROP DATABASE THU1;
 
 
 
-CREATE DATABASE THU1;
-USE THU1;
-CREATE TABLE student(name VARCHAR(1800), id INT);
+-- CREATE DATABASE THU1;
+-- USE THU1;
+-- CREATE TABLE student(name VARCHAR(1800), id INT);
 
 CREATE DATABASE THU;
 USE THU;
 CREATE TABLE student(name VARCHAR(1800), id INT);
 
 
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
 INSERT INTO student VALUES('Jack',20);
 INSERT INTO student VALUES('Jack',20);
 INSERT INTO student VALUES('Jack',20);
@@ -52,36 +42,27 @@ INSERT INTO student VALUES(NULL,872);
 INSERT INTO student VALUES(NULL,872);
 INSERT INTO student VALUES(NULL,872);
 INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
-INSERT INTO student VALUES(NULL,872);
 
-SELECT * FROM student WHERE student.name IN ('Jack', 'Mike');
 
-UPDATE student SET id = 777 WHERE student.name IN ('Jack', 'Mike');
+-- SELECT * FROM student WHERE student.name IN ('Jack', 'Mike');
+
+-- UPDATE student SET id = 777 WHERE student.name IN ('Jack', 'Mike');
 
 SELECT * FROM student WHERE student.id > 30;
-SELECT * FROM student WHERE student.name = 'Jack';
-ALTER TABLE student ADD INDEX(id);
-SELECT * FROM student WHERE student.id > 30;
+-- SELECT * FROM student WHERE student.name = 'Jack';
+-- ALTER TABLE student ADD INDEX(id);
+-- SELECT * FROM student WHERE student.id > 30;
 
 
-DUMP TO FILE 'dump.txt' FROM TABLE student;
+-- DUMP TO FILE 'dump.txt' FROM TABLE student;
 
-SELECT * FROM student WHERE student.name = 'Jack';
+-- SELECT * FROM student WHERE student.name = 'Jack';
 
 
 
-SELECT * FROM student;
-DESC student;
-
+-- SELECT * FROM student;
+-- DESC student;
+DROP DATABASE THU;
 
 
 -- CREATE TABLE student1(name VARCHAR(2000), id INT);
@@ -155,4 +136,4 @@ DESC student;
 -- CREATE TABLE student69(name VARCHAR(2000), id INT);
 -- CREATE TABLE student70(name VARCHAR(2000), id INT);
 
-SHOW TABLES;
+-- SHOW TABLES;

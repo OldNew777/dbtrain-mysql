@@ -347,7 +347,6 @@ antlrcpp::Any SystemVisitor::visitSelect_table(
         ctx->where_and_clause()->accept(this);
     iCondMap = iTempMap;
   }
-
   for (const auto &sTableName : iTableNameVec) {
     if (iCondMap.find(sTableName) == iCondMap.end())
       iResultMap[sTableName] = _pDB->Search(sTableName, nullptr, {});
@@ -367,7 +366,6 @@ antlrcpp::Any SystemVisitor::visitSelect_table(
         if (it) delete it;
     }
   }
-
   // Join
   bool bJoin = (iResultMap.size() > 1);
   std::vector<Condition *> iJoinConds = {};
@@ -376,7 +374,6 @@ antlrcpp::Any SystemVisitor::visitSelect_table(
   }
   std::pair<std::vector<String>, std::vector<Record *>> iHeadDataPair{};
   if (bJoin) iHeadDataPair = _pDB->Join(iResultMap, iJoinConds);
-
   // Generate Result
   std::vector<PageSlotID> iData;
   if (!bJoin) {
@@ -496,9 +493,11 @@ antlrcpp::Any SystemVisitor::visitField_list(
   }
   for (auto it = sColVec.begin(); it != sColVec.end(); it++) {
     FieldType type = FieldType::NULL_TYPE;
+    #ifdef DATABASE_DEBUG
     printf("%s\t%s\t%s\t%s\t%s\t%s\n", (*it)[0].data(), (*it)[1].data(),
        (*it)[2].data(), (*it)[3].data(),(*it)[4].data(),
        (*it)[5].data());
+    #endif
     int size = 0;
     if ((*it)[1] == "INT") {
       type = FieldType::INT_TYPE;
