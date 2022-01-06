@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "exception/exceptions.h"
+#include "utils/bitmap.h"
 
 namespace dbtrain_mysql {
 
@@ -30,13 +31,12 @@ void Record::Clear() {
 }
 
 void Record::Sub(const std::vector<Size>& iPos) {
-  bool bInSub[GetSize()];
-  memset(bInSub, 0, GetSize() * sizeof(bool));
-  for (const auto nPos : iPos) bInSub[nPos] = 1;
+  Bitmap bInSub(GetSize());
+  for (const auto nPos : iPos) bInSub.Set(nPos);
   auto itField = _iFields.begin();
   auto nSize = GetSize();
   for (Size i = 0; i < nSize; ++i) {
-    if (!bInSub[i]) {
+    if (!bInSub.Get(i)) {
       Field* pField = *itField;
       if (pField) delete pField;
       itField = _iFields.erase(itField);

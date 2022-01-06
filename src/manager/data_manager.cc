@@ -1,6 +1,6 @@
 #include "data_manager.h"
 
-#include <set>
+#include <unordered_set>
 
 #include "condition/conditions.h"
 #include "datastruct/hashes.h"
@@ -237,7 +237,7 @@ std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
     Size filedID_base;
     std::vector<Record*> recordVec;
     // 并查集
-    std::set<String> tableJoint;
+    std::unordered_set<String> tableJoint;
 
     std::map<String, Size> fieldID_base_map;
 
@@ -444,6 +444,30 @@ std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
   // 析构record
   for (auto iter = iRecordMap.begin(); iter != iRecordMap.end(); ++iter)
     for (Size i = 0; i < iter->second.size(); ++i) delete iter->second[i];
+
+  // delete duplicated fields
+  std::vector<Size> iDuplicatedVec, iRemainVec;
+  std::unordered_set<String> iFieldNameSet;
+  for (int i = ans.first.size() - 1; i >= 0; --i) {
+    if (iFieldNameSet.find(ans.first[i]) == iFieldNameSet.end()) {
+      iFieldNameSet.insert(ans.first[i]);
+      iRemainVec.push_back(i);
+    } else {
+      iDuplicatedVec.push_back(i);
+    }
+  }
+
+  if (iDuplicatedVec.size() == 0) return ans;
+
+  for (Record* pRecord : ans.second) {
+    pRecord->Sub(iRemainVec);
+  }
+  std::vector<String> iColName = std::move(ans.first);
+  for (int i : iDuplicatedVec) {
+    iColName.erase(iColName.begin() + i);
+  }
+  ans.first = std::move(iColName);
+
   return ans;
 }
 
