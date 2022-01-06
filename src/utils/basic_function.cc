@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <unordered_set>
 
 #include "exception/exceptions.h"
 
@@ -127,6 +128,27 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
     }
   }
   return pField;
+}
+
+bool LeagalDate(uint16_t year, uint8_t month, uint8_t day) {
+  static std::unordered_set<uint8_t> smallMonth = {4, 6, 9, 11};
+  if (year < 1000 || year >= 10000) return false;
+  if (month == 0 || month > 12) return false;
+  uint8_t dayMax = 31;
+  if (smallMonth.find(dayMax) != smallMonth.end())
+    dayMax = 30;
+  else if (month == 2) {
+    if (year % 400 == 0)
+      dayMax == 29;
+    else if (year % 100 == 0)
+      dayMax = 28;
+    else if (year & 4 == 0)
+      dayMax = 29;
+    else
+      dayMax = 28;
+  }
+  if (day == 0 || day > dayMax) return false;
+  return true;
 }
 
 }  // namespace dbtrain_mysql

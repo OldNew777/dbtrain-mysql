@@ -10,6 +10,7 @@ enum class FieldType {
   INT_TYPE = 1,
   CHAR_TYPE = 2,
   FLOAT_TYPE = 3,
+  DATE_TYPE = 4,
 };
 
 class Field {

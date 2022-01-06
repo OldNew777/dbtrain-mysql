@@ -30,6 +30,8 @@ std::vector<PageSlotID> Intersection(std::vector<PageSlotID> iA,
 
 Field* BuildField(const String& sRaw, FieldType iTargetFieldType);
 
+bool LeagalDate(uint16_t year, uint8_t month, uint8_t day);
+
 }  // namespace dbtrain_mysql
 
 #endif
