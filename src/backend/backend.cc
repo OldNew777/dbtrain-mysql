@@ -27,6 +27,8 @@ bool Exists() {
 
 void Init() {
   if (Exists()) return;
+  // OS::CheckFileExist();
+
   printf("Database Init.\n");
 
   WholePage* pDataManagerPage = new WholePage();
@@ -40,8 +42,10 @@ void Init() {
 
 void Clear() {
   if (!Exists()) return;
+  printf("clear\n");
   std::remove(DB_BITMAP_NAME);
   std::remove(DB_PAGE_NAME);
+  // OS::WriteBack();
 }
 
 void Close() { OS::WriteBack(); }

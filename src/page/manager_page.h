@@ -23,6 +23,7 @@ const PageOffset COLUMN_STATUS_OFFSET =
     COLUMN_NAME_OFFSET + COLUMN_NUM_MAX * COLUMN_NOT_NULL_BYTES;
 //COLUMN_STATUS_OFFSET的最后一位是NULL，1是“可以是NULL”，0是“不可以是NULL”
 //                      倒数第二位是PRIMARY，1是“是主键”，0是“不是主键”
+//                      倒数第三位是FOREIGN，1是”是外键“，0是”不是外键“
 
 class EntityManager;
 
