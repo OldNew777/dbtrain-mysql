@@ -4,25 +4,11 @@
 
 namespace dbtrain_mysql {
 
-Column::Column(const String& sName, FieldType iType, bool canBeNull, bool isPrimary, Size nSize)
-    : _sName(sName), _iType(iType), _canBeNull(canBeNull), _nSize(nSize), _isPrimary(isPrimary){
-  // switch (iType) {
-  //   case FieldType::NULL_TYPE:
-  //     _nSize = 0;
-  //     break;
-  //   case FieldType::INT_TYPE:
-  //     _nSize = 4;
-  //     break;
-  //   case FieldType::FLOAT_TYPE:
-  //     _nSize = 4;
-  //     break;
-  //   case FieldType::CHAR_TYPE:
-  //     _nSize = nSize;
-  //     break;
-  //   default:
-  //     throw RecordTypeException("Column type error");
-  //     break;
-  // }
+Column::Column(const String& sName, FieldType iType,
+ bool canBeNull, bool isPrimary, Size nSize,
+ std::pair<String, String> sForeignPair)
+    : _sName(sName), _iType(iType), _canBeNull(canBeNull), _nSize(nSize),
+     _isPrimary(isPrimary), _foreignKey(sForeignPair){
 }
 
 String Column::GetName() const { return _sName; }

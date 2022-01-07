@@ -156,3 +156,5 @@ ALTER TABLE order ADD PRIMARY KEY (customer, date);
 DESC order;
 ALTER TABLE order DROP PRIMARY KEY (date);
 DESC order;
+
+CREATE TABLE order2 (id INT, customer VARCHAR(64), date DATE NOT NULL, FOREIGN KEY (id, customer) REFERENCES order(id, customer));

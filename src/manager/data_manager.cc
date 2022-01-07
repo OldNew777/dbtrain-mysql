@@ -69,6 +69,11 @@ void DataManager::DropTable(const String& sTableName) const {
        _pDatabase->GetIndexManager()->GetTableIndexes(sTableName))
     _pDatabase->GetIndexManager()->DropIndex(sTableName, sColName);
   _pDatabase->DropTable(sTableName);
+  //delete shadow page
+  for (const auto& sColName :
+       _pDatabase->GetIndexManager()->GetTableIndexes("@" + sTableName))
+    _pDatabase->GetIndexManager()->DropIndex("@" + sTableName, sColName);
+  _pDatabase->DropTable("@" + sTableName);
 }
 
 void DataManager::RenameTable(const String& sOldTableName,

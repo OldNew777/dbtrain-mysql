@@ -55,6 +55,22 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   _iEntityMap[sTableName] = pTable;
   _iEntityPageIDMap[sTableName] = pPage->GetPageID();
 
+  //create shadowpage
+  //create a shadow table
+  std::vector<Column> shadowTableColVec;
+  shadowTableColVec.push_back(Column("Status", FieldType::INT_TYPE, 
+    false, false, FIELD_INT_TYPE_SIZE, std::make_pair("",""))); //status 
+  shadowTableColVec.push_back(Column("Column Name", FieldType::CHAR_TYPE,
+    false, false, COLUMN_NAME_SIZE, std::make_pair("","")));//该表某一列的名字
+  shadowTableColVec.push_back(Column("Foreign Key Name", FieldType::CHAR_TYPE,
+    false, false, COLUMN_NAME_SIZE, std::make_pair("","")));//某列的外键是谁
+  shadowTableColVec.push_back(Column("Dependency Key Name", FieldType::CHAR_TYPE,
+    false, false, COLUMN_NAME_SIZE, std::make_pair("","")));//某列是谁的外键
+  TablePage* shadowPage = new TablePage(Schema(shadowTableColVec));
+  Table* shadowTable = new Table(shadowPage);
+  _iEntityMap["@" + sTableName] = shadowTable;
+  _iEntityPageIDMap["@" + sTableName] = shadowPage->GetPageID();
+
   // insert entity to page
   InsertEntity(sTableName);
 
@@ -554,15 +570,14 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
     throw AlterException("the new Primary Key column cannot be Null");
   }
   pTable->AddPrimaryKey(sColNameVec);
-  printf("1\n");
   // TODO: a space bug
   // if(result != nullptr) delete result;
-  printf("2\n");
   return;
 }
 
 void Database::DropPrimaryKey(const String& sTableName, const String& sColName){
   Table* pTable = GetTable(sTableName);
+  printf("1\n");
   pTable->DropPrimaryKey(sColName);
 }
 bool Database::_CheckHaveNullPK(MemResult* result, const std::vector<String>& sColNameVec){
@@ -591,7 +606,6 @@ bool Database::_CheckHaveNullPK(MemResult* result, const std::vector<String>& sC
       }
     }
   }
-  if(result) delete result;
   return false;
 }
 

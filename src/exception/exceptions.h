@@ -16,3 +16,4 @@
 #include "file_not_exist_exception.h"
 #include "field_list_exception.h"
 #include "alter_exception.h"
+#include "foreign_key_exception.h"
