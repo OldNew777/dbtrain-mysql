@@ -56,7 +56,7 @@ TablePage::~TablePage() {
 FieldID TablePage::GetColPos(const String& sCol) {
   if (_iColMap.find(sCol) == _iColMap.end()) {
     auto e = TableException("Column does not exist");
-    std::cout << e.what() << "\n";
+    std::cout << e.what() << ": " << sCol << "\n";
     throw e;
   }
   return _iColMap[sCol];

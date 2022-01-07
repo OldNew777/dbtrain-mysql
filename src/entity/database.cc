@@ -724,7 +724,7 @@ std::pair<String, String> Database::GetForeignKey(const String& sTableName, cons
   printf("there should be a foreign key in shadow table\n");
   throw ForeignKeyException();
 }
-std::vector<std::pair<String, String> > Database::GetTableReferedKey
+std::vector<std::pair<String, String> > Database::GetTableReferedKeys
   (const String& sTableName){
   Table* pTable = GetTable("@" + sTableName);
   if (pTable == nullptr) {
@@ -743,6 +743,29 @@ std::vector<std::pair<String, String> > Database::GetTableReferedKey
   for(int i = 0; i < res->GetDataSize(); i ++){
     // printf("%s %s\n", res->GetFieldString(i, 0).data(), res->GetFieldString(i, 1).data());
     if(res->GetFieldString(i, 0) != SHADOW_STATUS_REFERED_KEY) continue;
+    referedKeyVec.push_back(std::make_pair(
+        res->GetFieldString(i, 2), res->GetFieldString(i, 3)));
+  }
+  return referedKeyVec;
+}
+std::vector<std::pair<String, String> > Database::GetTableForeignKeys(const String& sTableName){
+  Table* pTable = GetTable("@" + sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  std::vector<std::pair<String, String> > referedKeyVec;
+  FieldID colPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
+  std::vector<PageSlotID> iPageSlotIDVec =pTable->SearchRecord(nullptr);
+  MemResult* res = new MemResult({SHADOW_STATUS_NAME,
+     SHADOW_LOCAL_COLUMN_NAME, SHADOW_FOREIGN_TABLE_NAME, SHADOW_FOREIGN_COLUMN_NAME});
+  for(auto& psid: iPageSlotIDVec){
+    res->PushBack(pTable->GetRecord(psid.first, psid.second));
+  }
+  for(int i = 0; i < res->GetDataSize(); i ++){
+    // printf("%s %s\n", res->GetFieldString(i, 0).data(), res->GetFieldString(i, 1).data());
+    if(res->GetFieldString(i, 0) != SHADOW_STATUS_FOREIGN_KEY) continue;
     referedKeyVec.push_back(std::make_pair(
         res->GetFieldString(i, 2), res->GetFieldString(i, 3)));
   }
@@ -832,7 +855,7 @@ uint32_t Database::DropForeignKey(const String& sTableName, const String& sColNa
   } else {
     cCond = new RangeCondition(cColPos, cLow, cHigh);
   }
-  
+
   if(cCond) iCond.push_back(cCond);
   if(tCond) iCond.push_back(tCond);
   Condition * cond = new AndCondition(iCond);
@@ -842,9 +865,10 @@ uint32_t Database::DropForeignKey(const String& sTableName, const String& sColNa
   for (auto tmpCond : iCond) delete tmpCond;
   for (auto tmpCond : iIndexCond) delete tmpCond;
 
-  pTable->DropForeignKey(sColName);
+  GetTable(sTableName)->DropForeignKey(sColName);
 
   return ret;
+  printf("done\n");
 }
 uint32_t Database::DropReferedKey(const String& sTableName, const String& sColName, 
     const String& fTableName, const String& fColName){

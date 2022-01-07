@@ -171,5 +171,7 @@ INSERT INTO teacher2 VALUES(3, 'ZYH', 6);
 INSERT INTO teacher2 VALUES(0, 'TOM', 4);
 INSERT INTO teacher2 VALUES(4, 'Jack', 5);
 INSERT INTO teacher2 VALUES(3, 'ZYH', 2);
-INSERT INTO teacher2 VALUES(1, 'TOM', 6);
+SELECT * FROM teacher2;
+DROP TABLE teacher;
+INSERT INTO teacher2 VALUES(3, 'ZYH', 2);
 SELECT * FROM teacher2;
