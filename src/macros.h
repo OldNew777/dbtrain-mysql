@@ -41,10 +41,8 @@ const uint32_t CACHE_GROUP_NUM = 1024;
 const uint32_t FIELD_INT_TYPE_SIZE = 4;
 const uint32_t FIELD_FLOAT_TYPE_SIZE = 4;
 
-
-const uint32_t SHADOW_STATUS_FOREIGN_KEY = 0;//某列的外键是谁
-const uint32_t SHADOW_STATUS_REFERENCE_KEY = 1;//某列是谁的外键
-
+const uint32_t SHADOW_STATUS_FOREIGN_KEY = 1;
+const uint32_t SHADOW_STATUS_REFERENCE_KEY = 1;
 }  // namespace dbtrain_mysql
 
 #endif
