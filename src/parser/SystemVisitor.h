@@ -61,7 +61,8 @@ class SystemVisitor : public MYSQLBaseVisitor {
 
   virtual antlrcpp::Any visitDescribe_table(
       MYSQLParser::Describe_tableContext *context) override;
-
+    virtual antlrcpp::Any visitDescribe_shadow_table(
+      MYSQLParser::Describe_shadow_tableContext *context) override;
   virtual antlrcpp::Any visitInsert_into_table(
       MYSQLParser::Insert_into_tableContext *context) override;
 

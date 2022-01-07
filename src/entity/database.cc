@@ -832,45 +832,51 @@ uint32_t Database::DropForeignKey(const String& sTableName, const String& sColNa
     std::cout << e.what() << "\n";
     throw e;
   } 
-  std::vector<Condition*> iIndexCond{};
   std::vector<Condition*> iCond{};
   //type condition
   FieldID tColPos = pTable->GetColPos(SHADOW_STATUS_NAME);
-  Field* tLow = BuildField(SHADOW_STATUS_FOREIGN_KEY, FieldType::CHAR_TYPE);
+  Field* tLow = new CharField(SHADOW_STATUS_FOREIGN_KEY);
   Field* tHigh = tLow->Clone();
   tHigh->Add();
-  Condition* tCond = nullptr;
-  if (IsIndex("@" + sTableName, SHADOW_STATUS_NAME)) {
-    iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_STATUS_NAME, tLow, tHigh));
-  } else {
-    tCond = new RangeCondition(tColPos, tLow, tHigh);
-  }
+  Condition* tCond = new RangeCondition(tColPos, tLow, tHigh);
+
   //Colname condition
   FieldID cColPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
-  Field* cLow = BuildField(sColName, FieldType::CHAR_TYPE);
+  Field* cLow = new CharField(sColName);
   Field* cHigh = cLow->Clone();
   cHigh->Add();
-  Condition* cCond = nullptr;
-  if (IsIndex("@" + sTableName, SHADOW_LOCAL_COLUMN_NAME)) {
-    iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_LOCAL_COLUMN_NAME
-      , cLow, cHigh));
-  } else {
-    cCond = new RangeCondition(cColPos, cLow, cHigh);
-  }
+  Condition* cCond = new RangeCondition(cColPos, cLow, cHigh);
 
   if(cCond) iCond.push_back(cCond);
   if(tCond) iCond.push_back(tCond);
   Condition * cond = new AndCondition(iCond);
 
-  uint32_t ret = Delete("@" + sTableName, cond,iIndexCond);
+  uint32_t ret = Delete("@" + sTableName, cond,{});
 
   for (auto tmpCond : iCond) delete tmpCond;
-  for (auto tmpCond : iIndexCond) delete tmpCond;
 
   GetTable(sTableName)->DropForeignKey(sColName);
+  return ret;
+
+  // return ret;
+}
+uint32_t Database::RemoveTableForeignKey(const String& sTableName, const String& fTableName){
+  Table* pTable = GetTable("@" + sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException("@" + sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  } 
+  FieldID tColPos = pTable->GetColPos(SHADOW_FOREIGN_TABLE_NAME);
+  Field* tLow = new CharField(fTableName);
+  Field* tHigh = tLow->Clone();
+  tHigh->Add();
+  Condition* tCond = new RangeCondition(tColPos, tLow, tHigh);
+
+  uint32_t ret = Delete("@" + sTableName, tCond,{});
+  printf("%d\n", ret);
 
   return ret;
-  printf("done\n");
 }
 uint32_t Database::DropReferedKey(const String& sTableName, const String& sColName, 
     const String& fTableName, const String& fColName){
@@ -884,7 +890,7 @@ uint32_t Database::DropReferedKey(const String& sTableName, const String& sColNa
   std::vector<Condition*> iCond{};
   //type condition
   FieldID tColPos = pTable->GetColPos(SHADOW_STATUS_NAME);
-  Field* tLow = BuildField(SHADOW_STATUS_REFERED_KEY, FieldType::CHAR_TYPE);
+  Field* tLow = new CharField(SHADOW_STATUS_REFERED_KEY);
   Field* tHigh = tLow->Clone();
   tHigh->Add();
   Condition* tCond = nullptr;
@@ -896,7 +902,7 @@ uint32_t Database::DropReferedKey(const String& sTableName, const String& sColNa
   if(tCond != nullptr) iCond.push_back(tCond);
   //local Colname condition
   FieldID cColPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
-  Field* cLow = BuildField(sColName, FieldType::CHAR_TYPE);
+  Field* cLow = new CharField(sColName);
   Field* cHigh = cLow->Clone();
   cHigh->Add();
   Condition* cCond = nullptr;
@@ -909,7 +915,7 @@ uint32_t Database::DropReferedKey(const String& sTableName, const String& sColNa
   if(cCond != nullptr) iCond.push_back(cCond);
   //foreign tablename condition
   FieldID ftColPos = pTable->GetColPos(SHADOW_FOREIGN_TABLE_NAME);
-  Field* ftLow = BuildField(fTableName, FieldType::CHAR_TYPE);
+  Field* ftLow = new CharField(fTableName);
   Field* ftHigh = ftLow->Clone();
   ftHigh->Add();
   Condition* ftCond = nullptr;
@@ -922,7 +928,7 @@ uint32_t Database::DropReferedKey(const String& sTableName, const String& sColNa
   if(ftCond != nullptr) iCond.push_back(ftCond);
   //foreign colname condition
   FieldID fcColPos = pTable->GetColPos(SHADOW_FOREIGN_COLUMN_NAME);
-  Field* fcLow = BuildField(fColName, FieldType::CHAR_TYPE);
+  Field* fcLow = new CharField(fColName);
   Field* fcHigh = fcLow->Clone();
   fcHigh->Add();
   Condition* fcCond = nullptr;

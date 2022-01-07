@@ -65,18 +65,25 @@ void DataManager::CreateTable(const String& sTableName,
 
 void DataManager::DropTable(const String& sTableName) const {
   CheckDatabaseUsed();
-  //TODO: 删除以这个表上键为约束的其他表的reference
+  //TODO: 删除表间关联
   std::vector<std::pair<String, String> > refPairVec = 
       _pDatabase->GetTableReferedKeys(sTableName);
   std::vector<std::vector<String> > forPairVec = 
       _pDatabase->GetTableForeignKeys(sTableName);
   
+  std::map<String, int> tmpMap;
   for(auto& iPair: refPairVec){
     _pDatabase->DropForeignKey(iPair.first, iPair.second);
+    if(tmpMap.find(iPair.first) == tmpMap.end()){
+      tmpMap[iPair.first] = 1;
+      _pDatabase->RemoveTableForeignKey(iPair.first, sTableName);
+    }
   }
+  
   for(auto& tVec: forPairVec){
     _pDatabase->DropReferedKey(tVec[1], tVec[2], sTableName, tVec[0]);
   }
+
   for (const auto& sColName :
        _pDatabase->GetIndexManager()->GetTableIndexes(sTableName))
     _pDatabase->GetIndexManager()->DropIndex(sTableName, sColName);

@@ -248,7 +248,19 @@ antlrcpp::Any SystemVisitor::visitDescribe_table(
   }
   return res;
 }
-
+antlrcpp::Any SystemVisitor::visitDescribe_shadow_table(
+    MYSQLParser::Describe_shadow_tableContext *ctx) {
+      //TODO: desc shadow table
+  String sTableName = ctx->Identifier()->toString();
+  int limit = INT32_MAX, offset = 0;
+  std::vector<PageSlotID> psidVec = _pDB->Search("@" + sTableName, nullptr, {}, limit, offset);
+  Result *res = new MemResult({SHADOW_STATUS_NAME,
+     SHADOW_LOCAL_COLUMN_NAME, SHADOW_FOREIGN_TABLE_NAME, SHADOW_FOREIGN_COLUMN_NAME});
+  for(auto& psid: psidVec){
+    res->PushBack(_pDB->GetRecord("@" + sTableName, psid));
+  }
+  return res;
+}
 antlrcpp::Any SystemVisitor::visitInsert_into_table(
     MYSQLParser::Insert_into_tableContext *ctx) {
   // std::vector<std::vector<Field *>> iValueListVec =

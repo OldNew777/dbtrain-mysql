@@ -161,10 +161,12 @@ SHOW TABLES;
 
 CREATE TABLE teacher (id INT, customer VARCHAR(64), num INT);
 INSERT INTO teacher VALUES(1, 'TOM', 4);
+-- SELECT * FROM teacher WHERE teacher.customer = 'TOM';
+
 INSERT INTO teacher VALUES(2, 'Jack', 5);
 INSERT INTO teacher VALUES(3, 'ZYH', 6);
 SELECT * FROM teacher;
-CREATE TABLE teacher2 (id INT, customer VARCHAR(64), num INT, FOREIGN KEY (id, num) REFERENCES teacher (id, num));
+CREATE TABLE teacher2 (id2 INT, customer2 VARCHAR(64), num2 INT, FOREIGN KEY (id2, num2) REFERENCES teacher (id, num));
 INSERT INTO teacher2 VALUES(1, 'TOM', 4);
 INSERT INTO teacher2 VALUES(2, 'Jack', 5);
 INSERT INTO teacher2 VALUES(3, 'ZYH', 6);
@@ -172,6 +174,11 @@ INSERT INTO teacher2 VALUES(0, 'TOM', 4);
 INSERT INTO teacher2 VALUES(4, 'Jack', 5);
 INSERT INTO teacher2 VALUES(3, 'ZYH', 2);
 SELECT * FROM teacher2;
-DROP TABLE teacher;
-INSERT INTO teacher2 VALUES(3, 'ZYH', 2);
-SELECT * FROM teacher2;
+-- DESC SHADOW teacher2;
+-- DROP TABLE teacher;
+-- DESC SHADOW teacher2;
+-- INSERT INTO teacher2 VALUES(3, 'ZYH', 2);
+-- SELECT * FROM teacher2;
+DESC SHADOW teacher;
+DROP TABLE teacher2;
+DESC SHADOW teacher;
