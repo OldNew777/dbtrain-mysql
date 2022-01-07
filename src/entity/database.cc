@@ -552,7 +552,7 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
   if(needCheckDuplication && _CheckHaveDuplicatePK(result, sColNameVec)){
     throw AlterException("the new Primary Key column cannot be duplicated");
   }
-  if(_CheckHaveNullPK(sColNameVec)){
+  if(_CheckHaveNullPK(result, sColNameVec)){
     throw AlterException("the new Primary Key column cannot be Null");
   }
   pTable->AddPrimaryKey(sColNameVec);
