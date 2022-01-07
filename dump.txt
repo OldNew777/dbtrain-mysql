@@ -1,3 +1,5 @@
 'Jack',20
-'Jack',21
-NULL,872
+'bob',20
+'alice',21
+'Mike',20
+'Mike',NULL

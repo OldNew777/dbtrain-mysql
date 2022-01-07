@@ -491,7 +491,20 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
   if(ctx->Identifier().size() == 1){//not constriant
     String tableName = ctx->Identifier()[0]->getText();
     std::vector<String> sColName = ctx->identifiers()->accept(this);
-    _pDB->AddPrimaryKey(tableName, sColName);
+    try {
+      _pDB->AddPrimaryKey(tableName, sColName);
+    } catch (const std::exception &e) {
+      printf("%s\n", e.what());
+    }
+    Result *res = new MemResult({"Column Name", "Column Type", "Column Size",
+                               "Can Be Null", "Primary Key"});
+    String sTableName = ctx->Identifier()[0]->getText();
+    try {
+      for (const auto &pRecord : _pDB->GetTableInfos(sTableName))
+        res->PushBack(pRecord);
+    } catch (const std::exception &e) {
+    }
+    return res;
   }
   else{
     // printf("%s %s\n", ctx->Identifier()[0]->getText().data(),ctx->Identifier()[1]->getText().data());

@@ -14,7 +14,7 @@
 
 CREATE DATABASE THU;
 USE THU;
-CREATE TABLE order(id INT, customer VARCHAR(64), date DATE NOT NULL, PRIMARY KEY(id));
+CREATE TABLE order(id INT, customer VARCHAR(64), date DATE NOT NULL);
 
 INSERT INTO order VALUES(1, 'Jack', 2022-01-07);
 
@@ -22,7 +22,7 @@ SELECT * FROM order WHERE order.date = 2022-01-07;
 SELECT * FROM order WHERE order.date > 2022-02-29;
 SELECT * FROM order WHERE order.date < 2023-01-07;
 
-CREATE TABLE student(name VARCHAR(64), id INT, PRIMARY KEY(id));
+CREATE TABLE student(name VARCHAR(64), id INT);
 CREATE TABLE math(id INT, score FLOAT NOT NULL, PRIMARY KEY(id));
 
 INSERT INTO math VALUES(20, 90.5);
@@ -40,19 +40,19 @@ SELECT * FROM math;
 SELECT * FROM math LIMIT 2 OFFSET 1;
 
 INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('Jack',21);
+INSERT INTO student VALUES('bob',20);
+INSERT INTO student VALUES('alice',21);
 INSERT INTO student VALUES('Mike',20);
 
 
-INSERT INTO student VALUES('Mike',NULL);
-INSERT INTO student VALUES(NULL,872);
+-- INSERT INTO student VALUES('Mike',NULL);
+-- INSERT INTO student VALUES(NULL,872);
 
 SELECT * FROM student, math WHERE student.id = math.id;
 SELECT * FROM student WHERE student.name = 'Jack' AND student.id = 20;
 SELECT * FROM student WHERE student.name IN ('Jack', 'Mike');
 
-UPDATE student SET id = 777 WHERE student.name IN ('Jack', 'Mike');
+-- UPDATE student SET id = 777 WHERE student.name IN ('Jack', 'Mike');
 
 SELECT * FROM student WHERE student.id > 30;
 SELECT * FROM student WHERE student.name = 'Jack';
@@ -60,8 +60,8 @@ ALTER TABLE student ADD INDEX(id);
 SELECT * FROM student WHERE student.id > 30;
 
 
-DUMP TO FILE 'dump.txt' FROM TABLE student;
-LOAD FROM FILE 'dump.txt' TO TABLE student;
+-- DUMP TO FILE 'dump.txt' FROM TABLE student;
+-- LOAD FROM FILE 'dump.txt' TO TABLE student;
 
 SELECT * FROM student WHERE student.name = 'Jack';
 
@@ -69,6 +69,8 @@ SELECT * FROM student WHERE student.name = 'Jack';
 
 SELECT * FROM student;
 DESC student;
+
+
 -- DROP DATABASE THU;
 
 
@@ -144,4 +146,10 @@ DESC student;
 -- CREATE TABLE student70(name VARCHAR(2000), id INT);
 
 SHOW TABLES; 
+DESC student;
 ALTER TABLE student ADD PRIMARY KEY (name);
+
+INSERT INTO order VALUES(1, 'Mike', 2022-01-07);
+INSERT INTO order VALUES(1, 'Jack', 2022-01-06);
+SELECT * FROM order;
+ALTER TABLE order ADD PRIMARY KEY (customer, date);

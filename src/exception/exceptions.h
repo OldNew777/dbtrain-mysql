@@ -15,3 +15,4 @@
 #include "cache_invalide_exception.h"
 #include "file_not_exist_exception.h"
 #include "field_list_exception.h"
+#include "alter_exception.h"

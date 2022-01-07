@@ -519,46 +519,44 @@ void Database::Clear() {
 EntityType Database::GetEntityType() const { return EntityType::DATABASE_TYPE; }
 
 void Database::AddPrimaryKey(const String& sTableName, const std::vector<String> sColName){
-  printf("1\n");
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
     std::cout << e.what() << "\n";
     throw e;
   }
-  printf("2\n");
   std::vector<std::vector<Record*>> records;
   //因为现有pk的信息是正确的，所以只需要检查现有信息
   //获取所有需要检查的新增列的信息
   std::vector<String> sColNameVec;
   for (int i = 0; i < sColName.size(); i ++){
-    printf("%s\n", sColName[i].data());
     if(!pTable->GetIsPrimary(sColName[i])) sColNameVec.push_back(sColName[i]);
   }
-  printf("2.1\n");
   if(sColNameVec.size() == 0) return;
-  printf("2.2\n");
   std::vector<PageSlotID> psidVec =  pTable->SearchRecord(nullptr);
-  printf("2.3\n");
-  Result* result = new MemResult(pTable->GetColumnNames());
-  printf("2.4\n");
+  MemResult* result = new MemResult(pTable->GetColumnNames());
   for(auto& psid: psidVec){
     result->PushBack(pTable->GetRecord(psid.first, psid.second));
   }
-  printf("3\n");
   //如果已经有其他外键，那么一定不需要检查新外键的重复性
   bool needCheckDuplication = true;
   std::vector<std::string> iColNameVec = pTable->GetColumnNames();
-  printf("3.1\n");
   for(int i = 0; i < iColNameVec.size(); i ++){
     if(pTable->GetIsPrimary(iColNameVec[i])){
       needCheckDuplication = false;
       break;
     }
   }
-  printf("4\n");
   //检查重复性和null性
-  result->Display();
+  if(needCheckDuplication && result->CheckHaveDuplicatePK(sColNameVec)){
+    throw AlterException("the new Primary Key column cannot be duplicated");
+  }
+  if(result->CheckHaveNullPK(sColNameVec)){
+    throw AlterException("the new Primary Key column cannot be Null");
+  }
+  if(result) delete result;
+  pTable->AddPrimaryKey(sColNameVec);
+  return;
 }
 
 
