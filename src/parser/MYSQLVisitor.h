@@ -45,6 +45,8 @@ public:
 
     virtual antlrcpp::Any visitDescribe_table(MYSQLParser::Describe_tableContext *context) = 0;
 
+    virtual antlrcpp::Any visitDescribe_shadow_table(MYSQLParser::Describe_shadow_tableContext *context) = 0;
+
     virtual antlrcpp::Any visitInsert_into_table(MYSQLParser::Insert_into_tableContext *context) = 0;
 
     virtual antlrcpp::Any visitDelete_from_table(MYSQLParser::Delete_from_tableContext *context) = 0;

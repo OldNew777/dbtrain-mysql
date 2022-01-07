@@ -55,6 +55,9 @@ public:
   virtual void enterDescribe_table(MYSQLParser::Describe_tableContext * /*ctx*/) override { }
   virtual void exitDescribe_table(MYSQLParser::Describe_tableContext * /*ctx*/) override { }
 
+  virtual void enterDescribe_shadow_table(MYSQLParser::Describe_shadow_tableContext * /*ctx*/) override { }
+  virtual void exitDescribe_shadow_table(MYSQLParser::Describe_shadow_tableContext * /*ctx*/) override { }
+
   virtual void enterInsert_into_table(MYSQLParser::Insert_into_tableContext * /*ctx*/) override { }
   virtual void exitInsert_into_table(MYSQLParser::Insert_into_tableContext * /*ctx*/) override { }
 

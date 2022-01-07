@@ -20,10 +20,11 @@ public:
     T__32 = 33, T__33 = 34, T__34 = 35, T__35 = 36, T__36 = 37, T__37 = 38, 
     T__38 = 39, T__39 = 40, T__40 = 41, T__41 = 42, T__42 = 43, T__43 = 44, 
     T__44 = 45, T__45 = 46, T__46 = 47, T__47 = 48, T__48 = 49, T__49 = 50, 
-    T__50 = 51, T__51 = 52, T__52 = 53, EqualOrAssign = 54, Less = 55, LessEqual = 56, 
-    Greater = 57, GreaterEqual = 58, NotEqual = 59, Count = 60, Average = 61, 
-    Max = 62, Min = 63, Sum = 64, Null = 65, Date = 66, Identifier = 67, 
-    Integer = 68, String = 69, Float = 70, Whitespace = 71, Annotation = 72
+    T__50 = 51, T__51 = 52, T__52 = 53, T__53 = 54, EqualOrAssign = 55, 
+    Less = 56, LessEqual = 57, Greater = 58, GreaterEqual = 59, NotEqual = 60, 
+    Count = 61, Average = 62, Max = 63, Min = 64, Sum = 65, Null = 66, Date = 67, 
+    Identifier = 68, Integer = 69, String = 70, Float = 71, Whitespace = 72, 
+    Annotation = 73
   };
 
   enum {
@@ -297,6 +298,17 @@ public:
   class  Drop_tableContext : public Table_statementContext {
   public:
     Drop_tableContext(Table_statementContext *ctx);
+
+    antlr4::tree::TerminalNode *Identifier();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Describe_shadow_tableContext : public Table_statementContext {
+  public:
+    Describe_shadow_tableContext(Table_statementContext *ctx);
 
     antlr4::tree::TerminalNode *Identifier();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
