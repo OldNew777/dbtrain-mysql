@@ -368,6 +368,9 @@ PageSlotID Database::Insert(const String& sTableName,
       std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
       printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
       delete pField;
+      if(!_CheckForeignKey(fPair.first, fPair.second, pField)){
+        throw ForeignKeyException("key out of range" +  pField->ToString());
+      }
     }
   }
 
@@ -445,6 +448,9 @@ PageSlotID Database::Insert(const String& sTableName,
       //TODO: foreign key insert
       std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
       printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
+      if(!_CheckForeignKey(fPair.first, fPair.second, iValueVec[i])){
+        throw ForeignKeyException("key out of range" +  iValueVec[i]->ToString());
+      }
     }
   }
 
@@ -716,5 +722,53 @@ std::pair<String, String> Database::GetForeignKey(const String& sTableName, cons
   }
   printf("there should be a foreign key in shadow table\n");
   throw ForeignKeyException();
+}
+bool Database::_CheckForeignKey(const String& fTableName, 
+  const String& fColName, Field* pField){//false-wrong true-corrct
+  Table* pTable = GetTable(fTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(fTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  /// 检查是不是比所有都小
+  FieldID colPos = pTable->GetColPos(fColName);
+  Field *pLow = pField->Clone(), *pHigh = pField->Clone();
+  pLow->ToMin();
+  Condition* pCond = nullptr;
+  std::vector<Condition*> iIndexCond{};
+  if (IsIndex(fTableName, fColName)) {
+    iIndexCond.push_back(new IndexCondition(fTableName, fColName, pLow, pHigh));
+  } else {
+    pCond = new RangeCondition(colPos, pLow, pHigh);
+  }
+  std::vector<PageSlotID> iPageSlotIDVec =Search(fTableName, pCond, iIndexCond);
+  if(iPageSlotIDVec.size() == 0){
+    printf("less than every key in fk\n");
+    return false;
+  }
+
+  if (pCond) delete pCond;
+  for (auto pCond : iIndexCond) delete pCond;
+  iIndexCond.clear();
+  iPageSlotIDVec.clear();
+
+  //check if it is larger than every key in fk
+  colPos = pTable->GetColPos(fColName);
+  pLow = pField->Clone();
+  pHigh = pField->Clone();
+  pHigh->ToMax();
+  pCond = nullptr;
+  if (IsIndex(fTableName, fColName)) {
+    iIndexCond.push_back(new IndexCondition(fTableName, fColName, pLow, pHigh));
+  } else {
+    pCond = new RangeCondition(colPos, pLow, pHigh);
+  }
+  iPageSlotIDVec = Search(fTableName, pCond, iIndexCond);
+  if(iPageSlotIDVec.size() == 0){
+    printf("greater than every key in fk\n");
+    return false;
+  }
+  return true;
 }
 }  // namespace dbtrain_mysql

@@ -94,6 +94,8 @@ class Database : public EntityManager {
                                         const String& sColName, Field* pField);
     bool _CheckHaveNullPK(MemResult* result, const std::vector<String>& sColNameVec);
     bool _CheckHaveDuplicatePK(MemResult* result,const std::vector<String>& sColNameVec);
+    bool _CheckForeignKey(const String& sTableName,
+                                        const String& sColName, Field* pField);
 };
 
 }  // namespace dbtrain_mysql
