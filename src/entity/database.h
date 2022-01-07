@@ -81,7 +81,8 @@ class Database : public EntityManager {
   void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
   void DropPrimaryKey(const String& sTableName, const String& sColName);
   uint32_t DropForeignKey(const String& sTableName, const String& sColName);
-  uint32_t DropReferedKey(const String& sTableName, const String& sColName);
+  uint32_t DropReferedKey(const String& sTableName, const String& sColName,
+    const String& fTableName, const String& fColName);
   std::pair<String, String> GetForeignKey(const String& sTableName, const String& sColName);
   std::vector<std::pair<String, String> > GetTableReferedKey(const String& sTableName);
   std::vector<Record*> GetIndexInfos();

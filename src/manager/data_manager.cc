@@ -65,6 +65,7 @@ void DataManager::CreateTable(const String& sTableName,
 
 void DataManager::DropTable(const String& sTableName) const {
   CheckDatabaseUsed();
+  //TODO: 删除以这个表上键为约束的其他表的reference
   for (const auto& sColName :
        _pDatabase->GetIndexManager()->GetTableIndexes(sTableName))
     _pDatabase->GetIndexManager()->DropIndex(sTableName, sColName);

@@ -64,6 +64,7 @@ class Table : public Entity {
    */
   void AddPrimaryKey(const std::vector<String>& sColVec);
   void DropPrimaryKey(const String& sColName);
+  void DropForeignKey(const String& sColName);
 
   void SearchRecord(std::vector<PageSlotID>& iPairs, Condition* pCond);
 

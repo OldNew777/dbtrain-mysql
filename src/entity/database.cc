@@ -447,7 +447,7 @@ PageSlotID Database::Insert(const String& sTableName,
       // check whether primary key conflicts with other records
       
       std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
-      printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
+      // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
       if(!_CheckForeignKey(fPair.first, fPair.second, iValueVec[i])){
         printf("key out of range:%d\n", iValueVec[i]->ToString().data());
         throw ForeignKeyException();
@@ -808,6 +808,7 @@ uint32_t Database::DropForeignKey(const String& sTableName, const String& sColNa
     throw e;
   } 
   std::vector<Condition*> iIndexCond{};
+  std::vector<Condition*> iCond{};
   //type condition
   FieldID tColPos = pTable->GetColPos(SHADOW_STATUS_NAME);
   Field* tLow = BuildField(SHADOW_STATUS_FOREIGN_KEY, FieldType::CHAR_TYPE);
@@ -831,14 +832,22 @@ uint32_t Database::DropForeignKey(const String& sTableName, const String& sColNa
   } else {
     cCond = new RangeCondition(cColPos, cLow, cHigh);
   }
-  Condition * cond = new AndCondition({tCond, cCond});
+  
+  if(cCond) iCond.push_back(cCond);
+  if(tCond) iCond.push_back(tCond);
+  Condition * cond = new AndCondition(iCond);
+
   uint32_t ret = Delete("@" + sTableName, cond,iIndexCond);
-  if(cCond) delete cCond;
-  if(tCond) delete tCond;
-  for (auto iCond : iIndexCond) delete iCond;
+
+  for (auto tmpCond : iCond) delete tmpCond;
+  for (auto tmpCond : iIndexCond) delete tmpCond;
+
+  pTable->DropForeignKey(sColName);
+
   return ret;
 }
-uint32_t Database::DropReferedKey(const String& sTableName, const String& sColName){
+uint32_t Database::DropReferedKey(const String& sTableName, const String& sColName, 
+    const String& fTableName, const String& fColName){
   Table* pTable = GetTable("@" + sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException("@" + sTableName);
@@ -846,6 +855,7 @@ uint32_t Database::DropReferedKey(const String& sTableName, const String& sColNa
     throw e;
   } 
   std::vector<Condition*> iIndexCond{};
+  std::vector<Condition*> iCond{};
   //type condition
   FieldID tColPos = pTable->GetColPos(SHADOW_STATUS_NAME);
   Field* tLow = BuildField(SHADOW_STATUS_REFERED_KEY, FieldType::CHAR_TYPE);
@@ -857,7 +867,8 @@ uint32_t Database::DropReferedKey(const String& sTableName, const String& sColNa
   } else {
     tCond = new RangeCondition(tColPos, tLow, tHigh);
   }
-  //Colname condition
+  if(tCond != nullptr) iCond.push_back(tCond);
+  //local Colname condition
   FieldID cColPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
   Field* cLow = BuildField(sColName, FieldType::CHAR_TYPE);
   Field* cHigh = cLow->Clone();
@@ -869,11 +880,38 @@ uint32_t Database::DropReferedKey(const String& sTableName, const String& sColNa
   } else {
     cCond = new RangeCondition(cColPos, cLow, cHigh);
   }
-  Condition * cond = new AndCondition({tCond, cCond});
+  if(cCond != nullptr) iCond.push_back(cCond);
+  //foreign tablename condition
+  FieldID ftColPos = pTable->GetColPos(SHADOW_FOREIGN_TABLE_NAME);
+  Field* ftLow = BuildField(fTableName, FieldType::CHAR_TYPE);
+  Field* ftHigh = ftLow->Clone();
+  ftHigh->Add();
+  Condition* ftCond = nullptr;
+  if (IsIndex("@" + sTableName, SHADOW_FOREIGN_TABLE_NAME)) {
+    iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_FOREIGN_TABLE_NAME,
+      ftLow, ftHigh));
+  } else {
+    ftCond = new RangeCondition(ftColPos, ftLow, ftHigh);
+  }
+  if(ftCond != nullptr) iCond.push_back(ftCond);
+  //foreign colname condition
+  FieldID fcColPos = pTable->GetColPos(SHADOW_FOREIGN_COLUMN_NAME);
+  Field* fcLow = BuildField(fColName, FieldType::CHAR_TYPE);
+  Field* fcHigh = fcLow->Clone();
+  fcHigh->Add();
+  Condition* fcCond = nullptr;
+  if (IsIndex("@" + sTableName, SHADOW_FOREIGN_COLUMN_NAME)) {
+    iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_FOREIGN_COLUMN_NAME,
+      fcLow, fcHigh));
+  } else {
+    fcCond = new RangeCondition(fcColPos, fcLow, fcHigh);
+  }
+  if(fcCond != nullptr) iCond.push_back(fcCond);
+
+  Condition * cond = new AndCondition(iCond);
   uint32_t ret = Delete("@" + sTableName, cond,iIndexCond);
-  if(cCond) delete cCond;
-  if(tCond) delete tCond;
-  for (auto iCond : iIndexCond) delete iCond;
+  for (auto tmpCond : iCond) delete tmpCond;
+  for (auto tmpCond : iIndexCond) delete tmpCond;
   return ret;
 }
 }  // namespace dbtrain_mysql
