@@ -18,8 +18,10 @@ class MemResult : public Result {
   String Dump() const override;
   std::vector<String> ToVector() const override;
   void Display() const override;
-  bool CheckHaveNullPK(const std::vector<String>& sColNameVec);
-  bool CheckHaveDuplicatePK(const std::vector<String>& sColNameVec);
+  int GetHeaderSize() const;
+  String GetHeader(int pos) const;
+  int GetDataSize() const;
+  String GetFieldString(const int& row, const int& col) const;
 
  private:
   std::vector<Record*> _iData;

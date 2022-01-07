@@ -211,7 +211,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
       primaryKeyConflict = true;
       // check whether primary key conflicts with other records
       std::vector<PageSlotID> iDuplicated =
-          GetDuplicated(sTableName, sColName, iTrans[i].GetField());
+          _GetDuplicated(sTableName, sColName, iTrans[i].GetField());
 #ifdef PRIMARY_KEY_DEBUG
       printf("iResVec.size() = %d\n", iResVec.size());
       printf("iDuplicated.size() = %d\n", iDuplicated.size());
@@ -298,7 +298,7 @@ PageSlotID Database::Insert(const String& sTableName,
       primaryKeyConflict = true;
       FieldType colType = pTable->GetType(sColName);
       Field* pField = BuildField(iRawVec[i], colType);
-      if (GetDuplicated(sTableName, sColName, pField).size() == 0) {
+      if (_GetDuplicated(sTableName, sColName, pField).size() == 0) {
         primaryKeyConflict = false;
         delete pField;
         break;
@@ -367,7 +367,7 @@ PageSlotID Database::Insert(const String& sTableName,
     const String& sColName = iColNameVec[i];
     if (pTable->GetIsPrimary(sColName)) {
       primaryKeyConflict = true;
-      if (GetDuplicated(sTableName, sColName, iValueVec[i]).size() == 0) {
+      if (_GetDuplicated(sTableName, sColName, iValueVec[i]).size() == 0) {
         primaryKeyConflict = false;
         break;
       }
@@ -404,7 +404,7 @@ PageSlotID Database::Insert(const String& sTableName,
   return iPair;
 }
 
-std::vector<PageSlotID> Database::GetDuplicated(const String& sTableName,
+std::vector<PageSlotID> Database::_GetDuplicated(const String& sTableName,
                                                 const String& sColName,
                                                 Field* pField) {
   Table* pTable = GetTable(sTableName);
@@ -525,7 +525,6 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
     std::cout << e.what() << "\n";
     throw e;
   }
-  std::vector<std::vector<Record*>> records;
   //因为现有pk的信息是正确的，所以只需要检查现有信息
   //获取所有需要检查的新增列的信息
   std::vector<String> sColNameVec;
@@ -533,11 +532,13 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
     if(!pTable->GetIsPrimary(sColName[i])) sColNameVec.push_back(sColName[i]);
   }
   if(sColNameVec.size() == 0) return;
+
   std::vector<PageSlotID> psidVec =  pTable->SearchRecord(nullptr);
   MemResult* result = new MemResult(pTable->GetColumnNames());
   for(auto& psid: psidVec){
     result->PushBack(pTable->GetRecord(psid.first, psid.second));
   }
+  
   //如果已经有其他外键，那么一定不需要检查新外键的重复性
   bool needCheckDuplication = true;
   std::vector<std::string> iColNameVec = pTable->GetColumnNames();
@@ -548,16 +549,80 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
     }
   }
   //检查重复性和null性
-  if(needCheckDuplication && result->CheckHaveDuplicatePK(sColNameVec)){
+  if(needCheckDuplication && _CheckHaveDuplicatePK(result, sColNameVec)){
     throw AlterException("the new Primary Key column cannot be duplicated");
   }
-  if(result->CheckHaveNullPK(sColNameVec)){
+  if(_CheckHaveNullPK(sColNameVec)){
     throw AlterException("the new Primary Key column cannot be Null");
   }
-  if(result) delete result;
   pTable->AddPrimaryKey(sColNameVec);
+  if(result) delete result;
   return;
 }
 
 
+bool Database::_CheckHaveNullPK(MemResult* result, const std::vector<String>& sColNameVec){
+
+  std::map<String, int> iColPosMap;
+  for(int i = 0; i < sColNameVec.size(); i ++){
+    bool flag = false;
+    for(int j = 0; j < result->GetHeaderSize(); i ++){
+      if(sColNameVec[i] == result->GetHeader(j)){
+        flag = true;
+        iColPosMap[sColNameVec[i]] = j;
+        break;
+      }
+    }
+    if(!flag){
+      printf("the column name used to alter table PK should be a exist column name\n");
+      throw Exception();
+    }
+  }
+  
+  for (int j = 0; j < result->GetDataSize(); j ++) {
+    for (uint32_t i = 0; i < sColNameVec.size(); i++) {
+      if(result->GetFieldString(j, i) == "NULL"){
+        if(result) delete result;
+        return true;
+      }
+    }
+  }
+  if(result) delete result;
+  return false;
+}
+
+
+bool Database::_CheckHaveDuplicatePK(MemResult* result, const std::vector<String>& sColNameVec){
+  
+  std::map<String, int> iColPosMap;
+  for(int i = 0; i < sColNameVec.size(); i ++){
+    bool flag = false;
+    for(int j = 0; j < result->GetHeaderSize(); j ++){
+      if(result->GetHeader(j) == sColNameVec[i]){
+        flag = true;
+        iColPosMap[sColNameVec[i]] = j;
+        break;
+      }
+    }
+    if(!flag){
+      printf("the column name used to alter table PK should be a exist column name\n");
+      throw Exception();
+    }
+  }
+  
+  for (uint32_t i = 0; i < result->GetDataSize() - 1; i ++) {
+    printf("%s\n",sColNameVec[0].data());
+    for(uint32_t j = i + 1; j < result->GetDataSize(); j ++){
+      bool duplicate = true;
+      for(const String& colName: sColNameVec){
+        if(result->GetFieldString(i, iColPosMap[colName]) != result->GetFieldString(j, iColPosMap[colName])){
+              duplicate = false;
+              break;
+        }
+      }
+      if(duplicate) return true;
+    }
+  }
+  return false;
+}
 }  // namespace dbtrain_mysql
