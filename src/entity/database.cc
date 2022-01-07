@@ -362,15 +362,16 @@ PageSlotID Database::Insert(const String& sTableName,
     if (pTable->GetIsForeign(sColName)) {
       // check whether primary key conflicts with other records
       //TODO: foreign key insert
-      primaryKeyConflict = true;
       FieldType colType = pTable->GetType(sColName);
       Field* pField = BuildField(iRawVec[i], colType);
       std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
       printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
-      delete pField;
       if(!_CheckForeignKey(fPair.first, fPair.second, pField)){
-        throw ForeignKeyException("key out of range" +  pField->ToString());
+        printf("key out of range:%s\n", pField->ToString().data());
+        delete pField;
+        throw ForeignKeyException();
       }
+      delete pField;
     }
   }
 
@@ -449,7 +450,8 @@ PageSlotID Database::Insert(const String& sTableName,
       std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
       printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
       if(!_CheckForeignKey(fPair.first, fPair.second, iValueVec[i])){
-        throw ForeignKeyException("key out of range" +  iValueVec[i]->ToString());
+        printf("key out of range:%d\n", iValueVec[i]->ToString().data());
+        throw ForeignKeyException();
       }
     }
   }
@@ -725,15 +727,17 @@ std::pair<String, String> Database::GetForeignKey(const String& sTableName, cons
 }
 bool Database::_CheckForeignKey(const String& fTableName, 
   const String& fColName, Field* pField){//false-wrong true-corrct
+  printf("%s %s on %s\n", fTableName.data(), fColName.data(), pField->ToString().data());
   Table* pTable = GetTable(fTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(fTableName);
     std::cout << e.what() << "\n";
     throw e;
   }
-  /// 检查是不是比所有都小
+  // /// 检查是不是比所有都小
   FieldID colPos = pTable->GetColPos(fColName);
   Field *pLow = pField->Clone(), *pHigh = pField->Clone();
+  pHigh->Add();
   pLow->ToMin();
   Condition* pCond = nullptr;
   std::vector<Condition*> iIndexCond{};
@@ -749,23 +753,23 @@ bool Database::_CheckForeignKey(const String& fTableName,
   }
 
   if (pCond) delete pCond;
-  for (auto pCond : iIndexCond) delete pCond;
-  iIndexCond.clear();
-  iPageSlotIDVec.clear();
+  for (auto iCond : iIndexCond) delete iCond;
 
-  //check if it is larger than every key in fk
-  colPos = pTable->GetColPos(fColName);
-  pLow = pField->Clone();
-  pHigh = pField->Clone();
-  pHigh->ToMax();
-  pCond = nullptr;
+  // //check if it is larger than every key in fk
+  FieldID gcolPos = pTable->GetColPos(fColName);
+  Field *gLow = pField->Clone(), *gHigh = pField->Clone();
+  gHigh->ToMax();
+  Condition* gCond = nullptr;
+  std::vector<Condition*> gIndexCond{};
   if (IsIndex(fTableName, fColName)) {
-    iIndexCond.push_back(new IndexCondition(fTableName, fColName, pLow, pHigh));
+    gIndexCond.push_back(new IndexCondition(fTableName, fColName, gLow, gHigh));
   } else {
-    pCond = new RangeCondition(colPos, pLow, pHigh);
+    gCond = new RangeCondition(gcolPos, gLow, gHigh);
   }
-  iPageSlotIDVec = Search(fTableName, pCond, iIndexCond);
-  if(iPageSlotIDVec.size() == 0){
+  std::vector<PageSlotID> gPageSlotIDVec = Search(fTableName, gCond, gIndexCond);
+  if (gCond) delete gCond;
+  for (auto iCond : gIndexCond) delete iCond;
+  if(gPageSlotIDVec.size() == 0){
     printf("greater than every key in fk\n");
     return false;
   }
