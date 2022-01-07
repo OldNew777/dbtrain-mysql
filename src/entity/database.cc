@@ -60,11 +60,11 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   std::vector<Column> shadowTableColVec;
   shadowTableColVec.push_back(Column("Status", FieldType::INT_TYPE, 
     false, false, FIELD_INT_TYPE_SIZE, std::make_pair("",""))); //status 
-  shadowTableColVec.push_back(Column("Column Name", FieldType::CHAR_TYPE,
+  shadowTableColVec.push_back(Column("Local Column Name", FieldType::CHAR_TYPE,
     false, false, COLUMN_NAME_SIZE, std::make_pair("","")));//该表某一列的名字
+  shadowTableColVec.push_back(Column("Foreign Table Name", FieldType::CHAR_TYPE,
+    false, false, TABLE_NAME_SIZE, std::make_pair("","")));//某列的外键是谁
   shadowTableColVec.push_back(Column("Foreign Key Name", FieldType::CHAR_TYPE,
-    false, false, COLUMN_NAME_SIZE, std::make_pair("","")));//某列的外键是谁
-  shadowTableColVec.push_back(Column("Dependency Key Name", FieldType::CHAR_TYPE,
     false, false, COLUMN_NAME_SIZE, std::make_pair("","")));//某列是谁的外键
   TablePage* shadowPage = new TablePage(Schema(shadowTableColVec));
   Table* shadowTable = new Table(shadowPage);
@@ -73,11 +73,38 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
   // insert entity to page
   InsertEntity(sTableName);
+  InsertEntity("@" + sTableName);
 
   // insert index
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
     if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
+  }
+
+  //insert foreign key
+  for (int i = 0; i < iSchema.GetSize(); ++i) {
+    const Column& column = iSchema.GetColumn(i);
+    if (column.GetForeignKeyPair().first != "") {
+      String fTableName = column.GetForeignKeyPair().first;
+      String fColName = column.GetForeignKeyPair().second;
+      //insert local shadow table
+      std::vector<Field*> LocalVec;
+      LocalVec.push_back(new IntField(SHADOW_STATUS_FOREIGN_KEY));
+      LocalVec.push_back(new CharField(column.GetName()));
+      LocalVec.push_back(new CharField(fTableName));
+      LocalVec.push_back(new CharField(fColName));
+      // printf("1\n");
+      Insert("@" + sTableName, LocalVec);
+      //insert reference shadow table
+      std::vector<Field*> ForeignVec;
+      ForeignVec.push_back(new IntField(SHADOW_STATUS_REFERENCE_KEY));
+      ForeignVec.push_back(new CharField(fColName));
+      ForeignVec.push_back(new CharField(sTableName));
+      ForeignVec.push_back(new CharField(column.GetName()));
+      // printf("2\n");
+      Insert("@" + fTableName, ForeignVec);
+    }
+    // printf("3\n");
   }
 }
 

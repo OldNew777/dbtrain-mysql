@@ -20,5 +20,8 @@ Size Column::GetSize() const { return _nSize; }
 bool Column::GetCanBeNull() const {return _canBeNull;}
 
 bool Column::GetIsPrimary() const {return _isPrimary;}
+std::pair<String, String> Column::GetForeignKeyPair() const{
+   return _foreignKey;
+}
 
 }  // namespace dbtrain_mysql

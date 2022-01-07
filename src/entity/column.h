@@ -17,6 +17,7 @@ class Column {
   Size GetSize() const;
   bool GetCanBeNull() const;
   bool GetIsPrimary() const;
+  std::pair<String, String> GetForeignKeyPair() const;
 
  private:
   String _sName;
