@@ -20,6 +20,7 @@ class TablePage : public ManagerPage {
   FieldType GetType(const String& sCol);
   bool GetCanBeNull(const String& sCol);
   bool GetIsPrimary(const String& sCol);
+  bool GetIsForeign(const String& sCol);
   Size GetSize(const String& sCol);
 
   virtual ManagerPageType GetManagerPageType() const;

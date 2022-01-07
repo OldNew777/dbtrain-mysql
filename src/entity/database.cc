@@ -359,7 +359,7 @@ PageSlotID Database::Insert(const String& sTableName,
   //check foreignkey
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
-    if (pTable->GetIsPrimary(sColName)) {
+    if (pTable->GetIsForeign(sColName)) {
       // check whether primary key conflicts with other records
       primaryKeyConflict = true;
       FieldType colType = pTable->GetType(sColName);
@@ -439,7 +439,7 @@ PageSlotID Database::Insert(const String& sTableName,
   //check foreignkey
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
-    if (pTable->GetIsPrimary(sColName)) {
+    if (pTable->GetIsForeign(sColName)) {
       // check whether primary key conflicts with other records
       std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
       printf("FK of %s: %s %s", sColName, fPair.first, fPair.second);

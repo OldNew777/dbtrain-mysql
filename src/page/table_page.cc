@@ -23,6 +23,9 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
       // printf("name: %s\n", iCol.GetName());
       status |= 0b10;
     }
+    if(iCol.GetForeignKeyPair().first != ""){
+      status |= 0b100;
+    }
     _iStatusVec.push_back(status);
   }
   assert(_iColMap.size() == _iTypeVec.size());
@@ -71,6 +74,9 @@ bool TablePage::GetCanBeNull(const String& sCol) {
 }
 bool TablePage::GetIsPrimary(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10);
+}
+bool TablePage::GetIsForeign(const String& sCol){
+  return ((_iStatusVec[GetColPos(sCol)] & 0b100) == 0b100);
 }
 
 ManagerPageType TablePage::GetManagerPageType() const {

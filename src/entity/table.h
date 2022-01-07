@@ -72,6 +72,7 @@ class Table : public Entity {
   Size GetSize(const String& sCol) const;
   bool GetCanBeNull(const String& sCol) const;
   bool GetIsPrimary(const String& sCol) const;
+  bool GetIsForeign(const String& sCol) const;
   std::vector<Record*> GetTableInfos() const;
   std::vector<String> GetColumnNames() const;
 

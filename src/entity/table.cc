@@ -164,6 +164,9 @@ bool Table::GetCanBeNull(const String& sCol) const {
 bool Table::GetIsPrimary(const String& sCol) const {
   return _pTablePage->GetIsPrimary(sCol);
 }
+bool Table::GetIsForeign(const String& sCol) const {
+  return _pTablePage->GetIsForeign(sCol);
+}
 
 std::vector<String> Table::GetColumnNames() const {
   std::vector<String> iVec{};
@@ -205,8 +208,7 @@ void Table::AddPrimaryKey(const std::vector<String>& iColVec){
 }
 
 void Table::DropPrimaryKey(const String& sColName){
-  printf("");
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] &= 0b11111101;
-  printf("2\n");
 }
+
 }  // namespace dbtrain_mysql
