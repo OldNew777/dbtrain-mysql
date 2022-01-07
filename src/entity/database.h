@@ -80,6 +80,7 @@ class Database : public EntityManager {
   Index* GetIndex(const String& sTableName, const String& sColName);
   void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
   void DropPrimaryKey(const String& sTableName, const String& sColName);
+  std::pair<String, String> GetForeignKey(const String& sTableName, const String& sColName);
   std::vector<Record*> GetIndexInfos();
 
   virtual void Clear() override;
