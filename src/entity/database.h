@@ -58,7 +58,6 @@ class Database : public EntityManager {
   /**
    * @brief 增添主键
    */
-  void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
   IndexManager* GetIndexManager() const;
 
   // ------------------------ RECORD ------------------------
@@ -79,6 +78,8 @@ class Database : public EntityManager {
   void DropIndex(const String& sTableName, const String& sColName);
   bool IsIndex(const String& sTableName, const String& sColName);
   Index* GetIndex(const String& sTableName, const String& sColName);
+  void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
+  void DropPrimaryKey(const String& sTableName, const String& sColName);
   std::vector<Record*> GetIndexInfos();
 
   virtual void Clear() override;

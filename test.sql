@@ -153,3 +153,6 @@ INSERT INTO order VALUES(1, 'Mike', 2022-01-07);
 INSERT INTO order VALUES(1, 'Jack', 2022-01-06);
 SELECT * FROM order;
 ALTER TABLE order ADD PRIMARY KEY (customer, date);
+DESC order;
+ALTER TABLE order DROP PRIMARY KEY (date);
+DESC order;

@@ -73,6 +73,7 @@ class Instance {
   std::vector<Record *> GetIndexInfos() const;
   void CreateIndex(const String &sTableName, const String &sColName);
   void DropIndex(const String &sTableName, const String &sColName);
+  void DropPrimaryKey(const String &sTableName, const String &sColName);
 
   /**
    * @brief 实现多个表的JOIN操作

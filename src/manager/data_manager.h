@@ -125,6 +125,7 @@ class DataManager {
   // ------------------------ INDEX ------------------------
   void CreateIndex(const String& sTableName, const String& sColName);
   void DropIndex(const String& sTableName, const String& sColName);
+  void DropPrimaryKey(const String& sTableName, const String& sColName);
   bool IsIndex(const String& sTableName, const String& sColName) const;
   Index* GetIndex(const String& sTableName, const String& sColName) const;
   std::vector<Record*> GetIndexInfos() const;

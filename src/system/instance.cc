@@ -154,5 +154,7 @@ std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(
 void Instance::AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec){
   _pDataManager->AddPrimaryKey(sTableName, sColNameVec);
 }
-
+void Instance::DropPrimaryKey(const String& sTableName, const String& sColName) {
+  _pDataManager->DropPrimaryKey(sTableName, sColName);
+}
 }  // namespace dbtrain_mysql

@@ -203,4 +203,8 @@ void Table::AddPrimaryKey(const std::vector<String>& iColVec){
     _pTablePage->_iStatusVec[_pTablePage->GetColPos(iColVec[i])] |= 0b10 ;//add primary key
   }
 }
+
+void Table::DropPrimaryKey(const String& sColName){
+  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] &= 0b11111101;
+}
 }  // namespace dbtrain_mysql

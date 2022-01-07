@@ -113,6 +113,7 @@ antlrcpp::Any SystemVisitor::visitShow_tables(
   Result *res = new MemResult({"Show Tables"});
   // Add Some info
   for (const auto &sTableName : _pDB->GetTableNames()) {
+    if(sTableName.substr(0,1) == "@") continue;
     FixedRecord *pRes =
         new FixedRecord(1, {FieldType::CHAR_TYPE}, {TABLE_NAME_SIZE});
     pRes->SetField(0, new CharField(sTableName));
@@ -490,7 +491,22 @@ antlrcpp::Any SystemVisitor::visitAlter_drop_index(
 
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_pk(
     MYSQLParser::Alter_table_drop_pkContext *ctx) {
-  throw UnimplementedException();
+  String sTableName = ctx->Identifier()->getText();
+  std::vector<String> sColNameVec = ctx->identifiers()->accept(this);
+
+  Size nSize = 0;
+  for (const auto &sColName : sColNameVec) {
+    try {
+      _pDB->DropPrimaryKey(sTableName, sColName);
+      ++nSize;
+    } catch (const std::exception &e) {
+    }
+  }
+  Result *res = new MemResult({"Drop Primary Key"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(nSize));
+  res->PushBack(pRes);
+  return res;
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
@@ -504,19 +520,17 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
   if(ctx->Identifier().size() == 1){//not constriant
     String tableName = ctx->Identifier()[0]->getText();
     std::vector<String> sColName = ctx->identifiers()->accept(this);
+    Size nSize = 0;
     try {
       _pDB->AddPrimaryKey(tableName, sColName);
+      nSize += sColName.size();
     } catch (const std::exception &e) {
       printf("%s\n", e.what());
     }
-    Result *res = new MemResult({"Column Name", "Column Type", "Column Size",
-                               "Can Be Null", "Primary Key"});
-    String sTableName = ctx->Identifier()[0]->getText();
-    try {
-      for (const auto &pRecord : _pDB->GetTableInfos(sTableName))
-        res->PushBack(pRecord);
-    } catch (const std::exception &e) {
-    }
+    Result *res = new MemResult({"Add Primary Key"});
+    FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+    pRes->SetField(0, new IntField(nSize));
+    res->PushBack(pRes);
     return res;
   }
   else{

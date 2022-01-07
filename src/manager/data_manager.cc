@@ -546,5 +546,9 @@ void DataManager::AddPrimaryKey(const String& sTableName, const std::vector<Stri
   CheckDatabaseUsed();
   _pDatabase->AddPrimaryKey(sTableName, sColNameVec);
 }
+void DataManager::DropPrimaryKey(const String& sTableName, const String& sColName) {
+  CheckDatabaseUsed();
+  _pDatabase->DropPrimaryKey(sTableName, sColName);
+}
 
 }  // namespace dbtrain_mysql

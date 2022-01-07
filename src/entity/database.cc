@@ -532,13 +532,11 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
     if(!pTable->GetIsPrimary(sColName[i])) sColNameVec.push_back(sColName[i]);
   }
   if(sColNameVec.size() == 0) return;
-
   std::vector<PageSlotID> psidVec =  pTable->SearchRecord(nullptr);
-  MemResult* result = new MemResult(pTable->GetColumnNames());
+  Result* result = new MemResult(pTable->GetColumnNames());
   for(auto& psid: psidVec){
     result->PushBack(pTable->GetRecord(psid.first, psid.second));
   }
-  
   //如果已经有其他外键，那么一定不需要检查新外键的重复性
   bool needCheckDuplication = true;
   std::vector<std::string> iColNameVec = pTable->GetColumnNames();
@@ -549,18 +547,24 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
     }
   }
   //检查重复性和null性
-  if(needCheckDuplication && _CheckHaveDuplicatePK(result, sColNameVec)){
+  if(needCheckDuplication && _CheckHaveDuplicatePK((MemResult*) result, sColNameVec)){
     throw AlterException("the new Primary Key column cannot be duplicated");
   }
-  if(_CheckHaveNullPK(result, sColNameVec)){
+  if(_CheckHaveNullPK((MemResult*)result, sColNameVec)){
     throw AlterException("the new Primary Key column cannot be Null");
   }
   pTable->AddPrimaryKey(sColNameVec);
-  if(result) delete result;
+  printf("1\n");
+  // TODO: a space bug
+  // if(result != nullptr) delete result;
+  printf("2\n");
   return;
 }
 
-
+void Database::DropPrimaryKey(const String& sTableName, const String& sColName){
+  Table* pTable = GetTable(sTableName);
+  pTable->DropPrimaryKey(sColName);
+}
 bool Database::_CheckHaveNullPK(MemResult* result, const std::vector<String>& sColNameVec){
 
   std::map<String, int> iColPosMap;
