@@ -97,7 +97,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
       Insert("@" + sTableName, LocalVec);
       //insert reference shadow table
       std::vector<Field*> ForeignVec;
-      ForeignVec.push_back(new CharField(SHADOW_STATUS_REFERENCE_KEY));
+      ForeignVec.push_back(new CharField(SHADOW_STATUS_REFERED_KEY));
       ForeignVec.push_back(new CharField(fColName));
       ForeignVec.push_back(new CharField(sTableName));
       ForeignVec.push_back(new CharField(column.GetName()));
@@ -725,6 +725,31 @@ std::pair<String, String> Database::GetForeignKey(const String& sTableName, cons
   printf("there should be a foreign key in shadow table\n");
   throw ForeignKeyException();
 }
+std::vector<std::pair<String, String> > Database::GetTableReferedKey
+  (const String& sTableName){
+  Table* pTable = GetTable("@" + sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  std::vector<std::pair<String, String> > referedKeyVec;
+  FieldID colPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
+  std::vector<PageSlotID> iPageSlotIDVec =pTable->SearchRecord(nullptr);
+  MemResult* res = new MemResult({SHADOW_STATUS_NAME,
+     SHADOW_LOCAL_COLUMN_NAME, SHADOW_FOREIGN_TABLE_NAME, SHADOW_FOREIGN_COLUMN_NAME});
+  for(auto& psid: iPageSlotIDVec){
+    res->PushBack(pTable->GetRecord(psid.first, psid.second));
+  }
+  for(int i = 0; i < res->GetDataSize(); i ++){
+    // printf("%s %s\n", res->GetFieldString(i, 0).data(), res->GetFieldString(i, 1).data());
+    if(res->GetFieldString(i, 0) != SHADOW_STATUS_REFERED_KEY) continue;
+    referedKeyVec.push_back(std::make_pair(
+        res->GetFieldString(i, 2), res->GetFieldString(i, 3)));
+  }
+  return referedKeyVec;
+}
+
 bool Database::_CheckForeignKey(const String& fTableName, 
   const String& fColName, Field* pField){//false-wrong true-corrct
   printf("%s %s on %s\n", fTableName.data(), fColName.data(), pField->ToString().data());

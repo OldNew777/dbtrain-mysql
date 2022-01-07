@@ -81,6 +81,7 @@ class Database : public EntityManager {
   void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
   void DropPrimaryKey(const String& sTableName, const String& sColName);
   std::pair<String, String> GetForeignKey(const String& sTableName, const String& sColName);
+  std::vector<std::pair<String, String> > GetTableReferedKey(const String& sTableName);
   std::vector<Record*> GetIndexInfos();
 
   virtual void Clear() override;
