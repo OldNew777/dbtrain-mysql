@@ -578,7 +578,6 @@ antlrcpp::Any SystemVisitor::visitField_list(
         if(sColMap.find(tmp[i]) == sColMap.end()){
           throw ForeignKeyException("wtf happened?");
         }
-        // printf("%s\n", (tmp[i] + " " + tmp[i + 1]).data());
         sColVec[sColMap[tmp[i]]][4] = sForeignTableName + " " + tmp[i + 1];
       }
     }
