@@ -361,7 +361,6 @@ PageSlotID Database::Insert(const String& sTableName,
     const String& sColName = iColNameVec[i];
     if (pTable->GetIsForeign(sColName)) {
       // check whether primary key conflicts with other records
-      //TODO: foreign key insert
       FieldType colType = pTable->GetType(sColName);
       Field* pField = BuildField(iRawVec[i], colType);
       std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
@@ -446,7 +445,7 @@ PageSlotID Database::Insert(const String& sTableName,
     const String& sColName = iColNameVec[i];
     if (pTable->GetIsForeign(sColName)) {
       // check whether primary key conflicts with other records
-      //TODO: foreign key insert
+      
       std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
       printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
       if(!_CheckForeignKey(fPair.first, fPair.second, iValueVec[i])){
@@ -752,7 +751,7 @@ std::vector<std::pair<String, String> > Database::GetTableReferedKey
 
 bool Database::_CheckForeignKey(const String& fTableName, 
   const String& fColName, Field* pField){//false-wrong true-corrct
-  printf("%s %s on %s\n", fTableName.data(), fColName.data(), pField->ToString().data());
+  // printf("%s %s on %s\n", fTableName.data(), fColName.data(), pField->ToString().data());
   Table* pTable = GetTable(fTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(fTableName);
@@ -799,5 +798,82 @@ bool Database::_CheckForeignKey(const String& fTableName,
     return false;
   }
   return true;
+}
+uint32_t Database::DropForeignKey(const String& sTableName, const String& sColName){
+  //TODO: delete a forergnkey in shadow table and erase in status
+  Table* pTable = GetTable("@" + sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException("@" + sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  } 
+  std::vector<Condition*> iIndexCond{};
+  //type condition
+  FieldID tColPos = pTable->GetColPos(SHADOW_STATUS_NAME);
+  Field* tLow = BuildField(SHADOW_STATUS_FOREIGN_KEY, FieldType::CHAR_TYPE);
+  Field* tHigh = tLow->Clone();
+  tHigh->Add();
+  Condition* tCond = nullptr;
+  if (IsIndex("@" + sTableName, SHADOW_STATUS_NAME)) {
+    iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_STATUS_NAME, tLow, tHigh));
+  } else {
+    tCond = new RangeCondition(tColPos, tLow, tHigh);
+  }
+  //Colname condition
+  FieldID cColPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
+  Field* cLow = BuildField(sColName, FieldType::CHAR_TYPE);
+  Field* cHigh = cLow->Clone();
+  cHigh->Add();
+  Condition* cCond = nullptr;
+  if (IsIndex("@" + sTableName, SHADOW_LOCAL_COLUMN_NAME)) {
+    iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_LOCAL_COLUMN_NAME
+      , cLow, cHigh));
+  } else {
+    cCond = new RangeCondition(cColPos, cLow, cHigh);
+  }
+  Condition * cond = new AndCondition({tCond, cCond});
+  uint32_t ret = Delete("@" + sTableName, cond,iIndexCond);
+  if(cCond) delete cCond;
+  if(tCond) delete tCond;
+  for (auto iCond : iIndexCond) delete iCond;
+  return ret;
+}
+uint32_t Database::DropReferedKey(const String& sTableName, const String& sColName){
+  Table* pTable = GetTable("@" + sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException("@" + sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  } 
+  std::vector<Condition*> iIndexCond{};
+  //type condition
+  FieldID tColPos = pTable->GetColPos(SHADOW_STATUS_NAME);
+  Field* tLow = BuildField(SHADOW_STATUS_REFERED_KEY, FieldType::CHAR_TYPE);
+  Field* tHigh = tLow->Clone();
+  tHigh->Add();
+  Condition* tCond = nullptr;
+  if (IsIndex("@" + sTableName, SHADOW_STATUS_NAME)) {
+    iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_STATUS_NAME, tLow, tHigh));
+  } else {
+    tCond = new RangeCondition(tColPos, tLow, tHigh);
+  }
+  //Colname condition
+  FieldID cColPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
+  Field* cLow = BuildField(sColName, FieldType::CHAR_TYPE);
+  Field* cHigh = cLow->Clone();
+  cHigh->Add();
+  Condition* cCond = nullptr;
+  if (IsIndex("@" + sTableName, SHADOW_LOCAL_COLUMN_NAME)) {
+    iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_LOCAL_COLUMN_NAME
+      , cLow, cHigh));
+  } else {
+    cCond = new RangeCondition(cColPos, cLow, cHigh);
+  }
+  Condition * cond = new AndCondition({tCond, cCond});
+  uint32_t ret = Delete("@" + sTableName, cond,iIndexCond);
+  if(cCond) delete cCond;
+  if(tCond) delete tCond;
+  for (auto iCond : iIndexCond) delete iCond;
+  return ret;
 }
 }  // namespace dbtrain_mysql

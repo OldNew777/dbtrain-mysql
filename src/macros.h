@@ -43,7 +43,7 @@ const uint32_t FIELD_FLOAT_TYPE_SIZE = 4;
 
 const Size SHADOW_STATUS_SIZE = 4;
 const String SHADOW_STATUS_FOREIGN_KEY = "FORE";
-const String SHADOW_STATUS_REFERENCE_KEY = "REFE";
+const String SHADOW_STATUS_REFERED_KEY = "REFE";
 const String SHADOW_STATUS_NAME = "Status";
 const String SHADOW_LOCAL_COLUMN_NAME = "LocalColumnName";
 const String SHADOW_FOREIGN_COLUMN_NAME = "ForeignColumnName";
