@@ -487,7 +487,16 @@ antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
     MYSQLParser::Alter_table_add_pkContext *ctx) {
-  throw UnimplementedException();
+      
+  if(ctx->Identifier().size() == 1){//not constriant
+    String tableName = ctx->Identifier()[0]->getText();
+    std::vector<String> vectors = ctx->identifiers()->accept(this);
+    
+  }
+  else{
+    // printf("%s %s\n", ctx->Identifier()[0]->getText().data(),ctx->Identifier()[1]->getText().data());
+    //TODO: CONSTRIANT起名没有实现
+  }
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(

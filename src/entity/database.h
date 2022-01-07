@@ -5,6 +5,7 @@
 #include "entity_manager.h"
 #include "manager/index_manager.h"
 #include "page/database_page.h"
+#include "result/results.h"
 #include "table.h"
 
 namespace dbtrain_mysql {
@@ -54,6 +55,10 @@ class Database : public EntityManager {
    * @return std::vector<String> 表的列信息
    */
   std::vector<String> GetColumnNames(const String& sTableName);
+  /**
+   * @brief 增添主键
+   */
+  void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
   IndexManager* GetIndexManager() const;
 
   // ------------------------ RECORD ------------------------

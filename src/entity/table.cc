@@ -198,4 +198,9 @@ std::vector<Record*> Table::GetTableInfos() const {
 
 EntityType Table::GetEntityType() const { return EntityType::TABLE_TYPE; }
 
+void Table::AddPrimaryKey(const std::vector<String>& iColVec){
+  for(int i = 0; i < iColVec.size(); i ++){
+    _pTablePage->_iStatusVec[_pTablePage->GetColPos(iColVec[i])] |= 0b10 ;//add primary key
+  }
+}
 }  // namespace dbtrain_mysql

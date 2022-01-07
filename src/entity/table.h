@@ -56,6 +56,13 @@ class Table : public Entity {
    * @return std::vector<PageSlotID> 符合条件记录的位置
    */
   std::vector<PageSlotID> SearchRecord(Condition* pCond);
+  /**
+   * @brief 增加主键
+   *
+   * @param std::vector<String> 增加主键的名字
+   * @return std::vector<PageSlotID> 符合条件记录的位置
+   */
+  void AddPrimaryKey(const std::vector<String>& sColVec);
 
   void SearchRecord(std::vector<PageSlotID>& iPairs, Condition* pCond);
 
