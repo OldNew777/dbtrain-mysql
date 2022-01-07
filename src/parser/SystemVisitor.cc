@@ -208,6 +208,18 @@ antlrcpp::Any SystemVisitor::visitCreate_table(
     Schema iSchema = ctx->field_list()->accept(this);
     String sTableName = ctx->Identifier()->getText();
     _pDB->CreateTable(sTableName, iSchema);
+    //create a shadow table
+    std::vector<Column> shadowTableColVec;
+    shadowTableColVec.push_back(Column("Status", FieldType::INT_TYPE, 
+      false, false, FIELD_INT_TYPE_SIZE)); //status 
+    shadowTableColVec.push_back(Column("Column Name", FieldType::CHAR_TYPE,
+      false, false, COLUMN_NAME_SIZE));//该表某一列的名字
+    shadowTableColVec.push_back(Column("Foreign Key Name", FieldType::CHAR_TYPE,
+      false, false, COLUMN_NAME_SIZE));//某列的外键是谁
+    shadowTableColVec.push_back(Column("Dependency Key Name", FieldType::CHAR_TYPE,
+      false, false, COLUMN_NAME_SIZE));//某列是谁的外键
+    _pDB->CreateTable("@" + sTableName, Schema(shadowTableColVec));
+    
     nSize = 1;
   } catch (const std::exception &e) {
   }
@@ -224,6 +236,7 @@ antlrcpp::Any SystemVisitor::visitDrop_table(
   Size nSize = 0;
   try {
     _pDB->DropTable(sTableName);
+    _pDB->DropTable("@" + sTableName);
     nSize = 1;
   } catch (const std::exception &e) {
   }

@@ -611,7 +611,6 @@ bool Database::_CheckHaveDuplicatePK(MemResult* result, const std::vector<String
   }
   
   for (uint32_t i = 0; i < result->GetDataSize() - 1; i ++) {
-    printf("%s\n",sColNameVec[0].data());
     for(uint32_t j = i + 1; j < result->GetDataSize(); j ++){
       bool duplicate = true;
       for(const String& colName: sColNameVec){
