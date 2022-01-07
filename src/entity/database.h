@@ -85,7 +85,7 @@ class Database : public EntityManager {
     const String& fTableName, const String& fColName);
   std::pair<String, String> GetForeignKey(const String& sTableName, const String& sColName);
   std::vector<std::pair<String, String> > GetTableReferedKeys(const String& sTableName);//获取依赖一个表中键的所有其他表的键
-  std::vector<std::pair<String, String> > GetTableForeignKeys(const String& sTableName);//获取一个表中依赖的所有其他表的键
+  std::vector<std::vector<String>> GetTableForeignKeys(const String& sTableName);//获取一个表中依赖的所有其他表的键
   std::vector<Record*> GetIndexInfos();
 
   virtual void Clear() override;

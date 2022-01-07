@@ -748,14 +748,14 @@ std::vector<std::pair<String, String> > Database::GetTableReferedKeys
   }
   return referedKeyVec;
 }
-std::vector<std::pair<String, String> > Database::GetTableForeignKeys(const String& sTableName){
+std::vector<std::vector<String> > Database::GetTableForeignKeys(const String& sTableName){
   Table* pTable = GetTable("@" + sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
     std::cout << e.what() << "\n";
     throw e;
   }
-  std::vector<std::pair<String, String> > referedKeyVec;
+  std::vector<std::vector<String> > foreignKeyVec;
   FieldID colPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
   std::vector<PageSlotID> iPageSlotIDVec =pTable->SearchRecord(nullptr);
   MemResult* res = new MemResult({SHADOW_STATUS_NAME,
@@ -766,10 +766,12 @@ std::vector<std::pair<String, String> > Database::GetTableForeignKeys(const Stri
   for(int i = 0; i < res->GetDataSize(); i ++){
     // printf("%s %s\n", res->GetFieldString(i, 0).data(), res->GetFieldString(i, 1).data());
     if(res->GetFieldString(i, 0) != SHADOW_STATUS_FOREIGN_KEY) continue;
-    referedKeyVec.push_back(std::make_pair(
-        res->GetFieldString(i, 2), res->GetFieldString(i, 3)));
+    foreignKeyVec.push_back(std::vector<String>());
+    foreignKeyVec.back().push_back(res->GetFieldString(i, 1));
+    foreignKeyVec.back().push_back(res->GetFieldString(i, 2));
+    foreignKeyVec.back().push_back(res->GetFieldString(i, 3));
   }
-  return referedKeyVec;
+  return foreignKeyVec;
 }
 
 bool Database::_CheckForeignKey(const String& fTableName, 
