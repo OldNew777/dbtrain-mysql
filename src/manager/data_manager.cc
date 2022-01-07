@@ -542,4 +542,9 @@ void DataManager::CheckDatabaseUsed() const {
   }
 }
 
+void DataManager::AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec){
+  CheckDatabaseUsed();
+  _pDatabase->AddPrimaryKey(sTableName, sColNameVec);
+}
+
 }  // namespace dbtrain_mysql

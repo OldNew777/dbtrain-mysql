@@ -128,6 +128,7 @@ class DataManager {
   bool IsIndex(const String& sTableName, const String& sColName) const;
   Index* GetIndex(const String& sTableName, const String& sColName) const;
   std::vector<Record*> GetIndexInfos() const;
+  void AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec);
 
  protected:
   Whole* _pWhole;

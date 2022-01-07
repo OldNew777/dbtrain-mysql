@@ -151,5 +151,8 @@ std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(
     std::vector<Condition*>& iJoinConds) {
   return _pDataManager->Join(iResultMap, iJoinConds);
 }
+void Instance::AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec){
+  _pDataManager->AddPrimaryKey(sTableName, sColNameVec);
+}
 
 }  // namespace dbtrain_mysql

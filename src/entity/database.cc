@@ -519,85 +519,46 @@ void Database::Clear() {
 EntityType Database::GetEntityType() const { return EntityType::DATABASE_TYPE; }
 
 void Database::AddPrimaryKey(const String& sTableName, const std::vector<String> sColName){
+  printf("1\n");
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
     std::cout << e.what() << "\n";
     throw e;
   }
+  printf("2\n");
   std::vector<std::vector<Record*>> records;
   //因为现有pk的信息是正确的，所以只需要检查现有信息
   //获取所有需要检查的新增列的信息
   std::vector<String> sColNameVec;
   for (int i = 0; i < sColName.size(); i ++){
-    if(pTable->GetIsPrimary(sColName[i])) sColNameVec.push_back(sColName[i]);
+    printf("%s\n", sColName[i].data());
+    if(!pTable->GetIsPrimary(sColName[i])) sColNameVec.push_back(sColName[i]);
   }
+  printf("2.1\n");
   if(sColNameVec.size() == 0) return;
-  // for(int i = 0; i < sColNameVec.size(); i ++){
-  //   //get record
-  //   if(pTable->GetIsPrimary(sColNameVec[i])){ //不需要检查已经是pk的列
-  //     continue;
-  //   }
-  //   FieldID colPos = pTable->GetColPos(sColNameVec[i]);
-  //   Field *pLow = nullptr;
-  //   Field *pHigh = nullptr;
-  //   if(pTable->GetType(sColNameVec[i])== FieldType::INT_TYPE){
-  //     pLow = new IntField();
-  //     pHigh = pLow->Clone();
-  //     pLow->ToMin();
-  //     pHigh->ToMax();
-  //   }
-  //   else if(pTable->GetType(sColNameVec[i])== FieldType::FLOAT_TYPE){
-  //     pLow = new FloatField();
-  //     pHigh = pLow->Clone();
-  //     pLow->ToMin();
-  //     pHigh->ToMax();
-  //   }
-  //   else{
-  //     pLow = new CharField();
-  //     pHigh = pLow->Clone();
-  //     pLow->ToMin();
-  //     pHigh->ToMax();
-  //   }
-  //   Condition* pCond = nullptr;
-  //   std::vector<Condition*> iIndexCond{};
-  //   if (IsIndex(sTableName, sColNameVec[i])) {
-  //     iIndexCond.push_back(new IndexCondition(sTableName, sColNameVec[i], pLow, pHigh));
-  //   } else {
-  //     pCond = new RangeCondition(colPos, pLow, pHigh);
-  //   }
-
-  //   std::vector<PageSlotID> iPageSlotIDVec = Search(sTableName, pCond, iIndexCond);
-
-  //   if (pCond) delete pCond;
-  //   for (auto iCond : iIndexCond) if(iCond) delete iCond;
-  //   records.push_back(std::vector<Record*>());
-  //   for(auto& pageslotID: iPageSlotIDVec){
-  //     records.back().push_back(pTable->GetRecord(pageslotID.first, pageslotID.second));
-  //   }
-  // }
-  Result* result = new MemResult(sColNameVec);
-  //检查取出来的列数据数量上是否平齐
-  for(int i = 0; i < records.size(); i ++){
-    if(i == 0) continue;
-    assert(records[i-1].size() == records[i].size());
+  printf("2.2\n");
+  std::vector<PageSlotID> psidVec =  pTable->SearchRecord(nullptr);
+  printf("2.3\n");
+  Result* result = new MemResult(pTable->GetColumnNames());
+  printf("2.4\n");
+  for(auto& psid: psidVec){
+    result->PushBack(pTable->GetRecord(psid.first, psid.second));
   }
-  Size colSize = records[0].size();
+  printf("3\n");
   //如果已经有其他外键，那么一定不需要检查新外键的重复性
   bool needCheckDuplication = true;
   std::vector<std::string> iColNameVec = pTable->GetColumnNames();
+  printf("3.1\n");
   for(int i = 0; i < iColNameVec.size(); i ++){
     if(pTable->GetIsPrimary(iColNameVec[i])){
       needCheckDuplication = false;
       break;
     }
   }
+  printf("4\n");
   //检查重复性和null性
-  for(int j = 0; j < colSize; j ++){
-    for(int i = 0; i < records.size(); i ++){
-      records[i][j]->
-    }
-  }
+  result->Display();
 }
 
 

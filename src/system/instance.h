@@ -87,6 +87,7 @@ class Instance {
       std::map<String, std::vector<PageSlotID>> &iResultMap,
       std::vector<Condition *> &iJoinConds);
 
+  void AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec);
  protected:
   DataManager *_pDataManager;
 };
