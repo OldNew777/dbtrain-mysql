@@ -122,6 +122,7 @@ class Database : public EntityManager {
                                         const String& fColName, Field* pField);
     uint32_t _DropShadowTableKey(const String& sTableName, const String& statusMode, 
       const String& lColName, const String& rTableName, const String& fColName);
+    void _UpdateReferedKey(const String& sTableName, const String& fColname);
 };
 
 }  // namespace dbtrain_mysql

@@ -24,6 +24,8 @@ const PageOffset COLUMN_STATUS_OFFSET =
 //COLUMN_STATUS_OFFSET的最后一位是NULL，1是“可以是NULL”，0是“不可以是NULL”
 //                      倒数第二位是PRIMARY，1是“是主键”，0是“不是主键”
 //                      倒数第三位是FOREIGN，1是”是外键“，0是”不是外键“
+//                      倒数第四位是referd，1是”被refered“，0是”不被refered“
+//
 
 class EntityManager;
 

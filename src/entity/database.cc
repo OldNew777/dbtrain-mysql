@@ -48,6 +48,22 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     std::cout << e.what() << "\n";
     throw e;
   }
+  //check foreign key
+  //insert foreign key
+  for (int i = 0; i < iSchema.GetSize(); ++i) {
+    const Column& column = iSchema.GetColumn(i);
+    if (column.GetForeignKeyPair().first != "") {
+      String fTableName = column.GetForeignKeyPair().first;
+      String fColName = column.GetForeignKeyPair().second;
+      //check reference table is null
+      if(_CheckHaveNull(fTableName, fColName)){
+        printf("reference column should not be null\n");
+        throw ForeignKeyException("reference column should not be null");
+      }
+      //insert local shadow table
+    }
+    // printf("3\n");
+  }
 
   // Create table and cache it
   TablePage* pPage = new TablePage(iSchema);
@@ -87,11 +103,6 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     if (column.GetForeignKeyPair().first != "") {
       String fTableName = column.GetForeignKeyPair().first;
       String fColName = column.GetForeignKeyPair().second;
-      //check reference table is null
-      if(_CheckHaveNull(fTableName, fColName)){
-        printf("reference column should not be null\n");
-        throw ForeignKeyException("reference column should not be null");
-      }
       //insert local shadow table
       std::vector<Field*> LocalVec;
       LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
@@ -108,6 +119,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
       ForeignVec.push_back(new CharField(column.GetName()));
       // printf("2\n");
       Insert("@" + fTableName, ForeignVec);
+      _UpdateReferedKey(fTableName, fColName);
     }
     // printf("3\n");
   }
@@ -643,8 +655,9 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
 
 void Database::DropPrimaryKey(const String& sTableName, const String& sColName){
   Table* pTable = GetTable(sTableName);
-  printf("1\n");
   pTable->DropPrimaryKey(sColName);
+  // std::pair<String, String> sPair = GetForeignKey(sTableName, sColName);
+  // _UpdateReferedKey(sPair.first, sPair.second);
 }
 bool Database::_CheckHaveNull(const String& fTableName, const String& fColName){
   Table* fTable = GetTable(fTableName);
@@ -1061,6 +1074,9 @@ uint32_t Database::_DropShadowTableKey(const String& lTableName,const String& st
   if(statusMode == SHADOW_STATUS_FOREIGN_KEY){
     GetTable(lTableName)->DropForeignKey(lColName);
   }
+  else if(statusMode == SHADOW_STATUS_REFERED_KEY){
+    _UpdateReferedKey(fTableName, fColName);
+  }
   return ret;
 }
 void Database::AddForeignKey(const String& lTableName, const String& lColName,
@@ -1115,6 +1131,7 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
   // printf("2\n");
   Insert("@" + fTableName, ForeignVec);
   lTable->AddForeignKey(lColName);
+  _UpdateReferedKey(fTableName, fColName);
 }
 void Database::DropFroeignKey(const String& sTableName, const String& sColName){
   std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
@@ -1126,6 +1143,7 @@ void Database::DropFroeignKey(const String& sTableName, const String& sColName){
     sColName, fPair.first, fPair.second);
   // printf("%s %s %s %s %s\n", sTableName.data(), SHADOW_STATUS_FOREIGN_KEY.data(),
   //   sColName.data(),fPair.first.data(),fPair.second.data());
+  _UpdateReferedKey(fPair.first, fPair.second);
 }
 void Database::DropTableForeignKey(const String& sTableName){
   std::vector<std::vector<String> > refPairVec = 
@@ -1137,14 +1155,54 @@ void Database::DropTableForeignKey(const String& sTableName){
   for(auto& tVec: refPairVec){
     _DropShadowTableKey(tVec[1], SHADOW_STATUS_REFERED_KEY, 
       tVec[2],sTableName, tVec[0]);
+    _UpdateReferedKey(tVec[1], tVec[2]);
   }
   
   for(auto& tVec: forPairVec){
     _DropShadowTableKey(tVec[1], SHADOW_STATUS_FOREIGN_KEY, 
       tVec[2],sTableName, tVec[0]);
+    _UpdateReferedKey(tVec[1], tVec[2]);
+  }
+  
+}
+void Database::_UpdateReferedKey(const String& fTableName, const String& fColname){
+  Table* fTable = GetTable("@" + fTableName);
+  Table* sTable = GetTable(fTableName);
+  if (fTable == nullptr) {
+    auto e = TableNotExistException("@" + fTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  if (sTable == nullptr) {
+    auto e = TableNotExistException(fTableName);
+    std::cout << e.what() << "\n";
+    throw e;
   }
 
+  // printf("into\n");
+  std::vector<String> colNames = sTable->GetColumnNames();
+  std::map<String, bool> sMap;
+  for(auto& col: colNames){
+    sMap[col] = false;
+  }
+  std::vector<PageSlotID> fpsidVec = fTable->SearchRecord(nullptr);
+  MemResult* result = new MemResult(fTable->GetColumnNames());
+  for(auto& psid: fpsidVec)
+    result->PushBack(fTable->GetRecord(psid.first, psid.second));
+  for (int j = 0; j < result->GetDataSize(); j ++) {
+    if(result->GetFieldString(j, 0) != SHADOW_STATUS_REFERED_KEY) continue;
+    sMap[result->GetFieldString(j, 1)] = true;
+  }
+  for(auto& iPair: sMap){
+    if(iPair.second){
+      sTable->AddReferedKey(iPair.first);
+    }
+    else{
+      sTable->DropReferedKey(iPair.first);
+    }
+  }
+  
+  if(result) delete result;
 }
-
 
 }  // namespace dbtrain_mysql

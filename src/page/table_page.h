@@ -21,6 +21,7 @@ class TablePage : public ManagerPage {
   bool GetCanBeNull(const String& sCol);
   bool GetIsPrimary(const String& sCol);
   bool GetIsForeign(const String& sCol);
+  bool GetIsRefered(const String& sCol);
   Size GetSize(const String& sCol);
 
   virtual ManagerPageType GetManagerPageType() const;

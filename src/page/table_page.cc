@@ -70,13 +70,18 @@ Size TablePage::GetSize(const String& sCol) {
   return _iSizeVec[GetColPos(sCol)];
 }
 bool TablePage::GetCanBeNull(const String& sCol) {
-  return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1);
+  return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1) && 
+    !((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10) && 
+    !((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);
 }
 bool TablePage::GetIsPrimary(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10);
 }
 bool TablePage::GetIsForeign(const String& sCol){
   return ((_iStatusVec[GetColPos(sCol)] & 0b100) == 0b100);
+}
+bool TablePage::GetIsRefered(const String& sCol){
+  return ((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);
 }
 
 ManagerPageType TablePage::GetManagerPageType() const {

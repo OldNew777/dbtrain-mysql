@@ -167,6 +167,9 @@ bool Table::GetIsPrimary(const String& sCol) const {
 bool Table::GetIsForeign(const String& sCol) const {
   return _pTablePage->GetIsForeign(sCol);
 }
+bool Table::GetIsRefered(const String& sCol) const {
+  return _pTablePage->GetIsRefered(sCol);
+}
 
 std::vector<String> Table::GetColumnNames() const {
   std::vector<String> iVec{};
@@ -181,19 +184,22 @@ std::vector<Record*> Table::GetTableInfos() const {
   std::vector<Record*> iVec{};
   for (const auto& sColName : GetColumnNames()) {
     FixedRecord* pDesc = new FixedRecord(
-        5,
+        7,
         {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::INT_TYPE,
-         FieldType::CHAR_TYPE, FieldType::CHAR_TYPE},
-        {COLUMN_NAME_SIZE, 10, 4, 3, 3});
+         FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::CHAR_TYPE,
+         FieldType::CHAR_TYPE},
+        {COLUMN_NAME_SIZE, 10, 4, 3, 3, 3, 3});
     pDesc->SetField(0, new CharField(sColName));
     pDesc->SetField(1, new CharField(toString(GetType(sColName))));
     pDesc->SetField(2, new IntField(GetSize(sColName)));
-    pDesc->SetField(3, new CharField((_pTablePage->GetCanBeNull(sColName) &&
-                                      !_pTablePage->GetIsPrimary(sColName))
-                                         ? "YES"
-                                         : "NO"));
+    pDesc->SetField(
+        3, new CharField((_pTablePage->GetCanBeNull(sColName)) ? "YES" : "NO"));
     pDesc->SetField(
         4, new CharField((_pTablePage->GetIsPrimary(sColName)) ? "YES" : "NO"));
+    pDesc->SetField(
+        5, new CharField((_pTablePage->GetIsForeign(sColName)) ? "YES" : "NO"));
+    pDesc->SetField(
+        6, new CharField((_pTablePage->GetIsRefered(sColName)) ? "YES" : "NO"));
     iVec.push_back(pDesc);
   }
   return iVec;
@@ -209,12 +215,17 @@ void Table::AddPrimaryKey(const std::vector<String>& iColVec){
 void Table::AddForeignKey(const String& sColName){
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b100;
 }
-
+void Table::AddReferedKey(const String& sColName){
+  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b1000;
+}
 void Table::DropPrimaryKey(const String& sColName){
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] &= 0b11111101;
 }
 void Table::DropForeignKey(const String& sColName){
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] &= 0b11111011;
+}
+void Table::DropReferedKey(const String& sColName){
+  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] &= 0b11110111;
 }
 
 

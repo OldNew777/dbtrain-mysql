@@ -239,7 +239,7 @@ antlrcpp::Any SystemVisitor::visitDrop_table(
 antlrcpp::Any SystemVisitor::visitDescribe_table(
     MYSQLParser::Describe_tableContext *ctx) {
   Result *res = new MemResult({"Column Name", "Column Type", "Column Size",
-                               "Can Be Null", "Primary Key"});
+                               "Can Be Null", "Primary Key","Foreign Key", "Refered Key"});
   String sTableName = ctx->Identifier()->getText();
   try {
     for (const auto &pRecord : _pDB->GetTableInfos(sTableName))

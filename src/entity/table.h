@@ -64,6 +64,8 @@ class Table : public Entity {
    */
   void AddPrimaryKey(const std::vector<String>& sColVec);
   void AddForeignKey(const String& sColVec);
+  void AddReferedKey(const String& sColVec);
+  void DropReferedKey(const String& sColVec);
   void DropPrimaryKey(const String& sColName);
   void DropForeignKey(const String& sColName);
 
@@ -75,6 +77,7 @@ class Table : public Entity {
   bool GetCanBeNull(const String& sCol) const;
   bool GetIsPrimary(const String& sCol) const;
   bool GetIsForeign(const String& sCol) const;
+  bool GetIsRefered(const String& sCol) const;
   std::vector<Record*> GetTableInfos() const;
   std::vector<String> GetColumnNames() const;
 

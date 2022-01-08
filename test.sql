@@ -187,7 +187,9 @@ DESC SHADOW teacher2;
 ALTER TABLE teacher2 DROP FOREIGN KEY id2;
 
 DESC teacher;
+DESC SHADOW teacher;
 DESC teacher2;
+DESC SHADOW teacher2;
 -- INSERT INTO teacher2 VALUES(4, 'Jack', 5);
 ALTER TABLE teacher2 ADD FOREIGN KEY(id2) REFERENCES teacher (id);
 INSERT INTO teacher2 VALUES(4, 'Jack', 5);
