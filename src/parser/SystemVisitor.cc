@@ -514,7 +514,6 @@ antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
   String sTableName = ctx->Identifier()[0]->getText();
   String sColName = ctx->Identifier()[1]->getText();
   Size nSize = 0;
-  printf("0\n");
   try{
     _pDB->DropForeignKey(sTableName, sColName);
     nSize ++;
@@ -556,7 +555,33 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
     MYSQLParser::Alter_table_add_foreign_keyContext *ctx) {
-  throw UnimplementedException();
+  if(ctx->Identifier().size() == 2){
+    String lTableName = ctx->Identifier()[0]->toString();
+    std::vector<String> lColVec = ctx->identifiers()[0]->accept(this);
+    String fTableName = ctx->Identifier()[1]->toString();
+    std::vector<String> fColVec = ctx->identifiers()[1]->accept(this);
+    if(lColVec.size() != fColVec.size()){
+      printf("local key number should be equal to foreign key number\n");
+      throw ForeignKeyException("local key number should be equal to foreign key number");
+    }
+    Size nSize = 0;
+    for(int i = 0; i < lColVec.size(); i ++){
+      try{
+        _pDB->AddForeignKey(lTableName, lColVec[i], fTableName, fColVec[i]);
+        nSize ++;
+      }
+      catch(const Exception& e){
+        printf("%s\n",e.what());
+      }
+    }
+    Result *res = new MemResult({"Add Primary Key"});
+    FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+    pRes->SetField(0, new IntField(nSize));
+    res->PushBack(pRes);
+    return res;
+  }else{
+    //TODO: CONSTRIANT起名没有实现
+  }
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_unique(

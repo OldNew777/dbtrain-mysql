@@ -154,6 +154,10 @@ std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(
 void Instance::AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec){
   _pDataManager->AddPrimaryKey(sTableName, sColNameVec);
 }
+void Instance::AddForeignKey(const String& lTableName, const String& lColName,
+    const String& fTableName, const String& fColName){
+  _pDataManager->AddForeignKey(lTableName, lColName, fTableName, fColName);
+}
 void Instance::DropPrimaryKey(const String& sTableName, const String& sColName) {
   _pDataManager->DropPrimaryKey(sTableName, sColName);
 }

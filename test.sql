@@ -181,6 +181,13 @@ SELECT * FROM teacher2;
 -- SELECT * FROM teacher2;
 DESC SHADOW teacher2;
 -- DROP TABLE teacher;
-ALTER TABLE teacher2 DROP FOREIGN KEY id2;
+INSERT INTO teacher2 VALUES(4, 'Jack', 5);
 DESC SHADOW teacher2;
+ALTER TABLE teacher2 DROP FOREIGN KEY id2;
+
+DESC teacher;
+DESC teacher2;
+INSERT INTO teacher2 VALUES(4, 'Jack', 5);
+ALTER TABLE teacher2 ADD FOREIGN KEY(id2) REFERENCES teacher (id);
+INSERT INTO teacher2 VALUES(4, 'Jack', 5);
 -- DESC SHADOW teacher2;

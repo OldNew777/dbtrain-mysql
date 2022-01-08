@@ -364,7 +364,7 @@ PageSlotID Database::Insert(const String& sTableName,
       FieldType colType = pTable->GetType(sColName);
       Field* pField = BuildField(iRawVec[i], colType);
       std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
-      printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
+      // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
       if(!_CheckForeignKey(fPair.first, fPair.second, pField)){
         printf("key out of range:%s\n", pField->ToString().data());
         delete pField;
@@ -824,7 +824,7 @@ bool Database::_CheckForeignKey(const String& fTableName,
   }
   std::vector<PageSlotID> iPageSlotIDVec =Search(fTableName, pCond, iIndexCond);
   if(iPageSlotIDVec.size() == 0){
-    printf("less than every key in fk\n");
+    // printf("less than every key in fk\n");
     return false;
   }
 
@@ -846,7 +846,7 @@ bool Database::_CheckForeignKey(const String& fTableName,
   if (gCond) delete gCond;
   for (auto iCond : gIndexCond) delete iCond;
   if(gPageSlotIDVec.size() == 0){
-    printf("greater than every key in fk\n");
+    // printf("greater than every key in fk\n");
     return false;
   }
   return true;
@@ -1057,7 +1057,7 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
   MemResult* lRes = new MemResult(lTable->GetColumnNames());
   for(auto& psid: psidVec)
     lRes->PushBack(lTable->GetRecord(psid.first, psid.second));
-  FieldID colPos = lTable->GetColPos(fColName);
+  FieldID colPos = lTable->GetColPos(lColName);
   for(int i = 0; i < lRes->GetDataSize(); i ++){
     if(!_CheckForeignKey(fTableName, fColName, lRes->GetField(i, colPos))){
       printf("Foreign key should be in range of refernce key\n");
@@ -1081,6 +1081,7 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
   // printf("2\n");
   Insert("@" + fTableName, ForeignVec);
   if(lRes) delete lRes;
+  lTable->AddForeignKey(lColName);
 }
 void Database::DropFroeignKey(const String& sTableName, const String& sColName){
   std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);

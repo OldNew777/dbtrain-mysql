@@ -63,6 +63,7 @@ class Table : public Entity {
    * @return std::vector<PageSlotID> 符合条件记录的位置
    */
   void AddPrimaryKey(const std::vector<String>& sColVec);
+  void AddForeignKey(const String& sColVec);
   void DropPrimaryKey(const String& sColName);
   void DropForeignKey(const String& sColName);
 
