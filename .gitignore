@@ -16,6 +16,7 @@ lib/
 
 # report bin files
 *.pdf
+*.csv
 
 # Setting files
 .idea

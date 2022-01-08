@@ -671,8 +671,6 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
 void Database::DropPrimaryKey(const String& sTableName, const String& sColName){
   Table* pTable = GetTable(sTableName);
   pTable->DropPrimaryKey(sColName);
-  // std::pair<String, String> sPair = GetForeignKey(sTableName, sColName);
-  // _UpdateReferedKey(sPair.first, sPair.second);
 }
 bool Database::_CheckHaveNull(const String& fTableName, const String& fColName){
   Table* fTable = GetTable(fTableName);
