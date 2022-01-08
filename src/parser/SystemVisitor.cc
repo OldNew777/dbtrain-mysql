@@ -208,10 +208,12 @@ antlrcpp::Any SystemVisitor::visitCreate_table(
   try {
     Schema iSchema = ctx->field_list()->accept(this);
     String sTableName = ctx->Identifier()->getText();
+
     _pDB->CreateTable(sTableName, iSchema);
     
     nSize = 1;
   } catch (const std::exception &e) {
+    printf("%s\n", e.what());
   }
   Result *res = new MemResult({"Create Table"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
@@ -644,11 +646,11 @@ antlrcpp::Any SystemVisitor::visitField_list(
     }
     else if(tmp[0][0] == '#'){ //foreign key
       String sForeignTableName = tmp[0].substr(1);
-      int i;
+      int i = 1;
       std::vector<String> tmpNameVec;
       std::vector<std::pair<String, String> > tmpFKVec;
       for(; i < tmp.size();i ++){
-        if(tmp[i][0] != '#') break;
+        if(tmp[i][0] == '#') break;
         tmpFKVec.push_back(std::make_pair(sForeignTableName, tmp[i]));
       }
       for(; i < tmp.size(); i ++){
@@ -738,9 +740,6 @@ antlrcpp::Any SystemVisitor::visitForeign_key_field(
     String sForeignTableName = ctx->Identifier()[0]->toString();
     std::vector<String> sColName = ctx->identifiers()[0]->accept(this);
     std::vector<String> sForeignColName = ctx->identifiers()[1]->accept(this);
-    if(sColName.size() != sForeignColName.size()){
-      throw ForeignKeyException("the number of local key should equal to the number of foreign key");
-    }
     std::vector<String> res;
     res.push_back("#" + sForeignTableName);
     for(int i = 0; i < sForeignColName.size(); i ++){

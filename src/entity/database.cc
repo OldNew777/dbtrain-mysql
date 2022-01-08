@@ -62,7 +62,6 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
           throw ForeignKeyException("reference column should not be null");
         }
       }
-      
       //insert local shadow table
     }
     // printf("3\n");
@@ -76,6 +75,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
   //create shadowpage
   //create a shadow table
+
   std::vector<Column> shadowTableColVec;
   shadowTableColVec.push_back(Column(SHADOW_STATUS_NAME, FieldType::CHAR_TYPE, 
     false, false, SHADOW_STATUS_SIZE, {})); //status 
@@ -107,6 +107,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
       for(auto& tPair: column.GetForeignKeyVec()){
         String fTableName = tPair.first;
         String fColName = tPair.second;
+        printf("%s %s\n", fTableName.data(), fColName.data());
         //insert local shadow table
         std::vector<Field*> LocalVec;
         LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
