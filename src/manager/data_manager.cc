@@ -66,22 +66,20 @@ void DataManager::CreateTable(const String& sTableName,
 void DataManager::DropTable(const String& sTableName) const {
   CheckDatabaseUsed();
   //TODO: 删除表间关联
-  std::vector<std::pair<String, String> > refPairVec = 
+  std::vector<std::vector<String> > refPairVec = 
       _pDatabase->GetTableReferedKeys(sTableName);
   std::vector<std::vector<String> > forPairVec = 
       _pDatabase->GetTableForeignKeys(sTableName);
   
   std::map<String, int> tmpMap;
-  for(auto& iPair: refPairVec){
-    _pDatabase->DropForeignKey(iPair.first, iPair.second);
-    if(tmpMap.find(iPair.first) == tmpMap.end()){
-      tmpMap[iPair.first] = 1;
-      _pDatabase->RemoveTableForeignKey(iPair.first, sTableName);
-    }
+  for(auto& tVec: refPairVec){
+    _pDatabase->DropShadowTableKey(tVec[1], SHADOW_STATUS_REFERED_KEY, 
+      tVec[2],sTableName, tVec[0]);
   }
   
   for(auto& tVec: forPairVec){
-    _pDatabase->DropReferedKey(tVec[1], tVec[2], sTableName, tVec[0]);
+    _pDatabase->DropShadowTableKey(tVec[1], SHADOW_STATUS_FOREIGN_KEY, 
+      tVec[2],sTableName, tVec[0]);
   }
 
   for (const auto& sColName :
@@ -574,5 +572,9 @@ void DataManager::DropPrimaryKey(const String& sTableName, const String& sColNam
   CheckDatabaseUsed();
   _pDatabase->DropPrimaryKey(sTableName, sColName);
 }
-
+void DataManager::DropForeignKey(const String& sTableName, const String& sColName) {
+  CheckDatabaseUsed();
+  _pDatabase->DropShadowTableKey(sTableName,SHADOW_STATUS_FOREIGN_KEY, 
+      sColName, "", "");
+}
 }  // namespace dbtrain_mysql

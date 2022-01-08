@@ -511,7 +511,8 @@ antlrcpp::Any SystemVisitor::visitAlter_table_drop_pk(
 
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
     MYSQLParser::Alter_table_drop_foreign_keyContext *ctx) {
-  throw UnimplementedException();
+      String sTableName = ctx->Identifier()[0]->getText();
+      String sColName = ctx->Identifier()[1]->getText();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(

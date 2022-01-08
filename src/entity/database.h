@@ -80,12 +80,27 @@ class Database : public EntityManager {
   Index* GetIndex(const String& sTableName, const String& sColName);
   void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
   void DropPrimaryKey(const String& sTableName, const String& sColName);
-  uint32_t DropForeignKey(const String& sTableName, const String& sColName);
-  uint32_t RemoveTableForeignKey(const String& sTableName, const String& fTableName);
-  uint32_t DropReferedKey(const String& sTableName, const String& sColName,
-    const String& fTableName, const String& fColName);
+  // uint32_t DropForeignKey(const String& sTableName, const String& sColName);
+  // uint32_t RemoveTableForeignKey(const String& sTableName, const String& fTableName);
+  // uint32_t DropReferedKey(const String& sTableName, const String& sColName,
+  //   const String& fTableName, const String& fColName);
+  uint32_t DropShadowTableKey(const String& sTableName, const String& statusMode, 
+    const String& lColName, const String& rTableName, const String& fColName);
+  /**
+   * @brief 获得这个表上某个键依赖的其他表上的键
+   */
   std::pair<String, String> GetForeignKey(const String& sTableName, const String& sColName);
-  std::vector<std::pair<String, String> > GetTableReferedKeys(const String& sTableName);//获取依赖一个表中键的所有其他表的键
+  /**
+   * @brief 获得这个表上某个键依赖的其他表上的键
+   */
+  std::pair<String, String> GetReferedKey(const String& sTableName, const String& sColName);
+  /**
+   * @brief 获得依赖于这个表上键的其他表的键
+   */
+  std::vector<std::vector<String> > GetTableReferedKeys(const String& sTableName);//获取依赖一个表中键的所有其他表的键
+  /**
+   * @brief 获得这个表依赖的其他表上的键
+   */
   std::vector<std::vector<String>> GetTableForeignKeys(const String& sTableName);//获取一个表中依赖的所有其他表的键
   std::vector<Record*> GetIndexInfos();
 
