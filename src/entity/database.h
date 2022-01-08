@@ -8,6 +8,7 @@
 #include "result/results.h"
 #include "table.h"
 
+
 namespace dbtrain_mysql {
 
 class Database : public EntityManager {

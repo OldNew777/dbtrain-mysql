@@ -704,19 +704,14 @@ bool Database::_CheckHaveNull(const String& fTableName,
     return false;
   }
   // printf("into\n");
-  std::vector<PageSlotID> fpsidVec = fTable->SearchRecord(nullptr);
-  MemResult* result = new MemResult(fTable->GetColumnNames());
-  for (auto& psid : fpsidVec)
-    result->PushBack(fTable->GetRecord(psid.first, psid.second));
   FieldID colPos = fTable->GetColPos(fColName);
-  for (int j = 0; j < result->GetDataSize(); j++) {
-    if (result->GetFieldString(j, colPos) == "NULL") {
-      if (result) delete result;
-      return true;
-    }
-  }
-  if (result) delete result;
-  return false;
+  Field *pLow = new NullField();
+  Field *pHigh = pLow->Clone();
+  pHigh->Add();
+  Condition* pCond = nullptr;
+  pCond = new RangeCondition(colPos, pLow, pHigh);
+  std::vector<PageSlotID> iPageSlotIDVec = Search(fTableName, pCond, {});
+  return (iPageSlotIDVec.size() == 0);
 }
 
 bool Database::_CheckDuplicate(const String& sTableName, const String& sColName){
@@ -726,12 +721,14 @@ bool Database::_CheckDuplicate(const String& sTableName, const String& sColName)
   for(auto& psid: fpsidVec)
     result->PushBack(fTable->GetRecord(psid.first, psid.second));
   FieldID colPos = fTable->GetColPos(sColName);
+  std::set<String> pSet;
   for (int i = 0; i < result->GetDataSize(); i ++) {
     //TODO: 这么写可能会重复遍历
-    if(_GetDuplicated(sTableName, sColName, result->GetField(i, colPos)).size() != 0){
+    if(pSet.count(result->GetFieldString(i, colPos)) != 0){
       if(result) delete result;
       return true;
     }
+    pSet.insert(result->GetFieldString(i, colPos));
   }
   if(result) delete result;
   return false;
