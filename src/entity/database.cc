@@ -98,11 +98,13 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   InsertEntity(sTableName);
   InsertEntity("@" + sTableName);
 
-  // insert index
-  // for (int i = 0; i < iSchema.GetSize(); ++i) {
-  //   const Column& column = iSchema.GetColumn(i);
-  //   if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
-  // }
+  #ifndef NO_INDEX
+  //insert index
+  for (int i = 0; i < iSchema.GetSize(); ++i) {
+    const Column& column = iSchema.GetColumn(i);
+    if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
+  }
+  #endif
 
   // insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {
@@ -351,6 +353,7 @@ PageSlotID Database::Insert(const String& sTableName,
     throw e;
   }
 
+  #ifndef NO_INSERT_CHECK;
   // check null
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
@@ -408,6 +411,7 @@ PageSlotID Database::Insert(const String& sTableName,
       delete pField;
     }
   }
+  #endif
 
   Record* pRecord = pTable->EmptyRecord();
   try {
@@ -418,7 +422,7 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);
-
+  #ifndef NO_INDEX
   // Handle Insert on Index
   if (_pIndexManager->HasIndex(sTableName)) {
     auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
@@ -428,6 +432,7 @@ PageSlotID Database::Insert(const String& sTableName,
       _pIndexManager->GetIndex(sTableName, sCol)->Insert(pKey, iPair);
     }
   }
+  #endif
 
   delete pRecord;
   return iPair;
@@ -458,6 +463,7 @@ PageSlotID Database::Insert(const String& sTableName,
     }
   }
 
+#ifndef NO_INSERT_CHECK
   // check primary key
   bool primaryKeyConflict = false;
   for (int i = 0; i < iColNameVec.size(); i++) {
@@ -495,6 +501,8 @@ PageSlotID Database::Insert(const String& sTableName,
       }
     }
   }
+  #endif
+
   Record* pRecord = pTable->EmptyRecord();
   try {
     pRecord->Build(iValueVec);
@@ -505,6 +513,7 @@ PageSlotID Database::Insert(const String& sTableName,
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);
 
+  #ifndef NO_INDEX
   // Handle Insert on Index
   if (_pIndexManager->HasIndex(sTableName)) {
     auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
@@ -514,6 +523,7 @@ PageSlotID Database::Insert(const String& sTableName,
       _pIndexManager->GetIndex(sTableName, sCol)->Insert(pKey, iPair);
     }
   }
+  #endif
 
   delete pRecord;
   return iPair;
