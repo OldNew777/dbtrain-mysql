@@ -520,7 +520,7 @@ antlrcpp::Any SystemVisitor::visitAlter_table_drop_pk(
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
     MYSQLParser::Alter_table_drop_foreign_keyContext *ctx) {
   Size nSize = 0;
-#ifdef NO_FOREIGN_KEY
+#ifndef NO_FOREIGN_KEY
   String sTableName = ctx->Identifier()[0]->getText();
   String sColName = ctx->Identifier()[1]->getText();
   try {
@@ -561,7 +561,7 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
 antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
     MYSQLParser::Alter_table_add_foreign_keyContext *ctx) {
   Size nSize = 0;
-#ifdef NO_FOREIGN_KEY
+#ifndef NO_FOREIGN_KEY
   String lTableName = ctx->Identifier()[0]->toString();
   std::vector<String> lColVec = ctx->identifiers()[0]->accept(this);
   String Constriant;
@@ -742,7 +742,7 @@ antlrcpp::Any SystemVisitor::visitPrimary_key_field(
 
 antlrcpp::Any SystemVisitor::visitForeign_key_field(
     MYSQLParser::Foreign_key_fieldContext *ctx) {
-#ifdef NO_FOREIGN_KEY
+#ifndef NO_FOREIGN_KEY
   if (ctx->Identifier().size() == 1) {
     String sForeignTableName = ctx->Identifier()[0]->toString();
     std::vector<String> sColName = ctx->identifiers()[0]->accept(this);
