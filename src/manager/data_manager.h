@@ -133,7 +133,7 @@ class DataManager {
   void AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec);
   void AddUniqueKey(const String& sTableName, const String& sColNameVec);
   void AddForeignKey(const String& lTableName, const String& lColName,
-    const String& fTableName, const String& fColName);
+    const String& fTableName, const std::vector<String>& fColName);
     
  protected:
   Whole* _pWhole;

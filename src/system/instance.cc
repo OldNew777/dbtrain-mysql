@@ -155,7 +155,7 @@ void Instance::AddPrimaryKey(const String& sTableName, const std::vector<String>
   _pDataManager->AddPrimaryKey(sTableName, sColNameVec);
 }
 void Instance::AddForeignKey(const String& lTableName, const String& lColName,
-    const String& fTableName, const String& fColName){
+    const String& fTableName, const std::vector<String>& fColName){
   _pDataManager->AddForeignKey(lTableName, lColName, fTableName, fColName);
 }
 void Instance::AddUniqueKey(const String& sTableName, const String& sColNameVec){

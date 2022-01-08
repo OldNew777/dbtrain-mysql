@@ -23,7 +23,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
       // printf("name: %s\n", iCol.GetName());
       status |= 0b10;
     }
-    if(iCol.GetForeignKeyPair().first != ""){
+    if(iCol.GetForeignKeyVec().size() != 0){
       status |= 0b100;
     }
     _iStatusVec.push_back(status);

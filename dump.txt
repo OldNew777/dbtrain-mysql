@@ -1,5 +1,0 @@
-'Jack',20
-'bob',20
-'alice',21
-'Mike',20
-'Mike',NULL

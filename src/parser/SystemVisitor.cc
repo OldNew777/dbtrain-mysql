@@ -14,6 +14,7 @@
 #include "record/fixed_record.h"
 #include "record/transform.h"
 #include "result/result.h"
+#include "settings.h"
 #include "string.h"
 #include "utils/basic_function.h"
 
@@ -113,7 +114,7 @@ antlrcpp::Any SystemVisitor::visitShow_tables(
   Result *res = new MemResult({"Show Tables"});
   // Add Some info
   for (const auto &sTableName : _pDB->GetTableNames()) {
-    if(sTableName.substr(0,1) == "@") continue;
+    if (sTableName.substr(0, 1) == "@") continue;
     FixedRecord *pRes =
         new FixedRecord(1, {FieldType::CHAR_TYPE}, {TABLE_NAME_SIZE});
     pRes->SetField(0, new CharField(sTableName));
@@ -139,12 +140,12 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
   std::string path = ctx->String()->getText();
   path = path.substr(1, path.size() - 2);
   std::fstream fin(path, std::ios::in);
-  printf("path:%s\n", path.data());
   if (!fin) {
     auto e = FileNotExistException();
     std::cout << e.what() << "\n";
     throw e;
   }
+
   std::string str = "";
   while (std::getline(fin, str)) {
     iValueListVec.push_back(std::vector<String>());
@@ -167,13 +168,15 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
   fin.close();
 
   String sTableName = ctx->Identifier()->getText();
+  printf("Altogether %d to be inserted\n", iValueListVec.size());
   int inserted = 0;
-  try {
-    for (const auto &iValueList : iValueListVec) {
+  for (const auto &iValueList : iValueListVec) {
+    try {
       _pDB->Insert(sTableName, iValueList);
       ++inserted;
+      if (inserted % 100 == 0) printf("Inserted : %d\n", inserted);
+    } catch (const std::exception &e) {
     }
-  } catch (const std::exception &e) {
   }
   Result *res = new MemResult({"Insert"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
@@ -208,10 +211,12 @@ antlrcpp::Any SystemVisitor::visitCreate_table(
   try {
     Schema iSchema = ctx->field_list()->accept(this);
     String sTableName = ctx->Identifier()->getText();
+
     _pDB->CreateTable(sTableName, iSchema);
-    
+
     nSize = 1;
   } catch (const std::exception &e) {
+    printf("%s\n", e.what());
   }
   Result *res = new MemResult({"Create Table"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
@@ -238,8 +243,9 @@ antlrcpp::Any SystemVisitor::visitDrop_table(
 
 antlrcpp::Any SystemVisitor::visitDescribe_table(
     MYSQLParser::Describe_tableContext *ctx) {
-  Result *res = new MemResult({"Column Name", "Column Type", "Column Size","Can Be Null",
-                               "Unique", "Primary Key","Foreign Key", "Refered Key"});
+  Result *res =
+      new MemResult({"Column Name", "Column Type", "Column Size", "Can Be Null",
+                     "Unique", "Primary Key", "Foreign Key", "Refered Key"});
   String sTableName = ctx->Identifier()->getText();
   try {
     for (const auto &pRecord : _pDB->GetTableInfos(sTableName))
@@ -250,13 +256,15 @@ antlrcpp::Any SystemVisitor::visitDescribe_table(
 }
 antlrcpp::Any SystemVisitor::visitDescribe_shadow_table(
     MYSQLParser::Describe_shadow_tableContext *ctx) {
-      //TODO: desc shadow table
+  // TODO: desc shadow table
   String sTableName = ctx->Identifier()->toString();
   int limit = INT32_MAX, offset = 0;
-  std::vector<PageSlotID> psidVec = _pDB->Search("@" + sTableName, nullptr, {}, limit, offset);
-  Result *res = new MemResult({SHADOW_STATUS_NAME,
-     SHADOW_LOCAL_COLUMN_NAME, SHADOW_FOREIGN_TABLE_NAME, SHADOW_FOREIGN_COLUMN_NAME});
-  for(auto& psid: psidVec){
+  std::vector<PageSlotID> psidVec =
+      _pDB->Search("@" + sTableName, nullptr, {}, limit, offset);
+  Result *res =
+      new MemResult({SHADOW_STATUS_NAME, SHADOW_LOCAL_COLUMN_NAME,
+                     SHADOW_FOREIGN_TABLE_NAME, SHADOW_FOREIGN_COLUMN_NAME});
+  for (auto &psid : psidVec) {
     res->PushBack(_pDB->GetRecord("@" + sTableName, psid));
   }
   return res;
@@ -510,17 +518,18 @@ antlrcpp::Any SystemVisitor::visitAlter_table_drop_pk(
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
-  MYSQLParser::Alter_table_drop_foreign_keyContext *ctx) {
+    MYSQLParser::Alter_table_drop_foreign_keyContext *ctx) {
+  Size nSize = 0;
+#ifdef NO_FOREIGN_KEY
   String sTableName = ctx->Identifier()[0]->getText();
   String sColName = ctx->Identifier()[1]->getText();
-  Size nSize = 0;
-  try{
+  try {
     _pDB->DropForeignKey(sTableName, sColName);
-    nSize ++;
-  }
-  catch(const Exception& e){
+    nSize++;
+  } catch (const Exception &e) {
     printf("exception:%s\n", e.what());
   }
+#endif
   Result *res = new MemResult({"Drop Foreign Key"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
   pRes->SetField(0, new IntField(nSize));
@@ -544,40 +553,41 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
   pRes->SetField(0, new IntField(nSize));
   res->PushBack(pRes);
   return res;
-    // printf("%s %s\n", ctx->Identifier()[0]->getText().data(),ctx->Identifier()[1]->getText().data());
-    //TODO: CONSTRIANT起名没有实现
-
+  // printf("%s %s\n",
+  // ctx->Identifier()[0]->getText().data(),ctx->Identifier()[1]->getText().data());
+  // TODO: CONSTRIANT起名没有实现
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
     MYSQLParser::Alter_table_add_foreign_keyContext *ctx) {
+  Size nSize = 0;
+#ifdef NO_FOREIGN_KEY
   String lTableName = ctx->Identifier()[0]->toString();
   std::vector<String> lColVec = ctx->identifiers()[0]->accept(this);
   String Constriant;
   String fTableName;
-  if(ctx->identifiers().size() == 2){
+  if (ctx->identifiers().size() == 2) {
     fTableName = ctx->Identifier()[1]->toString();
-  }
-  else{
+  } else {
     fTableName = ctx->Identifier()[2]->toString();
   }
-   
+
   std::vector<String> fColVec = ctx->identifiers()[1]->accept(this);
 
-  if(lColVec.size() != fColVec.size()){
+  if (lColVec.size() != fColVec.size()) {
     printf("local key number should be equal to foreign key number\n");
-    throw ForeignKeyException("local key number should be equal to foreign key number");
+    throw ForeignKeyException(
+        "local key number should be equal to foreign key number");
   }
-  Size nSize = 0;
-  for(int i = 0; i < lColVec.size(); i ++){
-    try{
-      _pDB->AddForeignKey(lTableName, lColVec[i], fTableName, fColVec[i]);
-      nSize ++;
-    }
-    catch(const Exception& e){
-      printf("%s\n",e.what());
+  for (int i = 0; i < lColVec.size(); i++) {
+    try {
+      _pDB->AddForeignKey(lTableName, lColVec[i], fTableName, fColVec);
+      nSize++;
+    } catch (const Exception &e) {
+      printf("%s\n", e.what());
     }
   }
+#endif
   Result *res = new MemResult({"Add Primary Key"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
   pRes->SetField(0, new IntField(nSize));
@@ -590,13 +600,12 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_unique(
   String sTableName = ctx->Identifier()->getText();
   std::vector<String> sColNameVec = ctx->identifiers()->accept(this);
   Size nSize = 0;
-  for(auto& sColName: sColNameVec){
-    try{
+  for (auto &sColName : sColNameVec) {
+    try {
       _pDB->AddUniqueKey(sTableName, sColName);
-      nSize ++;
-    }
-    catch(const Exception& e){
-      printf("%s\n",e.what());
+      nSize++;
+    } catch (const Exception &e) {
+      printf("%s\n", e.what());
     }
   }
   Result *res = new MemResult({"Add Unique Key"});
@@ -629,8 +638,10 @@ antlrcpp::Any SystemVisitor::visitField_list(
   std::vector<std::vector<String>> sColVec;
   std::unordered_map<String, int> sColMap;
   std::vector<Column> iColVec;
+  std::unordered_map<String, std::vector<std::pair<String, String>>> fkMap;
   for (const auto &it : ctx->field()) {
     std::vector<String> tmp = it->accept(this);
+    if (tmp.size() == 0) continue;
     if (tmp[0][0] == '@') {  // primary key
       for (String &str : tmp) {
         if (sColMap.find(str.substr(1)) == sColMap.end()) {
@@ -640,17 +651,28 @@ antlrcpp::Any SystemVisitor::visitField_list(
         }
         sColVec[sColMap[str.substr(1)]][3] = "1";
       }
-    }
-    else if(tmp[0][0] == '#'){ //foreign key
+    } else if (tmp[0][0] == '#') {  // foreign key
       String sForeignTableName = tmp[0].substr(1);
-      for(int i = 1; i < tmp.size(); i += 2){
-        if(sColMap.find(tmp[i]) == sColMap.end()){
-          throw ForeignKeyException("wtf happened?");
-        }
-        sColVec[sColMap[tmp[i]]][4] = sForeignTableName + " " + tmp[i + 1];
+      int i = 1;
+      std::vector<String> tmpNameVec;
+      std::vector<std::pair<String, String>> tmpFKVec;
+      for (; i < tmp.size(); i++) {
+        if (tmp[i][0] == '#') break;
+        tmpFKVec.push_back(std::make_pair(sForeignTableName, tmp[i]));
       }
-    }
-    else{
+      for (; i < tmp.size(); i++) {
+        tmpNameVec.push_back(tmp[i].substr(1));
+      }
+      for (auto &colName : tmpNameVec) {
+        if (fkMap.find(colName) == fkMap.end()) {
+          fkMap[colName] = std::vector<std::pair<String, String>>();
+        }
+        for (auto &fk : tmpFKVec) {
+          fkMap[colName].push_back(fk);
+        }
+      }
+
+    } else {
       sColVec.push_back(tmp);
       sColMap[tmp[0]] = sColVec.size() - 1;
     }
@@ -677,13 +699,18 @@ antlrcpp::Any SystemVisitor::visitField_list(
     }
     bool canBeNull = ((*it)[2] == "1") ? true : false;
     bool isPrimary = ((*it)[3] == "1") ? true : false;
-    std::pair<String, String> tPair = std::make_pair("","");
-    if((*it)[4] != ""){
+    std::pair<String, String> tPair = std::make_pair("", "");
+    if ((*it)[4] != "") {
       Size pos = (*it)[4].find(" ");
       tPair.first = (*it)[4].substr(0, pos);
       tPair.second = (*it)[4].substr(pos + 1);
     }
-    iColVec.push_back(Column((*it)[0], type, canBeNull, isPrimary, size, tPair));
+    if (fkMap.find((*it)[0]) == fkMap.end()) {
+      iColVec.push_back(Column((*it)[0], type, canBeNull, isPrimary, size, {}));
+    } else {
+      iColVec.push_back(
+          Column((*it)[0], type, canBeNull, isPrimary, size, fkMap[(*it)[0]]));
+    }
   }
 
   return Schema(iColVec);
@@ -715,25 +742,27 @@ antlrcpp::Any SystemVisitor::visitPrimary_key_field(
 
 antlrcpp::Any SystemVisitor::visitForeign_key_field(
     MYSQLParser::Foreign_key_fieldContext *ctx) {
-  if(ctx->Identifier().size() == 1){
+#ifdef NO_FOREIGN_KEY
+  if (ctx->Identifier().size() == 1) {
     String sForeignTableName = ctx->Identifier()[0]->toString();
     std::vector<String> sColName = ctx->identifiers()[0]->accept(this);
     std::vector<String> sForeignColName = ctx->identifiers()[1]->accept(this);
-    if(sColName.size() != sForeignColName.size()){
-      throw ForeignKeyException("the number of local key should equal to the number of foreign key");
-    }
     std::vector<String> res;
     res.push_back("#" + sForeignTableName);
-    for(int i = 0; i < sColName.size(); i ++){
-      res.push_back(sColName[i]);
+    for (int i = 0; i < sForeignColName.size(); i++) {
       res.push_back(sForeignColName[i]);
     }
+
+    for (int i = 0; i < sColName.size(); i++) {
+      res.push_back("#" + sColName[i]);
+    }
+
     return res;
+  } else {
+    // TODO: 组合外键命名
   }
-  else{
-    //TODO: 组合外键命名
-  }
-  
+#endif
+  return std::vector<String>();
 }
 
 antlrcpp::Any SystemVisitor::visitType_(MYSQLParser::Type_Context *ctx) {
@@ -742,8 +771,6 @@ antlrcpp::Any SystemVisitor::visitType_(MYSQLParser::Type_Context *ctx) {
 
 antlrcpp::Any SystemVisitor::visitValue_lists(
     MYSQLParser::Value_listsContext *ctx) {
-
-
   std::vector<std::vector<String>> iRawListVec;
   for (const auto &it : ctx->value_list())
     iRawListVec.push_back(it->accept(this));
@@ -752,7 +779,6 @@ antlrcpp::Any SystemVisitor::visitValue_lists(
 
 antlrcpp::Any SystemVisitor::visitValue_list(
     MYSQLParser::Value_listContext *ctx) {
-
   std::vector<String> iRawVec;
   for (const auto &it : ctx->value()) {
     iRawVec.push_back(it->accept(this));

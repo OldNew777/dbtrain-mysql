@@ -36,7 +36,7 @@ const Size COLUMN_NUM_MAX = 32;
 const Size COLUMN_NOT_NULL_BYTES = 1;
 
 const uint32_t CACHE_ASSOCIATIVE = 16;
-const uint32_t CACHE_GROUP_NUM = 1024;
+const uint32_t CACHE_GROUP_NUM = 1 << 18;
 
 const uint32_t FIELD_INT_TYPE_SIZE = 4;
 const uint32_t FIELD_FLOAT_TYPE_SIZE = 4;

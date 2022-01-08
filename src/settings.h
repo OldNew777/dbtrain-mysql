@@ -15,5 +15,6 @@
 // #define RAW2FIELD_BUILD_DEBUG
 // #define UPDATE_DEBUG
 // #define PRIMARY_KEY_DEBUG
+// #define NO_FOREIGN_KEY
 
 #endif
