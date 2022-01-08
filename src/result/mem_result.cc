@@ -116,6 +116,8 @@ int MemResult::GetDataSize() const{
 String MemResult::GetFieldString(const int& row, const int& col) const{
   return _iData[row]->GetField(col)->ToString();
 }
-
+Field* MemResult::GetField(const int& row, const int& col) const{
+  return _iData[row]->GetField(col);
+}
 
 }  // namespace dbtrain_mysql

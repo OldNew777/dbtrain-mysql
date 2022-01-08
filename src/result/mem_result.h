@@ -22,6 +22,7 @@ class MemResult : public Result {
   String GetHeader(int pos) const;
   int GetDataSize() const;
   String GetFieldString(const int& row, const int& col) const;
+  Field* GetField(const int& row, const int& col) const;
 
  private:
   std::vector<Record*> _iData;

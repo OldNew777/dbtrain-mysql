@@ -157,4 +157,7 @@ void Instance::AddPrimaryKey(const String& sTableName, const std::vector<String>
 void Instance::DropPrimaryKey(const String& sTableName, const String& sColName) {
   _pDataManager->DropPrimaryKey(sTableName, sColName);
 }
+void Instance::DropForeignKey(const String& sTableName, const String& sColName) {
+  _pDataManager->DropForeignKey(sTableName, sColName);
+}
 }  // namespace dbtrain_mysql

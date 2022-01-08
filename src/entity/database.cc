@@ -975,10 +975,10 @@ bool Database::_CheckForeignKey(const String& fTableName,
 // }
 /**
   @brief 删除sTable的一行记录
-  @param sTable 要删除的表名
+  @param lTableName 要删除的表名
   @return 删除的个数
 */
-uint32_t Database::_DropShadowTableKey(const String& sTableName,const String& statusMode, 
+uint32_t Database::_DropShadowTableKey(const String& lTableName,const String& statusMode, 
   const String& lColName, const String& fTableName, const String& fColName){
   if(statusMode != SHADOW_STATUS_FOREIGN_KEY 
     && statusMode != SHADOW_STATUS_REFERED_KEY){
@@ -986,9 +986,9 @@ uint32_t Database::_DropShadowTableKey(const String& sTableName,const String& st
       throw ForeignKeyException("status Mode Wrong");
   }
 
-  Table* pTable = GetTable("@" + sTableName);
+  Table* pTable = GetTable("@" + lTableName);
   if (pTable == nullptr) {
-    auto e = TableNotExistException("@" + sTableName);
+    auto e = TableNotExistException("@" + lTableName);
     std::cout << e.what() << "\n";
     throw e;
   } 
@@ -1033,20 +1033,66 @@ uint32_t Database::_DropShadowTableKey(const String& sTableName,const String& st
   }
   
   Condition * cond = new AndCondition(iCond);
-  uint32_t ret = Delete("@" + sTableName, cond, {});
+  uint32_t ret = Delete("@" + lTableName, cond, {});
 
   for (auto tmpCond : iCond) delete tmpCond;
 
   if(statusMode == SHADOW_STATUS_FOREIGN_KEY){
-    GetTable(sTableName)->DropForeignKey(lColName);
+    printf("drop\n");
+    GetTable(lTableName)->DropForeignKey(lColName);
   }
   return ret;
 }
+void Database::AddForeignKey(const String& lTableName, const String& lColName,
+    const String& fTableName, const String& fColName){
+  //TODO: ADD FOREIGNKEY
+  Table* lTable = GetTable(lTableName);
+
+  if (lTable == nullptr) {
+    auto e = TableNotExistException(lTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  //check fk validation
+  std::vector<PageSlotID> psidVec = lTable->SearchRecord(nullptr);
+  MemResult* lRes = new MemResult(lTable->GetColumnNames());
+  for(auto& psid: psidVec)
+    lRes->PushBack(lTable->GetRecord(psid.first, psid.second));
+  FieldID colPos = lTable->GetColPos(fColName);
+  for(int i = 0; i < lRes->GetDataSize(); i ++){
+    if(!_CheckForeignKey(fTableName, fColName, lRes->GetField(i, colPos))){
+      printf("Foreign key should be in range of refernce key\n");
+      throw ForeignKeyException("Foreign key should be in range of refernce key");
+    }
+  }
+  //add this table foreign key
+  std::vector<Field*> LocalVec;
+  LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
+  LocalVec.push_back(new CharField(lColName));
+  LocalVec.push_back(new CharField(fTableName));
+  LocalVec.push_back(new CharField(fColName));
+  // printf("1\n");
+  Insert("@" + lTableName, LocalVec);
+  //insert reference shadow table
+  std::vector<Field*> ForeignVec;
+  ForeignVec.push_back(new CharField(SHADOW_STATUS_REFERED_KEY));
+  ForeignVec.push_back(new CharField(fColName));
+  ForeignVec.push_back(new CharField(lTableName));
+  ForeignVec.push_back(new CharField(lColName));
+  // printf("2\n");
+  Insert("@" + fTableName, ForeignVec);
+  if(lRes) delete lRes;
+}
 void Database::DropFroeignKey(const String& sTableName, const String& sColName){
-  _DropShadowTableKey(sTableName,SHADOW_STATUS_FOREIGN_KEY, sColName, "", "");
+  std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
+  //drop ref key of foreign table
+  _DropShadowTableKey(fPair.first, SHADOW_STATUS_REFERED_KEY, fPair.second, 
+    sTableName, sColName);
+  //frop for key of local table
+  uint32_t res = _DropShadowTableKey(sTableName, SHADOW_STATUS_FOREIGN_KEY, sColName, "", "");
+  printf("res:%d\n", res);
 }
 void Database::DropTableForeignKey(const String& sTableName){
-  //TODO: 删除表间关联
   std::vector<std::vector<String> > refPairVec = 
       GetTableReferedKeys(sTableName);
   std::vector<std::vector<String> > forPairVec = 
@@ -1062,5 +1108,8 @@ void Database::DropTableForeignKey(const String& sTableName){
     _DropShadowTableKey(tVec[1], SHADOW_STATUS_FOREIGN_KEY, 
       tVec[2],sTableName, tVec[0]);
   }
+
 }
+
+
 }  // namespace dbtrain_mysql

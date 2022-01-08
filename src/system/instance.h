@@ -74,6 +74,7 @@ class Instance {
   void CreateIndex(const String &sTableName, const String &sColName);
   void DropIndex(const String &sTableName, const String &sColName);
   void DropPrimaryKey(const String &sTableName, const String &sColName);
+  void DropForeignKey(const String &sTableName, const String &sColName);
 
   /**
    * @brief 实现多个表的JOIN操作

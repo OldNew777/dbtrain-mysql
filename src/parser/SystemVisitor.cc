@@ -510,9 +510,23 @@ antlrcpp::Any SystemVisitor::visitAlter_table_drop_pk(
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
-    MYSQLParser::Alter_table_drop_foreign_keyContext *ctx) {
-      String sTableName = ctx->Identifier()[0]->getText();
-      String sColName = ctx->Identifier()[1]->getText();
+  MYSQLParser::Alter_table_drop_foreign_keyContext *ctx) {
+  String sTableName = ctx->Identifier()[0]->getText();
+  String sColName = ctx->Identifier()[1]->getText();
+  Size nSize = 0;
+  printf("0\n");
+  try{
+    _pDB->DropForeignKey(sTableName, sColName);
+    nSize ++;
+  }
+  catch(const Exception& e){
+    printf("exception:%s\n", e.what());
+  }
+  Result *res = new MemResult({"Drop Foreign Key"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(nSize));
+  res->PushBack(pRes);
+  return res;
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
