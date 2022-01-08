@@ -120,7 +120,9 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
       // printf("2\n");
       Insert("@" + fTableName, ForeignVec);
       _UpdateReferedKey(fTableName, fColName);
+      GetTable(sTableName)->SetForeignKey(column.GetName());
     }
+
     // printf("3\n");
   }
 }
@@ -643,8 +645,17 @@ void Database::AddPrimaryKey(const String& sTableName, const std::vector<String>
     }
   }
   //检查重复性和null性
-  if(needCheckDuplication && _CheckHaveDuplicate((MemResult*) result, sColNameVec)){
-    throw AlterException("the new Primary Key column cannot be duplicated");
+  if(needCheckDuplication){
+    int errorTimes = 0;
+    for(auto& colName: sColNameVec){
+      if(_CheckDuplicate(sTableName, colName)){
+        errorTimes ++;
+      }
+    }
+    if(errorTimes == sColName.size()){
+      printf("the new Primary Key column cannot be duplicated\n");
+      throw AlterException("the new Primary Key column cannot be duplicated");
+    }
   }
   for(auto& colName: sColName){
     if(_CheckHaveNull(sTableName, colName)){
@@ -690,39 +701,24 @@ bool Database::_CheckHaveNull(const String& fTableName, const String& fColName){
   return false;
 }
 
-
-bool Database::_CheckHaveDuplicate(MemResult* result, const std::vector<String>& sColNameVec){
-  
-  std::map<String, int> iColPosMap;
-  for(int i = 0; i < sColNameVec.size(); i ++){
-    bool flag = false;
-    for(int j = 0; j < result->GetHeaderSize(); j ++){
-      if(result->GetHeader(j) == sColNameVec[i]){
-        flag = true;
-        iColPosMap[sColNameVec[i]] = j;
-        break;
-      }
-    }
-    if(!flag){
-      printf("the column name used to alter table PK should be a exist column name\n");
-      throw Exception();
+bool Database::_CheckDuplicate(const String& sTableName, const String& sColName){
+  Table* fTable = GetTable(sTableName);
+  std::vector<PageSlotID> fpsidVec = fTable->SearchRecord(nullptr);
+  MemResult* result = new MemResult(fTable->GetColumnNames());
+  for(auto& psid: fpsidVec)
+    result->PushBack(fTable->GetRecord(psid.first, psid.second));
+  FieldID colPos = fTable->GetColPos(sColName);
+  for (int i = 0; i < result->GetDataSize(); i ++) {
+    //TODO: 这么写可能会重复遍历
+    if(_GetDuplicated(sTableName, sColName, result->GetField(i, colPos)).size() != 0){
+      if(result) delete result;
+      return true;
     }
   }
-  
-  for (uint32_t i = 0; i < result->GetDataSize() - 1; i ++) {
-    for(uint32_t j = i + 1; j < result->GetDataSize(); j ++){
-      bool duplicate = true;
-      for(const String& colName: sColNameVec){
-        if(result->GetFieldString(i, iColPosMap[colName]) != result->GetFieldString(j, iColPosMap[colName])){
-              duplicate = false;
-              break;
-        }
-      }
-      if(duplicate) return true;
-    }
-  }
+  if(result) delete result;
   return false;
 }
+
 std::vector<std::pair<String, String>> Database::GetReferedKey(const String& sTableName, const String& sColName){
   Table* pTable = GetTable("@" + sTableName);
   if (pTable == nullptr) {
@@ -843,20 +839,7 @@ bool Database::_CheckForeignKey(const String& fTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
-  std::vector<PageSlotID> psidVec = pTable->SearchRecord(nullptr);
-  MemResult* res = new MemResult(pTable->GetColumnNames());
-  for(auto& psid: psidVec){
-    res->PushBack(pTable->GetRecord(psid.first, psid.second));
-  }
-  FieldID colPos = pTable->GetColPos(fColName);
-  bool flag = false;
-  for(int i = 0; i < res->GetDataSize(); i ++){
-    if(res->GetFieldString(i, colPos) == pField->ToString()){
-      flag = true;
-      break;
-    }
-  }
-  return flag;
+  return (_GetDuplicated(fTableName, fColName, pField).size() == 0);
 }
 
 /**
@@ -982,7 +965,7 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
   ForeignVec.push_back(new CharField(lColName));
   // printf("2\n");
   Insert("@" + fTableName, ForeignVec);
-  lTable->AddForeignKey(lColName);
+  lTable->SetForeignKey(lColName);
   _UpdateReferedKey(fTableName, fColName);
 }
 void Database::DropFroeignKey(const String& sTableName, const String& sColName){
@@ -997,6 +980,8 @@ void Database::DropFroeignKey(const String& sTableName, const String& sColName){
   //   sColName.data(),fPair.first.data(),fPair.second.data());
   _UpdateReferedKey(fPair.first, fPair.second);}
 }
+
+
 void Database::DropTableForeignKey(const String& sTableName){
   std::vector<std::vector<String> > refPairVec = 
       GetTableReferedKeys(sTableName);
@@ -1014,9 +999,10 @@ void Database::DropTableForeignKey(const String& sTableName){
     _DropShadowTableKey(tVec[1], SHADOW_STATUS_FOREIGN_KEY, 
       tVec[2],sTableName, tVec[0]);
     _UpdateReferedKey(tVec[1], tVec[2]);
-  }
-  
+  } 
 }
+
+
 void Database::_UpdateReferedKey(const String& fTableName, const String& fColname){
   Table* fTable = GetTable("@" + fTableName);
   Table* sTable = GetTable(fTableName);
@@ -1056,6 +1042,8 @@ void Database::_UpdateReferedKey(const String& fTableName, const String& fColnam
   
   if(result) delete result;
 }
+
+
 void Database::AddUniqueKey(const String& sTableName, const String& sColName){
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) {
@@ -1063,18 +1051,9 @@ void Database::AddUniqueKey(const String& sTableName, const String& sColName){
     std::cout << e.what() << "\n";
     throw e;
   }
-  std::vector<String> sColNameVec;
-  sColNameVec.push_back(sColName);
-  std::vector<PageSlotID> psidVec =  pTable->SearchRecord(nullptr);
-  Result* result = new MemResult(pTable->GetColumnNames());
-  for(auto& psid: psidVec){
-    result->PushBack(pTable->GetRecord(psid.first, psid.second));
-  }
-  if(_CheckHaveDuplicate((MemResult*) result, sColNameVec)){
-    if(result) delete result;
+  if(_CheckDuplicate(sTableName, sColName)){
     throw AlterException("the new Unique Key column cannot be duplicated");
   }
   pTable->AddUniqueKey(sColName);
-  if(result) delete result;
 }
 }  // namespace dbtrain_mysql
