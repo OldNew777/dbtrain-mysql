@@ -770,10 +770,10 @@ std::vector<std::pair<String, String>> Database::GetReferedKey(
     retVec.push_back(
         std::make_pair(res->GetFieldString(i, 2), res->GetFieldString(i, 3)));
   }
-  if (retVec.size() == 0) {
-    printf("there should be a refered key in shadow table\n");
-    throw ForeignKeyException();
-  }
+  // if (retVec.size() == 0) {
+  //   printf("there should be a refered key in shadow table\n");
+  //   throw ForeignKeyException();
+  // }
 }
 std::vector<std::pair<String, String>> Database::GetForeignKey(
     const String& sTableName, const String& sColName) {
@@ -801,10 +801,10 @@ std::vector<std::pair<String, String>> Database::GetForeignKey(
     retVec.push_back(
         std::make_pair(res->GetFieldString(i, 2), res->GetFieldString(i, 3)));
   }
-  if (retVec.size() == 0) {
-    printf("there should be a foreign key in shadow table\n");
-    throw ForeignKeyException();
-  }
+  // if (retVec.size() == 0) {
+  //   printf("there should be a foreign key in shadow table\n");
+  //   throw ForeignKeyException();
+  // }
   return retVec;
 }
 
