@@ -514,6 +514,7 @@ PageSlotID DataManager::Insert(const String& sTableName,
 
 PageSlotID DataManager::Insert(const String& sTableName,
                                const std::vector<String>& iRawVec) {
+  CheckDatabaseUsed();
   return _pDatabase->Insert(sTableName, iRawVec);
 }
 
