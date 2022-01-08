@@ -116,8 +116,8 @@ class Database : public EntityManager {
 
   std::vector<PageSlotID> _GetDuplicated(const String& sTableName,
                                         const String& sColName, Field* pField);
-    bool _CheckHaveNullPK(MemResult* result, const std::vector<String>& sColNameVec);
-    bool _CheckHaveDuplicatePK(MemResult* result,const std::vector<String>& sColNameVec);
+    bool _CheckHaveNull(const String& fTableName, const String& fColName);
+    bool _CheckHaveDuplicate(MemResult* result,const std::vector<String>& sColNameVec);
     bool _CheckForeignKey(const String& fTableName,
                                         const String& fColName, Field* pField);
     uint32_t _DropShadowTableKey(const String& sTableName, const String& statusMode, 

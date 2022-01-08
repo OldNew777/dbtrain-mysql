@@ -165,6 +165,7 @@ INSERT INTO teacher VALUES(1, 'TOM', 4);
 
 INSERT INTO teacher VALUES(2, 'Jack', 5);
 INSERT INTO teacher VALUES(3, 'ZYH', 6);
+-- INSERT INTO teacher VALUES(NULL, 'ZYH', 6);
 SELECT * FROM teacher;
 CREATE TABLE teacher2 (id2 INT, customer2 VARCHAR(64), num2 INT, FOREIGN KEY (id2, num2) REFERENCES teacher (id, num));
 INSERT INTO teacher2 VALUES(1, 'TOM', 4);
@@ -187,7 +188,7 @@ ALTER TABLE teacher2 DROP FOREIGN KEY id2;
 
 DESC teacher;
 DESC teacher2;
-INSERT INTO teacher2 VALUES(4, 'Jack', 5);
+-- INSERT INTO teacher2 VALUES(4, 'Jack', 5);
 ALTER TABLE teacher2 ADD FOREIGN KEY(id2) REFERENCES teacher (id);
 INSERT INTO teacher2 VALUES(4, 'Jack', 5);
 -- DESC SHADOW teacher2;
