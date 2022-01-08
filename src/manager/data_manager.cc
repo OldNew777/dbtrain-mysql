@@ -70,7 +70,7 @@ void DataManager::DropTable(const String& sTableName) const {
        _pDatabase->GetIndexManager()->GetTableIndexes(sTableName))
     _pDatabase->GetIndexManager()->DropIndex(sTableName, sColName);
   _pDatabase->DropTable(sTableName);
-  //delete shadow page
+  // delete shadow page
   for (const auto& sColName :
        _pDatabase->GetIndexManager()->GetTableIndexes("@" + sTableName))
     _pDatabase->GetIndexManager()->DropIndex("@" + sTableName, sColName);
@@ -96,26 +96,31 @@ std::vector<String> DataManager::GetColumnNames(
 
 FieldID DataManager::GetColID(const String& sTableName,
                               const String& sColName) const {
+  CheckDatabaseUsed();
   return GetTable(sTableName)->GetColPos(sColName);
 }
 
 FieldType DataManager::GetColType(const String& sTableName,
                                   const String& sColName) const {
+  CheckDatabaseUsed();
   return GetTable(sTableName)->GetType(sColName);
 }
 
 Size DataManager::GetColSize(const String& sTableName,
                              const String& sColName) const {
+  CheckDatabaseUsed();
   return GetTable(sTableName)->GetSize(sColName);
 }
 
 Record* DataManager::GetRecord(const String& sTableName,
                                const PageSlotID& nPageSlotID) const {
+  CheckDatabaseUsed();
   return GetTable(sTableName)->GetRecord(nPageSlotID.first, nPageSlotID.second);
 }
 
 std::vector<Record*> DataManager::GetTableInfos(
     const String& sTableName) const {
+  CheckDatabaseUsed();
   return GetTable(sTableName)->GetTableInfos();
 }
 
@@ -548,25 +553,31 @@ void DataManager::CheckDatabaseUsed() const {
   }
 }
 
-void DataManager::AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec){
+void DataManager::AddPrimaryKey(const String& sTableName,
+                                const std::vector<String> sColNameVec) {
   CheckDatabaseUsed();
   _pDatabase->AddPrimaryKey(sTableName, sColNameVec);
 }
 
-void DataManager::AddUniqueKey(const String& sTableName, const String& sColName){
+void DataManager::AddUniqueKey(const String& sTableName,
+                               const String& sColName) {
   CheckDatabaseUsed();
   _pDatabase->AddUniqueKey(sTableName, sColName);
 }
 
-void DataManager::AddForeignKey(const String& lTableName, const String& lColName,
-    const String& fTableName, const std::vector<String>& fColName){
-  _pDatabase->AddForeignKey(lTableName,lColName, fTableName, fColName);
+void DataManager::AddForeignKey(const String& lTableName,
+                                const String& lColName,
+                                const String& fTableName,
+                                const std::vector<String>& fColName) {
+  _pDatabase->AddForeignKey(lTableName, lColName, fTableName, fColName);
 }
-void DataManager::DropPrimaryKey(const String& sTableName, const String& sColName) {
+void DataManager::DropPrimaryKey(const String& sTableName,
+                                 const String& sColName) {
   CheckDatabaseUsed();
   _pDatabase->DropPrimaryKey(sTableName, sColName);
 }
-void DataManager::DropForeignKey(const String& sTableName, const String& sColName) {
+void DataManager::DropForeignKey(const String& sTableName,
+                                 const String& sColName) {
   CheckDatabaseUsed();
   _pDatabase->DropFroeignKey(sTableName, sColName);
 }
