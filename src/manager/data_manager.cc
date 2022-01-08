@@ -559,7 +559,7 @@ void DataManager::AddUniqueKey(const String& sTableName, const String& sColName)
 }
 
 void DataManager::AddForeignKey(const String& lTableName, const String& lColName,
-    const String& fTableName, const String& fColName){
+    const String& fTableName, const std::vector<String>& fColName){
   _pDatabase->AddForeignKey(lTableName,lColName, fTableName, fColName);
 }
 void DataManager::DropPrimaryKey(const String& sTableName, const String& sColName) {

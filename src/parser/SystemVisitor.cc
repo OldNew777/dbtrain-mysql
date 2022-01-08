@@ -571,7 +571,7 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
   Size nSize = 0;
   for(int i = 0; i < lColVec.size(); i ++){
     try{
-      _pDB->AddForeignKey(lTableName, lColVec[i], fTableName, fColVec[i]);
+      _pDB->AddForeignKey(lTableName, lColVec[i], fTableName, fColVec);
       nSize ++;
     }
     catch(const Exception& e){
@@ -629,6 +629,7 @@ antlrcpp::Any SystemVisitor::visitField_list(
   std::vector<std::vector<String>> sColVec;
   std::unordered_map<String, int> sColMap;
   std::vector<Column> iColVec;
+  std::unordered_map<String, std::vector<std::pair<String, String> > > fkMap;
   for (const auto &it : ctx->field()) {
     std::vector<String> tmp = it->accept(this);
     if (tmp[0][0] == '@') {  // primary key
@@ -643,12 +644,25 @@ antlrcpp::Any SystemVisitor::visitField_list(
     }
     else if(tmp[0][0] == '#'){ //foreign key
       String sForeignTableName = tmp[0].substr(1);
-      for(int i = 1; i < tmp.size(); i += 2){
-        if(sColMap.find(tmp[i]) == sColMap.end()){
-          throw ForeignKeyException("wtf happened?");
-        }
-        sColVec[sColMap[tmp[i]]][4] = sForeignTableName + " " + tmp[i + 1];
+      int i;
+      std::vector<String> tmpNameVec;
+      std::vector<std::pair<String, String> > tmpFKVec;
+      for(; i < tmp.size();i ++){
+        if(tmp[i][0] != '#') break;
+        tmpFKVec.push_back(std::make_pair(sForeignTableName, tmp[i]));
       }
+      for(; i < tmp.size(); i ++){
+        tmpNameVec.push_back(tmp[i].substr(1));
+      }
+      for(auto& colName: tmpNameVec){
+        if(fkMap.find(colName) == fkMap.end()){
+          fkMap[colName] = std::vector<std::pair<String, String> >();
+        }
+        for(auto& fk: tmpFKVec){
+          fkMap[colName].push_back(fk);
+        }
+      }
+    
     }
     else{
       sColVec.push_back(tmp);
@@ -683,7 +697,12 @@ antlrcpp::Any SystemVisitor::visitField_list(
       tPair.first = (*it)[4].substr(0, pos);
       tPair.second = (*it)[4].substr(pos + 1);
     }
-    iColVec.push_back(Column((*it)[0], type, canBeNull, isPrimary, size, tPair));
+    if(fkMap.find((*it)[0]) == fkMap.end()){
+      iColVec.push_back(Column((*it)[0], type, canBeNull, isPrimary, size, {}));
+    }else{
+      iColVec.push_back(Column((*it)[0], type, canBeNull, isPrimary, size, fkMap[(*it)[0]]));
+    }
+    
   }
 
   return Schema(iColVec);
@@ -724,10 +743,14 @@ antlrcpp::Any SystemVisitor::visitForeign_key_field(
     }
     std::vector<String> res;
     res.push_back("#" + sForeignTableName);
-    for(int i = 0; i < sColName.size(); i ++){
-      res.push_back(sColName[i]);
+    for(int i = 0; i < sForeignColName.size(); i ++){
       res.push_back(sForeignColName[i]);
     }
+
+    for(int i = 0; i < sColName.size(); i ++){
+      res.push_back("#" + sColName[i]);
+    }
+    
     return res;
   }
   else{

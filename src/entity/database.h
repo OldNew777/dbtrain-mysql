@@ -80,7 +80,7 @@ class Database : public EntityManager {
   Index* GetIndex(const String& sTableName, const String& sColName);
   void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
   void AddForeignKey(const String& lTableName, const String& lColName,
-    const String& fTableName, const String& fColName);
+    const String& fTableName, const std::vector<String>& fColNameVec);
   void AddUniqueKey(const String& sTableName, const String& sColName);
   
   void DropPrimaryKey(const String& sTableName, const String& sColName);

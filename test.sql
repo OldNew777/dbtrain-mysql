@@ -167,39 +167,40 @@ INSERT INTO teacher VALUES(2, 'Jack', 5);
 INSERT INTO teacher VALUES(3, 'ZYH', 6);
 -- INSERT INTO teacher VALUES(NULL, 'ZYH', 6);
 SELECT * FROM teacher;
-CREATE TABLE teacher2 (id2 INT, customer2 VARCHAR(64), num2 INT, FOREIGN KEY (id2, num2) REFERENCES teacher (id, num));
-INSERT INTO teacher2 VALUES(1, 'TOM', 4);
-INSERT INTO teacher2 VALUES(2, 'Jack', 5);
-INSERT INTO teacher2 VALUES(3, 'ZYH', 6);
-INSERT INTO teacher2 VALUES(0, 'TOM', 4);
-INSERT INTO teacher2 VALUES(4, 'Jack', 5);
-INSERT INTO teacher2 VALUES(3, 'ZYH', 2);
-SELECT * FROM teacher2;
--- DESC SHADOW teacher2;
--- DROP TABLE teacher;
--- DESC SHADOW teacher2;
+CREATE TABLE teacher2 (id2 INT, customer2 VARCHAR(64), num2 INT, FOREIGN KEY (id2) REFERENCES teacher (id, num));
+DESC SHADOW teacher2;
+-- INSERT INTO teacher2 VALUES(1, 'TOM', 4);
+-- INSERT INTO teacher2 VALUES(2, 'Jack', 5);
+-- INSERT INTO teacher2 VALUES(3, 'ZYH', 6);
+-- INSERT INTO teacher2 VALUES(0, 'TOM', 4);
+-- INSERT INTO teacher2 VALUES(4, 'Jack', 5);
 -- INSERT INTO teacher2 VALUES(3, 'ZYH', 2);
 -- SELECT * FROM teacher2;
-DESC SHADOW teacher2;
--- DROP TABLE teacher;
-INSERT INTO teacher2 VALUES(4, 'Jack', 5);
-DESC SHADOW teacher2;
-ALTER TABLE teacher2 DROP FOREIGN KEY id2;
-
-DESC teacher;
-DESC SHADOW teacher;
-DESC teacher2;
-DESC SHADOW teacher2;
--- INSERT INTO teacher2 VALUES(4, 'Jack', 5);
-ALTER TABLE teacher2 ADD FOREIGN KEY(id2) REFERENCES teacher (id);
-INSERT INTO teacher2 VALUES(4, 'Jack', 5);
+-- -- DESC SHADOW teacher2;
+-- -- DROP TABLE teacher;
+-- -- DESC SHADOW teacher2;
+-- -- INSERT INTO teacher2 VALUES(3, 'ZYH', 2);
+-- -- SELECT * FROM teacher2;
 -- DESC SHADOW teacher2;
+-- -- DROP TABLE teacher;
+-- INSERT INTO teacher2 VALUES(4, 'Jack', 5);
+-- DESC SHADOW teacher2;
+-- ALTER TABLE teacher2 DROP FOREIGN KEY id2;
 
-CREATE TABLE teacher3 (id INT, customer VARCHAR(64), num INT);
-INSERT INTO teacher3 VALUES(4, 'Jack', 5);
+-- DESC teacher;
+-- DESC SHADOW teacher;
+-- DESC teacher2;
+-- DESC SHADOW teacher2;
+-- -- INSERT INTO teacher2 VALUES(4, 'Jack', 5);
+-- ALTER TABLE teacher2 ADD FOREIGN KEY(id2) REFERENCES teacher (id);
+-- INSERT INTO teacher2 VALUES(4, 'Jack', 5);
+-- -- DESC SHADOW teacher2;
+
+-- CREATE TABLE teacher3 (id INT, customer VARCHAR(64), num INT);
+-- INSERT INTO teacher3 VALUES(4, 'Jack', 5);
+-- -- INSERT INTO teacher3 VALUES(4, 'Tom', 6);
+-- ALTER TABLE teacher3 ADD UNIQUE (id);
 -- INSERT INTO teacher3 VALUES(4, 'Tom', 6);
-ALTER TABLE teacher3 ADD UNIQUE (id);
-INSERT INTO teacher3 VALUES(4, 'Tom', 6);
 
 
 

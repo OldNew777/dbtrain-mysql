@@ -52,14 +52,17 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   //insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
-    if (column.GetForeignKeyPair().first != "") {
-      String fTableName = column.GetForeignKeyPair().first;
-      String fColName = column.GetForeignKeyPair().second;
-      //check reference table is null
-      if(_CheckHaveNull(fTableName, fColName)){
-        printf("reference column should not be null\n");
-        throw ForeignKeyException("reference column should not be null");
+    if (column.GetForeignKeyVec().size() != 0) {
+      for(auto& tPair: column.GetForeignKeyVec()){
+        String fTableName = tPair.first;
+        String fColName = tPair.second;
+        //check reference table is null
+        if(_CheckHaveNull(fTableName, fColName)){
+          printf("reference column should not be null\n");
+          throw ForeignKeyException("reference column should not be null");
+        }
       }
+      
       //insert local shadow table
     }
     // printf("3\n");
@@ -75,13 +78,13 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   //create a shadow table
   std::vector<Column> shadowTableColVec;
   shadowTableColVec.push_back(Column(SHADOW_STATUS_NAME, FieldType::CHAR_TYPE, 
-    false, false, SHADOW_STATUS_SIZE, std::make_pair("",""))); //status 
+    false, false, SHADOW_STATUS_SIZE, {})); //status 
   shadowTableColVec.push_back(Column(SHADOW_LOCAL_COLUMN_NAME, FieldType::CHAR_TYPE,
-    false, false, COLUMN_NAME_SIZE, std::make_pair("","")));//该表某一列的名字
+    false, false, COLUMN_NAME_SIZE, {}));//该表某一列的名字
   shadowTableColVec.push_back(Column(SHADOW_FOREIGN_TABLE_NAME, FieldType::CHAR_TYPE,
-    false, false, TABLE_NAME_SIZE, std::make_pair("","")));//
+    false, false, TABLE_NAME_SIZE, {}));//
   shadowTableColVec.push_back(Column(SHADOW_FOREIGN_COLUMN_NAME, FieldType::CHAR_TYPE,
-    false, false, COLUMN_NAME_SIZE, std::make_pair("","")));//
+    false, false, COLUMN_NAME_SIZE, {}));//
   TablePage* shadowPage = new TablePage(Schema(shadowTableColVec));
   Table* shadowTable = new Table(shadowPage);
   _iEntityMap["@" + sTableName] = shadowTable;
@@ -100,26 +103,28 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   //insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
-    if (column.GetForeignKeyPair().first != "") {
-      String fTableName = column.GetForeignKeyPair().first;
-      String fColName = column.GetForeignKeyPair().second;
-      //insert local shadow table
-      std::vector<Field*> LocalVec;
-      LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
-      LocalVec.push_back(new CharField(column.GetName()));
-      LocalVec.push_back(new CharField(fTableName));
-      LocalVec.push_back(new CharField(fColName));
-      // printf("1\n");
-      Insert("@" + sTableName, LocalVec);
-      //insert reference shadow table
-      std::vector<Field*> ForeignVec;
-      ForeignVec.push_back(new CharField(SHADOW_STATUS_REFERED_KEY));
-      ForeignVec.push_back(new CharField(fColName));
-      ForeignVec.push_back(new CharField(sTableName));
-      ForeignVec.push_back(new CharField(column.GetName()));
-      // printf("2\n");
-      Insert("@" + fTableName, ForeignVec);
-      _UpdateReferedKey(fTableName, fColName);
+    if (column.GetForeignKeyVec().size() != 0) {
+      for(auto& tPair: column.GetForeignKeyVec()){
+        String fTableName = tPair.first;
+        String fColName = tPair.second;
+        //insert local shadow table
+        std::vector<Field*> LocalVec;
+        LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
+        LocalVec.push_back(new CharField(column.GetName()));
+        LocalVec.push_back(new CharField(fTableName));
+        LocalVec.push_back(new CharField(fColName));
+        // printf("1\n");
+        Insert("@" + sTableName, LocalVec);
+        //insert reference shadow table
+        std::vector<Field*> ForeignVec;
+        ForeignVec.push_back(new CharField(SHADOW_STATUS_REFERED_KEY));
+        ForeignVec.push_back(new CharField(fColName));
+        ForeignVec.push_back(new CharField(sTableName));
+        ForeignVec.push_back(new CharField(column.GetName()));
+        // printf("2\n");
+        Insert("@" + fTableName, ForeignVec);
+        _UpdateReferedKey(fTableName, fColName);
+      }
     }
     // printf("3\n");
   }
@@ -932,7 +937,7 @@ uint32_t Database::_DropShadowTableKey(const String& lTableName,const String& st
   return ret;
 }
 void Database::AddForeignKey(const String& lTableName, const String& lColName,
-    const String& fTableName, const String& fColName){
+    const String& fTableName, const std::vector<String>& fColNameVec){
   //TODO: ADD FOREIGNKEY
   Table* lTable = GetTable(lTableName);
   Table* fTable = GetTable(fTableName);
@@ -947,43 +952,50 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
     throw e;
   }
   //check fk validation
-  std::vector<PageSlotID> psidVec = lTable->SearchRecord(nullptr);
-  MemResult* lRes = new MemResult(lTable->GetColumnNames());
-  for(auto& psid: psidVec)
-    lRes->PushBack(lTable->GetRecord(psid.first, psid.second));
-  FieldID colPos = lTable->GetColPos(lColName);
-  for(int i = 0; i < lRes->GetDataSize(); i ++){
-    if(!_CheckForeignKey(fTableName, fColName, lRes->GetField(i, colPos))){
-      if(lRes) delete lRes;
-      printf("Foreign key should be in range of refernce key\n");
-      throw ForeignKeyException("Foreign key should be in range of refernce key");
+  for(auto& fColName: fColNameVec){
+    std::vector<PageSlotID> psidVec = lTable->SearchRecord(nullptr);
+    MemResult* lRes = new MemResult(lTable->GetColumnNames());
+    for(auto& psid: psidVec)
+      lRes->PushBack(lTable->GetRecord(psid.first, psid.second));
+    FieldID colPos = lTable->GetColPos(lColName);
+    for(int i = 0; i < lRes->GetDataSize(); i ++){
+      if(!_CheckForeignKey(fTableName, fColName, lRes->GetField(i, colPos))){
+        if(lRes) delete lRes;
+        printf("Foreign key should be in range of refernce key\n");
+        throw ForeignKeyException("Foreign key should be in range of refernce key");
+      }
     }
-  }
-  if(lRes) delete lRes;
-  //check reference not null
-  if(_CheckHaveNull(fTableName, fColName)){
-    printf("reference key cannot be null\n");
-    throw ForeignKeyException("reference key cannot be null");
-  }
+    if(lRes) delete lRes;
+    //check type
+    if(lTable->GetType(lColName) != fTable->GetType(fColName)){
+      printf("foreign key should have same type\n");
+      throw ForeignKeyException("foreign key should have same type");  
+    }
+    //check reference not null
+    if(_CheckHaveNull(fTableName, fColName)){
+      printf("reference key cannot be null\n");
+      throw ForeignKeyException("reference key cannot be null");
+    }
 
-  //add this table foreign key
-  std::vector<Field*> LocalVec;
-  LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
-  LocalVec.push_back(new CharField(lColName));
-  LocalVec.push_back(new CharField(fTableName));
-  LocalVec.push_back(new CharField(fColName));
-  // printf("1\n");
-  Insert("@" + lTableName, LocalVec);
-  //insert reference shadow table
-  std::vector<Field*> ForeignVec;
-  ForeignVec.push_back(new CharField(SHADOW_STATUS_REFERED_KEY));
-  ForeignVec.push_back(new CharField(fColName));
-  ForeignVec.push_back(new CharField(lTableName));
-  ForeignVec.push_back(new CharField(lColName));
-  // printf("2\n");
-  Insert("@" + fTableName, ForeignVec);
-  lTable->AddForeignKey(lColName);
-  _UpdateReferedKey(fTableName, fColName);
+    //add this table foreign key
+    std::vector<Field*> LocalVec;
+    LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
+    LocalVec.push_back(new CharField(lColName));
+    LocalVec.push_back(new CharField(fTableName));
+    LocalVec.push_back(new CharField(fColName));
+    // printf("1\n");
+    Insert("@" + lTableName, LocalVec);
+    //insert reference shadow table
+    std::vector<Field*> ForeignVec;
+    ForeignVec.push_back(new CharField(SHADOW_STATUS_REFERED_KEY));
+    ForeignVec.push_back(new CharField(fColName));
+    ForeignVec.push_back(new CharField(lTableName));
+    ForeignVec.push_back(new CharField(lColName));
+    // printf("2\n");
+    Insert("@" + fTableName, ForeignVec);
+    lTable->AddForeignKey(lColName);
+    _UpdateReferedKey(fTableName, fColName);
+  }
 }
 void Database::DropFroeignKey(const String& sTableName, const String& sColName){
   std::vector<std::pair<String, String>> fPairVec = GetForeignKey(sTableName, sColName);
