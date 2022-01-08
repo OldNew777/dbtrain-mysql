@@ -194,3 +194,12 @@ DESC SHADOW teacher2;
 ALTER TABLE teacher2 ADD FOREIGN KEY(id2) REFERENCES teacher (id);
 INSERT INTO teacher2 VALUES(4, 'Jack', 5);
 -- DESC SHADOW teacher2;
+
+CREATE TABLE teacher3 (id INT, customer VARCHAR(64), num INT);
+INSERT INTO teacher3 VALUES(4, 'Jack', 5);
+-- INSERT INTO teacher3 VALUES(4, 'Tom', 6);
+ALTER TABLE teacher3 ADD UNIQUE (id);
+INSERT INTO teacher3 VALUES(4, 'Tom', 6);
+
+
+

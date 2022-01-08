@@ -158,6 +158,10 @@ void Instance::AddForeignKey(const String& lTableName, const String& lColName,
     const String& fTableName, const String& fColName){
   _pDataManager->AddForeignKey(lTableName, lColName, fTableName, fColName);
 }
+void Instance::AddUniqueKey(const String& sTableName, const String& sColNameVec){
+  _pDataManager->AddUniqueKey(sTableName, sColNameVec);
+}
+
 void Instance::DropPrimaryKey(const String& sTableName, const String& sColName) {
   _pDataManager->DropPrimaryKey(sTableName, sColName);
 }

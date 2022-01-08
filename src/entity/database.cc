@@ -288,7 +288,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
   }
   if (primaryKeyConflict) {
     // add exception here
-    auto e = Exception("Primary key ");
+    auto e = Exception("Unique Key Exists");
     std::cout << e.what() << "\n";
     throw e;
   }
@@ -353,7 +353,7 @@ PageSlotID Database::Insert(const String& sTableName,
   bool primaryKeyConflict = false;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
-    if (pTable->GetIsPrimary(sColName)) {
+    if (pTable->GetIsPrimary(sColName) || pTable->GetIsUnique(sColName)) {
       // check whether primary key conflicts with other records
       primaryKeyConflict = true;
       FieldType colType = pTable->GetType(sColName);
@@ -368,7 +368,7 @@ PageSlotID Database::Insert(const String& sTableName,
   }
   if (primaryKeyConflict) {
     // add exception here
-    auto e = Exception("Primary key existed");
+    auto e = Exception("Unique key existed");
     std::cout << e.what() << "\n";
     throw e;
   }
@@ -453,7 +453,7 @@ PageSlotID Database::Insert(const String& sTableName,
   }
   if (primaryKeyConflict) {
     // add exception here
-    auto e = Exception("Primary key existed");
+    auto e = Exception("Unique key existed");
     std::cout << e.what() << "\n";
     throw e;
   }
@@ -845,168 +845,8 @@ bool Database::_CheckForeignKey(const String& fTableName,
     }
   }
   return flag;
-  // /// 检查是不是比所有都小
-  // FieldID colPos = pTable->GetColPos(fColName);
-  // Field *pLow = pField->Clone(), *pHigh = pField->Clone();
-  // pHigh->Add();
-  // pLow->ToMin();
-  // Condition* pCond = nullptr;
-  // std::vector<Condition*> iIndexCond{};
-  // if (IsIndex(fTableName, fColName)) {
-  //   iIndexCond.push_back(new IndexCondition(fTableName, fColName, pLow, pHigh));
-  // } else {
-  //   pCond = new RangeCondition(colPos, pLow, pHigh);
-  // }
-  // std::vector<PageSlotID> iPageSlotIDVec =Search(fTableName, pCond, iIndexCond);
-  // if(iPageSlotIDVec.size() == 0){
-  //   // printf("less than every key in fk\n");
-  //   return false;
-  // }
-
-  // if (pCond) delete pCond;
-  // for (auto iCond : iIndexCond) delete iCond;
-
-  // // //check if it is larger than every key in fk
-  // FieldID gcolPos = pTable->GetColPos(fColName);
-  // Field *gLow = pField->Clone(), *gHigh = pField->Clone();
-  // gHigh->ToMax();
-  // Condition* gCond = nullptr;
-  // std::vector<Condition*> gIndexCond{};
-  // if (IsIndex(fTableName, fColName)) {
-  //   gIndexCond.push_back(new IndexCondition(fTableName, fColName, gLow, gHigh));
-  // } else {
-  //   gCond = new RangeCondition(gcolPos, gLow, gHigh);
-  // }
-  // std::vector<PageSlotID> gPageSlotIDVec = Search(fTableName, gCond, gIndexCond);
-  // if (gCond) delete gCond;
-  // for (auto iCond : gIndexCond) delete iCond;
-  // if(gPageSlotIDVec.size() == 0){
-  //   // printf("greater than every key in fk\n");
-  //   return false;
-  // }
 }
-// uint32_t Database::DropForeignKey(const String& sTableName, const String& sColName){
-//   //TODO: delete a forergnkey in shadow table and erase in status
-//   Table* pTable = GetTable("@" + sTableName);
-//   if (pTable == nullptr) {
-//     auto e = TableNotExistException("@" + sTableName);
-//     std::cout << e.what() << "\n";
-//     throw e;
-//   } 
-//   std::vector<Condition*> iCond{};
-//   //type condition
-//   FieldID tColPos = pTable->GetColPos(SHADOW_STATUS_NAME);
-//   Field* tLow = new CharField(SHADOW_STATUS_FOREIGN_KEY);
-//   Field* tHigh = tLow->Clone();
-//   tHigh->Add();
-//   Condition* tCond = new RangeCondition(tColPos, tLow, tHigh);
 
-//   //Colname condition
-//   FieldID cColPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
-//   Field* cLow = new CharField(sColName);
-//   Field* cHigh = cLow->Clone();
-//   cHigh->Add();
-//   Condition* cCond = new RangeCondition(cColPos, cLow, cHigh);
-
-//   if(cCond) iCond.push_back(cCond);
-//   if(tCond) iCond.push_back(tCond);
-//   Condition * cond = new AndCondition(iCond);
-
-//   uint32_t ret = Delete("@" + sTableName, cond,{});
-
-//   for (auto tmpCond : iCond) delete tmpCond;
-
-//   GetTable(sTableName)->DropForeignKey(sColName);
-//   return ret;
-
-//   // return ret;
-// }
-// uint32_t Database::RemoveTableForeignKey(const String& sTableName, const String& fTableName){
-//   Table* pTable = GetTable("@" + sTableName);
-//   if (pTable == nullptr) {
-//     auto e = TableNotExistException("@" + sTableName);
-//     std::cout << e.what() << "\n";
-//     throw e;
-//   } 
-//   FieldID tColPos = pTable->GetColPos(SHADOW_FOREIGN_TABLE_NAME);
-//   Field* tLow = new CharField(fTableName);
-//   Field* tHigh = tLow->Clone();
-//   tHigh->Add();
-//   Condition* tCond = new RangeCondition(tColPos, tLow, tHigh);
-
-//   uint32_t ret = Delete("@" + sTableName, tCond,{});
-//   printf("%d\n", ret);
-
-//   return ret;
-// }
-// uint32_t Database::DropReferedKey(const String& sTableName, const String& sColName, 
-//     const String& fTableName, const String& fColName){
-//   Table* pTable = GetTable("@" + sTableName);
-//   if (pTable == nullptr) {
-//     auto e = TableNotExistException("@" + sTableName);
-//     std::cout << e.what() << "\n";
-//     throw e;
-//   } 
-//   std::vector<Condition*> iIndexCond{};
-//   std::vector<Condition*> iCond{};
-//   //type condition
-//   FieldID tColPos = pTable->GetColPos(SHADOW_STATUS_NAME);
-//   Field* tLow = new CharField(SHADOW_STATUS_REFERED_KEY);
-//   Field* tHigh = tLow->Clone();
-//   tHigh->Add();
-//   Condition* tCond = nullptr;
-//   if (IsIndex("@" + sTableName, SHADOW_STATUS_NAME)) {
-//     iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_STATUS_NAME, tLow, tHigh));
-//   } else {
-//     tCond = new RangeCondition(tColPos, tLow, tHigh);
-//   }
-//   if(tCond != nullptr) iCond.push_back(tCond);
-//   //local Colname condition
-//   FieldID cColPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
-//   Field* cLow = new CharField(sColName);
-//   Field* cHigh = cLow->Clone();
-//   cHigh->Add();
-//   Condition* cCond = nullptr;
-//   if (IsIndex("@" + sTableName, SHADOW_LOCAL_COLUMN_NAME)) {
-//     iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_LOCAL_COLUMN_NAME
-//       , cLow, cHigh));
-//   } else {
-//     cCond = new RangeCondition(cColPos, cLow, cHigh);
-//   }
-//   if(cCond != nullptr) iCond.push_back(cCond);
-//   //foreign tablename condition
-//   FieldID ftColPos = pTable->GetColPos(SHADOW_FOREIGN_TABLE_NAME);
-//   Field* ftLow = new CharField(fTableName);
-//   Field* ftHigh = ftLow->Clone();
-//   ftHigh->Add();
-//   Condition* ftCond = nullptr;
-//   if (IsIndex("@" + sTableName, SHADOW_FOREIGN_TABLE_NAME)) {
-//     iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_FOREIGN_TABLE_NAME,
-//       ftLow, ftHigh));
-//   } else {
-//     ftCond = new RangeCondition(ftColPos, ftLow, ftHigh);
-//   }
-//   if(ftCond != nullptr) iCond.push_back(ftCond);
-//   //foreign colname condition
-//   FieldID fcColPos = pTable->GetColPos(SHADOW_FOREIGN_COLUMN_NAME);
-//   Field* fcLow = new CharField(fColName);
-//   Field* fcHigh = fcLow->Clone();
-//   fcHigh->Add();
-//   Condition* fcCond = nullptr;
-//   if (IsIndex("@" + sTableName, SHADOW_FOREIGN_COLUMN_NAME)) {
-//     iIndexCond.push_back(new IndexCondition("@" + sTableName, SHADOW_FOREIGN_COLUMN_NAME,
-//       fcLow, fcHigh));
-//   } else {
-//     fcCond = new RangeCondition(fcColPos, fcLow, fcHigh);
-//   }
-//   if(fcCond != nullptr) iCond.push_back(fcCond);
-
-//   Condition * cond = new AndCondition(iCond);
-//   uint32_t ret = Delete("@" + sTableName, cond,iIndexCond);
-//   for (auto tmpCond : iCond) delete tmpCond;
-//   for (auto tmpCond : iIndexCond) delete tmpCond;
-//   return ret;
-// }
 /**
   @brief 删除sTable的一行记录
   @param lTableName 要删除的表名
@@ -1204,5 +1044,25 @@ void Database::_UpdateReferedKey(const String& fTableName, const String& fColnam
   
   if(result) delete result;
 }
-
+void Database::AddUniqueKey(const String& sTableName, const String& sColName){
+  Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  std::vector<String> sColNameVec;
+  sColNameVec.push_back(sColName);
+  std::vector<PageSlotID> psidVec =  pTable->SearchRecord(nullptr);
+  Result* result = new MemResult(pTable->GetColumnNames());
+  for(auto& psid: psidVec){
+    result->PushBack(pTable->GetRecord(psid.first, psid.second));
+  }
+  if(_CheckHaveDuplicate((MemResult*) result, sColNameVec)){
+    if(result) delete result;
+    throw AlterException("the new Unique Key column cannot be duplicated");
+  }
+  pTable->AddUniqueKey(sColName);
+  if(result) delete result;
+}
 }  // namespace dbtrain_mysql

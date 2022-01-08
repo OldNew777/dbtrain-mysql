@@ -17,7 +17,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
     _iColMap[iCol.GetName()] = i;
     _iTypeVec.push_back(iCol.GetType());
     _iSizeVec.push_back(iCol.GetSize());
-    uint8_t status = 0;
+    uint8_t status = 0b00000000;
     if (iCol.GetCanBeNull()) status |= 0b1;
     if (iCol.GetIsPrimary()) {
       // printf("name: %s\n", iCol.GetName());
@@ -82,6 +82,12 @@ bool TablePage::GetIsForeign(const String& sCol){
 }
 bool TablePage::GetIsRefered(const String& sCol){
   return ((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);
+}
+bool TablePage::GetIsUnique(const String& sCol){
+  return (
+    ((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10)
+    || ((_iStatusVec[GetColPos(sCol)] & 0b10000) == 0b10000)
+  );
 }
 
 ManagerPageType TablePage::GetManagerPageType() const {

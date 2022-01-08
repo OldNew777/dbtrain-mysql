@@ -79,14 +79,11 @@ class Database : public EntityManager {
   bool IsIndex(const String& sTableName, const String& sColName);
   Index* GetIndex(const String& sTableName, const String& sColName);
   void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
-  void DropPrimaryKey(const String& sTableName, const String& sColName);
-  // uint32_t DropForeignKey(const String& sTableName, const String& sColName);
-  // uint32_t RemoveTableForeignKey(const String& sTableName, const String& fTableName);
-  // uint32_t DropReferedKey(const String& sTableName, const String& sColName,
-  //   const String& fTableName, const String& fColName);
   void AddForeignKey(const String& lTableName, const String& lColName,
     const String& fTableName, const String& fColName);
-
+  void AddUniqueKey(const String& sTableName, const String& sColName);
+  
+  void DropPrimaryKey(const String& sTableName, const String& sColName);
   void DropFroeignKey(const String& sTableName, const String& sColName);
   void DropTableForeignKey(const String& sTableName);
   /**

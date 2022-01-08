@@ -65,6 +65,7 @@ class Table : public Entity {
   void AddPrimaryKey(const std::vector<String>& sColVec);
   void AddForeignKey(const String& sColVec);
   void AddReferedKey(const String& sColVec);
+  void AddUniqueKey(const String& sColVec);
   void DropReferedKey(const String& sColVec);
   void DropPrimaryKey(const String& sColName);
   void DropForeignKey(const String& sColName);
@@ -74,6 +75,7 @@ class Table : public Entity {
   FieldID GetColPos(const String& sCol) const;
   FieldType GetType(const String& sCol) const;
   Size GetSize(const String& sCol) const;
+  bool GetIsUnique(const String& sCol) const;
   bool GetCanBeNull(const String& sCol) const;
   bool GetIsPrimary(const String& sCol) const;
   bool GetIsForeign(const String& sCol) const;
