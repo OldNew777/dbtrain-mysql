@@ -118,7 +118,6 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         LocalVec.push_back(new CharField(column.GetName()));
         LocalVec.push_back(new CharField(fTableName));
         LocalVec.push_back(new CharField(fColName));
-        // printf("1\n");
         Insert("@" + sTableName, LocalVec);
         // insert reference shadow table
         std::vector<Field*> ForeignVec;
@@ -1018,7 +1017,6 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
     LocalVec.push_back(new CharField(lColName));
     LocalVec.push_back(new CharField(fTableName));
     LocalVec.push_back(new CharField(fColName));
-    // printf("1\n");
     Insert("@" + lTableName, LocalVec);
     // insert reference shadow table
     std::vector<Field*> ForeignVec;

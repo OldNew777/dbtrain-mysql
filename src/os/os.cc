@@ -68,7 +68,6 @@ PageID OS::NewPage() {
   do {
     if (!_pUsed->Get(_nClock)) {
       while (_nClock > _maxSize && _maxSize < MAX_MEM_PAGES) {
-        printf("1\n");
         std::fstream fout(DB_PAGE_NAME,
                           std::ios::binary | std::ios::in | std::ios::out);
         uint8_t* ptemp = new uint8_t[PAGE_SIZE * MEM_PAGES];

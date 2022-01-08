@@ -167,13 +167,15 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
   fin.close();
 
   String sTableName = ctx->Identifier()->getText();
+  printf("Altogether %d to be inserted\n", iValueListVec.size());
   int inserted = 0;
-  try {
-    for (const auto &iValueList : iValueListVec) {
+  for (const auto &iValueList : iValueListVec) {
+    try {
       _pDB->Insert(sTableName, iValueList);
       ++inserted;
+      if (inserted % 100 == 0) printf("Inserted : %d\n", inserted);
+    } catch (const std::exception &e) {
     }
-  } catch (const std::exception &e) {
   }
   Result *res = new MemResult({"Insert"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
