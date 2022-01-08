@@ -1,18 +1,15 @@
 #include "cache.h"
 namespace dbtrain_mysql {
+
+uint8_t pTemp[PAGE_SIZE];
+
 ////// CacheLine //////
 CacheLine::CacheLine(PageID pid) {
   _pid = pid;
 
-  std::ifstream fin(DB_PAGE_NAME, std::ios::binary);
-  if (!fin) {
-    auto e =
-        CacheInvalideException("CacheLine::CacheLine: DB_Page.dat not exist");
-    std::cout << e.what() << "\n";
-    throw e;
-  }
-  uint8_t pTemp[PAGE_SIZE];
-  fin.seekg(pid * PAGE_SIZE, std::ios::beg);
+  std::ifstream fin(String(DB_PAGE_NAME) + std::to_string(_pid / MEM_PAGES),
+                    std::ios::binary);
+  fin.seekg(pid % PAGE_SIZE, std::ios::beg);
   fin.read((char*)pTemp, PAGE_SIZE);
   _rawPage = new RawPage();
   _rawPage->Write(pTemp, PAGE_SIZE);
@@ -28,11 +25,10 @@ CacheLine::~CacheLine() {
 }
 
 void CacheLine::_writeBack() {
-  std::fstream fout(DB_PAGE_NAME,
+  std::fstream fout(String(DB_PAGE_NAME) + std::to_string(_pid / MEM_PAGES),
                     std::ios::binary | std::ios::out | std::ios::in);
-  uint8_t pTemp[PAGE_SIZE];
   _rawPage->Read(pTemp, PAGE_SIZE);
-  fout.seekp(_pid * PAGE_SIZE, std::ios::beg);
+  fout.seekp(_pid % PAGE_SIZE, std::ios::beg);
   fout.write((char*)pTemp, PAGE_SIZE);
   fout.close();
 }

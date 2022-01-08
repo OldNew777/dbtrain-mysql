@@ -8,6 +8,27 @@
 
 namespace dbtrain_mysql {
 
+std::vector<String> GetFiles(const String& path) {
+  DIR* dir;
+  dirent* ptr;
+  char base[1000];
+
+  std::vector<String> files;
+
+  if ((dir = opendir(path.c_str())) == nullptr) {
+    return files;
+  }
+  while ((ptr = readdir(dir)) != nullptr) {
+    if (std::strcmp(ptr->d_name, "") == 0 || strcmp(ptr->d_name, "..") == 0)
+      continue;
+    else if (ptr->d_type == 8)
+      // files
+      files.push_back(ptr->d_name);
+  }
+  closedir(dir);
+  return files;
+}
+
 void PrintPageSlotID(const PageSlotID& nPageSlotID) {
   std::cout << '(' << nPageSlotID.first << ", " << nPageSlotID.second << ')';
 }

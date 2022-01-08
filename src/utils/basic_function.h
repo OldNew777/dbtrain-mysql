@@ -1,12 +1,19 @@
 #ifndef DBTRAIN_MYSQL_BASIC_FUNCTION_H
 #define DBTRAIN_MYSQL_BASIC_FUNCTION_H
 
+#include <dirent.h>
+#include <unistd.h>
+
 #include <iostream>
+#include <vector>
 
 #include "defines.h"
 #include "field/fields.h"
 
 namespace dbtrain_mysql {
+
+std::vector<String> GetFiles(const String& path);
+
 void PrintPageSlotID(const PageSlotID& nPageSlotID);
 bool CmpPageSlotID(const PageSlotID& iA, const PageSlotID& iB);
 
