@@ -130,6 +130,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         Insert("@" + fTableName, ForeignVec);
         _UpdateReferedKey(fTableName, fColName);
       }
+      GetTable(sTableName)->AddForeignKey(column.GetName());
     }
     // printf("3\n");
   }
