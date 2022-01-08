@@ -996,7 +996,7 @@ uint32_t Database::_DropShadowTableKey(const String& lTableName,const String& st
 
   //type condition
   FieldID tColPos = pTable->GetColPos(SHADOW_STATUS_NAME);
-  Field* tLow = new CharField(SHADOW_STATUS_REFERED_KEY);
+  Field* tLow = new CharField(statusMode);
   Field* tHigh = tLow->Clone();
   tHigh->Add();
   Condition* tCond= new RangeCondition(tColPos, tLow, tHigh);
@@ -1038,7 +1038,6 @@ uint32_t Database::_DropShadowTableKey(const String& lTableName,const String& st
   for (auto tmpCond : iCond) delete tmpCond;
 
   if(statusMode == SHADOW_STATUS_FOREIGN_KEY){
-    printf("drop\n");
     GetTable(lTableName)->DropForeignKey(lColName);
   }
   return ret;
@@ -1089,8 +1088,10 @@ void Database::DropFroeignKey(const String& sTableName, const String& sColName){
   _DropShadowTableKey(fPair.first, SHADOW_STATUS_REFERED_KEY, fPair.second, 
     sTableName, sColName);
   //frop for key of local table
-  uint32_t res = _DropShadowTableKey(sTableName, SHADOW_STATUS_FOREIGN_KEY, sColName, "", "");
-  printf("res:%d\n", res);
+  uint32_t res = _DropShadowTableKey(sTableName, SHADOW_STATUS_FOREIGN_KEY, 
+    sColName, fPair.first, fPair.second);
+  // printf("%s %s %s %s %s\n", sTableName.data(), SHADOW_STATUS_FOREIGN_KEY.data(),
+  //   sColName.data(),fPair.first.data(),fPair.second.data());
 }
 void Database::DropTableForeignKey(const String& sTableName){
   std::vector<std::vector<String> > refPairVec = 
