@@ -477,27 +477,27 @@ antlrcpp::Any SystemVisitor::visitAlter_drop_index(
 
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_pk(
     MYSQLParser::Alter_table_drop_pkContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
     MYSQLParser::Alter_table_drop_foreign_keyContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
     MYSQLParser::Alter_table_add_pkContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
     MYSQLParser::Alter_table_add_foreign_keyContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_unique(
     MYSQLParser::Alter_table_add_uniqueContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_rename(
@@ -600,7 +600,7 @@ antlrcpp::Any SystemVisitor::visitPrimary_key_field(
 
 antlrcpp::Any SystemVisitor::visitForeign_key_field(
     MYSQLParser::Foreign_key_fieldContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitType_(MYSQLParser::Type_Context *ctx) {
@@ -730,7 +730,7 @@ antlrcpp::Any SystemVisitor::visitWhere_operator_expression(
 
 antlrcpp::Any SystemVisitor::visitWhere_operator_select(
     MYSQLParser::Where_operator_selectContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_null(
@@ -779,12 +779,12 @@ antlrcpp::Any SystemVisitor::visitWhere_in_list(
 
 antlrcpp::Any SystemVisitor::visitWhere_in_select(
     MYSQLParser::Where_in_selectContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitWhere_like_string(
     MYSQLParser::Where_like_stringContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitColumn(MYSQLParser::ColumnContext *ctx) {
@@ -821,7 +821,7 @@ antlrcpp::Any SystemVisitor::visitSelectors(
 }
 
 antlrcpp::Any SystemVisitor::visitSelector(MYSQLParser::SelectorContext *ctx) {
-  throw UnimplementedException();
+  // throw UnimplementedException();
 }
 
 antlrcpp::Any SystemVisitor::visitIdentifiers(
