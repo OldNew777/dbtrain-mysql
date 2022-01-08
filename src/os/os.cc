@@ -20,7 +20,6 @@ OS* OS::GetOS() {
 }
 
 void OS::WriteBack() {
-  // printf("write_back\n");
   if (os != nullptr) {
     delete os;
     os = nullptr;
@@ -46,9 +45,9 @@ OS::OS() {
 
 OS::~OS() {
   // printf("pUsed num:%d\n", _pUsed->GetUsed());
-  printf("~OS()\n");
   StoreBitmap();
   delete _pUsed;
+  printf("~OS()\n");
 }
 
 PageID OS::NewPage() {
@@ -56,9 +55,9 @@ PageID OS::NewPage() {
   do {
     if (!_pUsed->Get(_nClock)) {
       while (_nClock > _maxSize && _maxSize < DB_PAGES_MAX) {
-        std::fstream fout(
+        std::ofstream fout(
             String(DB_PAGE_NAME) + std::to_string(_maxSize / MEM_PAGES),
-            std::ios::binary | std::ios::in | std::ios::out);
+            std::ios::binary);
         fout.seekp(0, std::ios::end);
         for (int i = 0; i < MEM_PAGES; ++i) fout.write((char*)zeros, PAGE_SIZE);
         fout.close();

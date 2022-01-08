@@ -6,10 +6,9 @@ uint8_t pTemp[PAGE_SIZE];
 ////// CacheLine //////
 CacheLine::CacheLine(PageID pid) {
   _pid = pid;
-
   std::ifstream fin(String(DB_PAGE_NAME) + std::to_string(_pid / MEM_PAGES),
                     std::ios::binary);
-  fin.seekg(pid % PAGE_SIZE, std::ios::beg);
+  fin.seekg((_pid % MEM_PAGES) * PAGE_SIZE, std::ios::beg);
   fin.read((char*)pTemp, PAGE_SIZE);
   _rawPage = new RawPage();
   _rawPage->Write(pTemp, PAGE_SIZE);
@@ -28,7 +27,7 @@ void CacheLine::_writeBack() {
   std::fstream fout(String(DB_PAGE_NAME) + std::to_string(_pid / MEM_PAGES),
                     std::ios::binary | std::ios::out | std::ios::in);
   _rawPage->Read(pTemp, PAGE_SIZE);
-  fout.seekp(_pid % PAGE_SIZE, std::ios::beg);
+  fout.seekp((_pid % MEM_PAGES) * PAGE_SIZE, std::ios::beg);
   fout.write((char*)pTemp, PAGE_SIZE);
   fout.close();
 }
@@ -54,6 +53,7 @@ CacheGroup::~CacheGroup() {
   for (int i = 0; i < CACHE_GROUP_NUM; ++i) {
     if (_cacheGroup[i]) delete _cacheGroup[i];
   }
+  delete[] _cacheGroup;
 }
 
 CacheLine* CacheGroup::_getPage(PageID pid) {

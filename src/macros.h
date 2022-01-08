@@ -15,7 +15,7 @@ const PageOffset PAGE_SIZE = 4096;
 const PageOffset HEADER_SIZE = 64;
 const PageOffset DATA_SIZE = PAGE_SIZE - HEADER_SIZE;
 
-const PageID MEM_PAGES = 1U << 14;
+const PageID MEM_PAGES = 1U << 12;
 const PageID DB_PAGES_MAX = 1U << 24;
 
 const PageID NULL_PAGE = 0xFFFFFFFF;
@@ -35,7 +35,7 @@ const Size COLUMN_NUM_MAX = 32;
 
 const Size COLUMN_STATUS_BYTES = 1;
 
-const uint32_t CACHE_GROUP_NUM = 1 << 18;
+const uint32_t CACHE_GROUP_NUM = 1 << 14;
 
 const uint32_t FIELD_INT_TYPE_SIZE = 4;
 const uint32_t FIELD_FLOAT_TYPE_SIZE = 4;
