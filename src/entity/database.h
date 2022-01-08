@@ -89,11 +89,11 @@ class Database : public EntityManager {
   /**
    * @brief 获得这个表上某个键依赖的其他表上的键
    */
-  std::pair<String, String> GetForeignKey(const String& sTableName, const String& sColName);
+  std::vector<std::pair<String, String>> GetForeignKey(const String& sTableName, const String& sColName);
   /**
    * @brief 获得这个表上某个键依赖的其他表上的键
    */
-  std::pair<String, String> GetReferedKey(const String& sTableName, const String& sColName);
+  std::vector<std::pair<String, String>> GetReferedKey(const String& sTableName, const String& sColName);
   /**
    * @brief 获得依赖于这个表上键的其他表的键
    */

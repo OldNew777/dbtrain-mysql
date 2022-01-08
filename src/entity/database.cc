@@ -380,13 +380,16 @@ PageSlotID Database::Insert(const String& sTableName,
       // check whether primary key conflicts with other records
       FieldType colType = pTable->GetType(sColName);
       Field* pField = BuildField(iRawVec[i], colType);
-      std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
+      std::vector<std::pair<String, String>> fPairVec = GetForeignKey(sTableName, sColName);
       // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
-      if(!_CheckForeignKey(fPair.first, fPair.second, pField)){
-        printf("key out of range:%s\n", pField->ToString().data());
-        delete pField;
-        throw ForeignKeyException();
+      for(auto& fPair: fPairVec){
+        if(!_CheckForeignKey(fPair.first, fPair.second, pField)){
+          printf("key out of range:%s\n", pField->ToString().data());
+          delete pField;
+          throw ForeignKeyException();
+        }
       }
+      
       delete pField;
     }
   }
@@ -463,15 +466,16 @@ PageSlotID Database::Insert(const String& sTableName,
     if (pTable->GetIsForeign(sColName)) {
       // check whether primary key conflicts with other records
       
-      std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
+      std::vector<std::pair<String, String>> fPairVec = GetForeignKey(sTableName, sColName);
       // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(), fPair.second.data());
-      if(!_CheckForeignKey(fPair.first, fPair.second, iValueVec[i])){
-        printf("key out of range:%d\n", iValueVec[i]->ToString().data());
-        throw ForeignKeyException();
+      for(auto& fPair: fPairVec){
+        if(!_CheckForeignKey(fPair.first, fPair.second, iValueVec[i])){
+          printf("key out of range:%d\n", iValueVec[i]->ToString().data());
+          throw ForeignKeyException();
+        }
       }
     }
   }
-
   Record* pRecord = pTable->EmptyRecord();
   try {
     pRecord->Build(iValueVec);
@@ -719,13 +723,14 @@ bool Database::_CheckHaveDuplicate(MemResult* result, const std::vector<String>&
   }
   return false;
 }
-std::pair<String, String> Database::GetReferedKey(const String& sTableName, const String& sColName){
+std::vector<std::pair<String, String>> Database::GetReferedKey(const String& sTableName, const String& sColName){
   Table* pTable = GetTable("@" + sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
     std::cout << e.what() << "\n";
     throw e;
   }
+  std::vector<std::pair<String, String>> retVec;
   FieldID colPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
   std::vector<PageSlotID> iPageSlotIDVec =pTable->SearchRecord(nullptr);
   MemResult* res = new MemResult({SHADOW_STATUS_NAME,
@@ -737,18 +742,22 @@ std::pair<String, String> Database::GetReferedKey(const String& sTableName, cons
     // printf("%s %s\n", res->GetFieldString(i, 0).data(), res->GetFieldString(i, 1).data());
     if(res->GetFieldString(i, 0) != SHADOW_STATUS_REFERED_KEY 
       || res->GetFieldString(i, 1) != sColName) continue;
-    return std::make_pair(res->GetFieldString(i, 2), res->GetFieldString(i, 3));
+    retVec.push_back(std::make_pair(res->GetFieldString(i, 2), res->GetFieldString(i, 3)));
   }
-  printf("there should be a foreign key in shadow table\n");
-  throw ForeignKeyException();
+  if(retVec.size() == 0){
+    printf("there should be a refered key in shadow table\n");
+    throw ForeignKeyException();
+  }
 }
-std::pair<String, String> Database::GetForeignKey(const String& sTableName, const String& sColName){
+ std::vector<std::pair<String, String>> Database::GetForeignKey(
+    const String& sTableName, const String& sColName){
   Table* pTable = GetTable("@" + sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
     std::cout << e.what() << "\n";
     throw e;
   }
+  std::vector<std::pair<String, String>> retVec;
   FieldID colPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
   std::vector<PageSlotID> iPageSlotIDVec =pTable->SearchRecord(nullptr);
   MemResult* res = new MemResult({SHADOW_STATUS_NAME,
@@ -760,10 +769,13 @@ std::pair<String, String> Database::GetForeignKey(const String& sTableName, cons
     // printf("%s %s\n", res->GetFieldString(i, 0).data(), res->GetFieldString(i, 1).data());
     if(res->GetFieldString(i, 0) != SHADOW_STATUS_FOREIGN_KEY 
       || res->GetFieldString(i, 1) != sColName) continue;
-    return std::make_pair(res->GetFieldString(i, 2), res->GetFieldString(i, 3));
+    retVec.push_back(std::make_pair(res->GetFieldString(i, 2), res->GetFieldString(i, 3)));
   }
-  printf("there should be a foreign key in shadow table\n");
-  throw ForeignKeyException();
+  if(retVec.size() == 0){
+    printf("there should be a foreign key in shadow table\n");
+    throw ForeignKeyException();
+  }
+  return retVec;
 }
 
 std::vector<std::vector<String> > Database::GetTableReferedKeys
@@ -974,16 +986,16 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
   _UpdateReferedKey(fTableName, fColName);
 }
 void Database::DropFroeignKey(const String& sTableName, const String& sColName){
-  std::pair<String, String> fPair = GetForeignKey(sTableName, sColName);
+  std::vector<std::pair<String, String>> fPairVec = GetForeignKey(sTableName, sColName);
   //drop ref key of foreign table
-  _DropShadowTableKey(fPair.first, SHADOW_STATUS_REFERED_KEY, fPair.second, 
+  for(auto fPair: fPairVec){_DropShadowTableKey(fPair.first, SHADOW_STATUS_REFERED_KEY, fPair.second, 
     sTableName, sColName);
   //frop for key of local table
   uint32_t res = _DropShadowTableKey(sTableName, SHADOW_STATUS_FOREIGN_KEY, 
     sColName, fPair.first, fPair.second);
   // printf("%s %s %s %s %s\n", sTableName.data(), SHADOW_STATUS_FOREIGN_KEY.data(),
   //   sColName.data(),fPair.first.data(),fPair.second.data());
-  _UpdateReferedKey(fPair.first, fPair.second);
+  _UpdateReferedKey(fPair.first, fPair.second);}
 }
 void Database::DropTableForeignKey(const String& sTableName){
   std::vector<std::vector<String> > refPairVec = 
