@@ -26,6 +26,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
     if (iCol.GetForeignKeyVec().size() != 0) {
       status |= 0b100;
     }
+    //refered and unique will not present in create table
     _iStatusVec.push_back(status);
   }
   assert(_iColMap.size() == _iTypeVec.size());

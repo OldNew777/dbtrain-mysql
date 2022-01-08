@@ -402,6 +402,7 @@ PageSlotID Database::Insert(const String& sTableName,
       // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
       // fPair.second.data());
       for (auto& fPair : fPairVec) {
+        // printf("%s %s\n", fPair.first.data(), fPair.second.data());
         if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
           printf("key out of range:%s\n", pField->ToString().data());
           delete pField;
@@ -794,7 +795,7 @@ std::vector<std::pair<String, String>> Database::GetForeignKey(
   }
   for (int i = 0; i < res->GetDataSize(); i++) {
     // printf("%s %s\n", res->GetFieldString(i, 0).data(),
-    // res->GetFieldString(i, 1).data());
+    //   res->GetFieldString(i, 1).data());
     if (res->GetFieldString(i, 0) != SHADOW_STATUS_FOREIGN_KEY ||
         res->GetFieldString(i, 1) != sColName)
       continue;
@@ -873,13 +874,8 @@ bool Database::_CheckForeignKey(const String& fTableName,
   if (pField->ToString() == "NULL") {  //外键可为null
     return true;
   }
-  Table* pTable = GetTable(fTableName);
-  if (pTable == nullptr) {
-    auto e = TableNotExistException(fTableName);
-    std::cout << e.what() << "\n";
-    throw e;
-  }
-  return (_GetDuplicated(fTableName, fColName, pField).size() == 0);
+
+  return (_GetDuplicated(fTableName, fColName, pField).size() != 0);
 }
 
 /**
