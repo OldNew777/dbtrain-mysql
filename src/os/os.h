@@ -1,11 +1,12 @@
 #ifndef DBTRAIN_MYSQL_OS_H
 #define DBTRAIN_MYSQL_OS_H
 
-#include "defines.h"
+#include <filesystem>
+
 #include "cache.h"
+#include "defines.h"
 #include "os/raw_page.h"
 #include "utils/bitmap.h"
-#include <filesystem>
 
 namespace dbtrain_mysql {
 
@@ -21,20 +22,20 @@ class OS {
   PageID NewPage();
   void DeletePage(PageID pid);
   /**
-   * @brief read a page 
+   * @brief read a page
    *
    * @param pid page id
-   * @param dst destination buffer 
+   * @param dst destination buffer
    * @param nSize the length of read
    * @param nOffset the start palace of read
    */
   void ReadPage(PageID pid, uint8_t* dst, PageOffset nSize,
                 PageOffset nOffset = 0);
   /**
-   * @brief write a page 
+   * @brief write a page
    *
    * @param pid page id
-   * @param src source buffer 
+   * @param src source buffer
    * @param nSize the length of read
    * @param nOffset the start place of read
    */
@@ -50,7 +51,7 @@ class OS {
   void StoreBitmap();
   void initDBPage();
 
-  CacheGroup* _getCacheGroup(PageID pid){
+  CacheGroup* _getCacheGroup(PageID pid) {
     return _cache[pid % CACHE_ASSOCIATIVE];
   }
 
@@ -60,6 +61,7 @@ class OS {
   Size _maxSize;
 
   static OS* os;
+  uint8_t zeros[PAGE_SIZE];
 };
 
 }  // namespace dbtrain_mysql

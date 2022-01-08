@@ -349,6 +349,7 @@ PageSlotID Database::Insert(const String& sTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
+
   // check null
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
@@ -359,6 +360,7 @@ PageSlotID Database::Insert(const String& sTableName,
       throw e;
     }
   }
+
   // check primary key
   bool primaryKeyConflict = false;
   for (int i = 0; i < iColNameVec.size(); i++) {
@@ -455,6 +457,7 @@ PageSlotID Database::Insert(const String& sTableName,
     }
   }
 
+  // check primary key
   bool primaryKeyConflict = false;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
@@ -472,6 +475,7 @@ PageSlotID Database::Insert(const String& sTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
+
   // check foreignkey
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];

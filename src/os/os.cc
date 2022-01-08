@@ -40,7 +40,7 @@ void OS::CheckFileExist() {
 }
 
 OS::OS() {
-  printf("OS()\n");
+  memset(zeros, 0, PAGE_SIZE);
   _pUsed = new Bitmap(MAX_MEM_PAGES);
   _cache = new CacheGroup*[CACHE_ASSOCIATIVE];
   for (int i = 0; i < CACHE_ASSOCIATIVE; i++) {
@@ -50,6 +50,7 @@ OS::OS() {
   LoadBitmap();
   initDBPage();
   // printf("pUsed num:%d\n", _pUsed->GetUsed());
+  printf("OS()\n");
 }
 
 OS::~OS() {
@@ -70,12 +71,9 @@ PageID OS::NewPage() {
       while (_nClock > _maxSize && _maxSize < MAX_MEM_PAGES) {
         std::fstream fout(DB_PAGE_NAME,
                           std::ios::binary | std::ios::in | std::ios::out);
-        uint8_t* ptemp = new uint8_t[PAGE_SIZE * MEM_PAGES];
-        memset(ptemp, 0, PAGE_SIZE * MEM_PAGES);
         fout.seekp(0, std::ios::end);
-        fout.write((char*)ptemp, PAGE_SIZE * MEM_PAGES);
+        for (int i = 0; i < MEM_PAGES; ++i) fout.write((char*)zeros, PAGE_SIZE);
         fout.close();
-        delete ptemp;
         _maxSize += MEM_PAGES;
       }
       _getCacheGroup(_nClock)->NewPage(_nClock);
@@ -166,11 +164,8 @@ void OS::initDBPage() {
   } else {
     // printf("OS::initDBPage: DB_Page.dat not exists\n");
     std::ofstream fout(DB_PAGE_NAME, std::ios::binary);
-    uint8_t* ptemp = new uint8_t[PAGE_SIZE * MEM_PAGES];
-    memset(ptemp, 0, PAGE_SIZE * MEM_PAGES);
-    fout.write((char*)ptemp, PAGE_SIZE * MEM_PAGES);
+    for (int i = 0; i < MEM_PAGES; ++i) fout.write((char*)zeros, PAGE_SIZE);
     fout.close();
-    delete ptemp;
     _maxSize = MEM_PAGES;
   }
   return;

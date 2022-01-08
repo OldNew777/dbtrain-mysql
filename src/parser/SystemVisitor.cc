@@ -14,6 +14,7 @@
 #include "record/fixed_record.h"
 #include "record/transform.h"
 #include "result/result.h"
+#include "settings.h"
 #include "string.h"
 #include "utils/basic_function.h"
 
@@ -519,14 +520,16 @@ antlrcpp::Any SystemVisitor::visitAlter_table_drop_pk(
 antlrcpp::Any SystemVisitor::visitAlter_table_drop_foreign_key(
     MYSQLParser::Alter_table_drop_foreign_keyContext *ctx) {
   Size nSize = 0;
-  // String sTableName = ctx->Identifier()[0]->getText();
-  // String sColName = ctx->Identifier()[1]->getText();
-  // try {
-  //   _pDB->DropForeignKey(sTableName, sColName);
-  //   nSize++;
-  // } catch (const Exception &e) {
-  //   printf("exception:%s\n", e.what());
-  // }
+#ifdef NO_FOREIGN_KEY
+  String sTableName = ctx->Identifier()[0]->getText();
+  String sColName = ctx->Identifier()[1]->getText();
+  try {
+    _pDB->DropForeignKey(sTableName, sColName);
+    nSize++;
+  } catch (const Exception &e) {
+    printf("exception:%s\n", e.what());
+  }
+#endif
   Result *res = new MemResult({"Drop Foreign Key"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
   pRes->SetField(0, new IntField(nSize));
@@ -557,32 +560,34 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
     MYSQLParser::Alter_table_add_foreign_keyContext *ctx) {
-  // String lTableName = ctx->Identifier()[0]->toString();
-  // std::vector<String> lColVec = ctx->identifiers()[0]->accept(this);
-  // String Constriant;
-  // String fTableName;
-  // if (ctx->identifiers().size() == 2) {
-  //   fTableName = ctx->Identifier()[1]->toString();
-  // } else {
-  //   fTableName = ctx->Identifier()[2]->toString();
-  // }
-
-  // std::vector<String> fColVec = ctx->identifiers()[1]->accept(this);
-
-  // if (lColVec.size() != fColVec.size()) {
-  //   printf("local key number should be equal to foreign key number\n");
-  //   throw ForeignKeyException(
-  //       "local key number should be equal to foreign key number");
-  // }
   Size nSize = 0;
-  // for (int i = 0; i < lColVec.size(); i++) {
-  //   try {
-  //     _pDB->AddForeignKey(lTableName, lColVec[i], fTableName, fColVec);
-  //     nSize++;
-  //   } catch (const Exception &e) {
-  //     printf("%s\n", e.what());
-  //   }
-  // }
+#ifdef NO_FOREIGN_KEY
+  String lTableName = ctx->Identifier()[0]->toString();
+  std::vector<String> lColVec = ctx->identifiers()[0]->accept(this);
+  String Constriant;
+  String fTableName;
+  if (ctx->identifiers().size() == 2) {
+    fTableName = ctx->Identifier()[1]->toString();
+  } else {
+    fTableName = ctx->Identifier()[2]->toString();
+  }
+
+  std::vector<String> fColVec = ctx->identifiers()[1]->accept(this);
+
+  if (lColVec.size() != fColVec.size()) {
+    printf("local key number should be equal to foreign key number\n");
+    throw ForeignKeyException(
+        "local key number should be equal to foreign key number");
+  }
+  for (int i = 0; i < lColVec.size(); i++) {
+    try {
+      _pDB->AddForeignKey(lTableName, lColVec[i], fTableName, fColVec);
+      nSize++;
+    } catch (const Exception &e) {
+      printf("%s\n", e.what());
+    }
+  }
+#endif
   Result *res = new MemResult({"Add Primary Key"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
   pRes->SetField(0, new IntField(nSize));
@@ -737,24 +742,26 @@ antlrcpp::Any SystemVisitor::visitPrimary_key_field(
 
 antlrcpp::Any SystemVisitor::visitForeign_key_field(
     MYSQLParser::Foreign_key_fieldContext *ctx) {
-  // if (ctx->Identifier().size() == 1) {
-  //   String sForeignTableName = ctx->Identifier()[0]->toString();
-  //   std::vector<String> sColName = ctx->identifiers()[0]->accept(this);
-  //   std::vector<String> sForeignColName =
-  //   ctx->identifiers()[1]->accept(this); std::vector<String> res;
-  //   res.push_back("#" + sForeignTableName);
-  //   for (int i = 0; i < sForeignColName.size(); i++) {
-  //     res.push_back(sForeignColName[i]);
-  //   }
+#ifdef NO_FOREIGN_KEY
+  if (ctx->Identifier().size() == 1) {
+    String sForeignTableName = ctx->Identifier()[0]->toString();
+    std::vector<String> sColName = ctx->identifiers()[0]->accept(this);
+    std::vector<String> sForeignColName = ctx->identifiers()[1]->accept(this);
+    std::vector<String> res;
+    res.push_back("#" + sForeignTableName);
+    for (int i = 0; i < sForeignColName.size(); i++) {
+      res.push_back(sForeignColName[i]);
+    }
 
-  //   for (int i = 0; i < sColName.size(); i++) {
-  //     res.push_back("#" + sColName[i]);
-  //   }
+    for (int i = 0; i < sColName.size(); i++) {
+      res.push_back("#" + sColName[i]);
+    }
 
-  //   return res;
-  // } else {
-  //   // TODO: 组合外键命名
-  // }
+    return res;
+  } else {
+    // TODO: 组合外键命名
+  }
+#endif
   return std::vector<String>();
 }
 

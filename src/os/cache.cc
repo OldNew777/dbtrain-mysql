@@ -134,6 +134,7 @@ void CacheGroup::DeletePage(PageID pid) {
   std::cout << e.what() << "\n";
   throw e;
 }
+
 void CacheGroup::NewPage(PageID pid) {
   _cacheGroup.push_front(new CacheLine(pid));  // get a new page
   if (_cacheGroup.size() > CACHE_GROUP_NUM) {  // LRU
@@ -147,4 +148,5 @@ void CacheGroup::NewPage(PageID pid) {
     _cacheGroup.pop_back();
   }
 }
+
 }  // namespace dbtrain_mysql
