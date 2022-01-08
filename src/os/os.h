@@ -51,12 +51,8 @@ class OS {
   void StoreBitmap();
   void initDBPage();
 
-  CacheGroup* _getCacheGroup(PageID pid) {
-    return _cache[pid % CACHE_ASSOCIATIVE];
-  }
-
   Bitmap* _pUsed;
-  CacheGroup** _cache;
+  CacheGroup _cache;
   Size _nClock;
   Size _maxSize;
 
