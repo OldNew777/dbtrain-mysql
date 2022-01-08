@@ -978,7 +978,7 @@ bool Database::_CheckForeignKey(const String& fTableName,
   @param sTable 要删除的表名
   @return 删除的个数
 */
-uint32_t Database::DropShadowTableKey(const String& sTableName,const String& statusMode, 
+uint32_t Database::_DropShadowTableKey(const String& sTableName,const String& statusMode, 
   const String& lColName, const String& fTableName, const String& fColName){
   if(statusMode != SHADOW_STATUS_FOREIGN_KEY 
     && statusMode != SHADOW_STATUS_REFERED_KEY){
@@ -1041,5 +1041,26 @@ uint32_t Database::DropShadowTableKey(const String& sTableName,const String& sta
     GetTable(sTableName)->DropForeignKey(lColName);
   }
   return ret;
+}
+void Database::DropFroeignKey(const String& sTableName, const String& sColName){
+  _DropShadowTableKey(sTableName,SHADOW_STATUS_FOREIGN_KEY, sColName, "", "");
+}
+void Database::DropTableForeignKey(const String& sTableName){
+  //TODO: 删除表间关联
+  std::vector<std::vector<String> > refPairVec = 
+      GetTableReferedKeys(sTableName);
+  std::vector<std::vector<String> > forPairVec = 
+      GetTableForeignKeys(sTableName);
+  
+  std::map<String, int> tmpMap;
+  for(auto& tVec: refPairVec){
+    _DropShadowTableKey(tVec[1], SHADOW_STATUS_REFERED_KEY, 
+      tVec[2],sTableName, tVec[0]);
+  }
+  
+  for(auto& tVec: forPairVec){
+    _DropShadowTableKey(tVec[1], SHADOW_STATUS_FOREIGN_KEY, 
+      tVec[2],sTableName, tVec[0]);
+  }
 }
 }  // namespace dbtrain_mysql

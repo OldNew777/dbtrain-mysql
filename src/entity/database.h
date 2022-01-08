@@ -84,8 +84,9 @@ class Database : public EntityManager {
   // uint32_t RemoveTableForeignKey(const String& sTableName, const String& fTableName);
   // uint32_t DropReferedKey(const String& sTableName, const String& sColName,
   //   const String& fTableName, const String& fColName);
-  uint32_t DropShadowTableKey(const String& sTableName, const String& statusMode, 
-    const String& lColName, const String& rTableName, const String& fColName);
+  void AddForeignKey(const String& sTableName, const String& sColName);
+  void DropFroeignKey(const String& sTableName, const String& sColName);
+  void DropTableForeignKey(const String& sTableName);
   /**
    * @brief 获得这个表上某个键依赖的其他表上的键
    */
@@ -117,6 +118,8 @@ class Database : public EntityManager {
     bool _CheckHaveDuplicatePK(MemResult* result,const std::vector<String>& sColNameVec);
     bool _CheckForeignKey(const String& sTableName,
                                         const String& sColName, Field* pField);
+    uint32_t _DropShadowTableKey(const String& sTableName, const String& statusMode, 
+      const String& lColName, const String& rTableName, const String& fColName);
 };
 
 }  // namespace dbtrain_mysql
