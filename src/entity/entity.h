@@ -44,7 +44,8 @@ class Entity {
   /**
    * @brief 表示一个非满页编号，可用于构建一个时空高效的记录插入算法。
    */
-  PageID _nNotFull;
+  PageID _nNotFull = 0;
+  bool _bFormerFull = false;
 
   /**
    * @brief 查找一个可用于插入新记录的页面，不存在时自动添加一个新的页面

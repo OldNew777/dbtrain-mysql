@@ -64,6 +64,8 @@ PageSlotID Table::InsertRecord(Record* pRecord) {
 }
 
 void Table::DeleteRecord(PageID nPageID, SlotID nSlotID) {
+  _bFormerFull = false;
+
   // 利用RecordPage::DeleteRecord删除数据
   RecordPage page(nPageID);
   page.DeleteRecord(nSlotID);

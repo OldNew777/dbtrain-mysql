@@ -42,11 +42,18 @@ void Entity::FindNextNotFull() {
   //       ->GetTailID对应结点后插入新的结点，并更新_pManager的TailID
   // 只需要保证均摊复杂度较低即可
 
-  PageID searchFlag = _nNotFull;
-  if (NextNotFullUntil(_pManagerPage->GetTailID())) return;
-  _nNotFull = _pManagerPage->GetHeadID();
-  // searchFlag会重复搜索一次
-  if (NextNotFullUntil(searchFlag)) return;
+  if (!_bFormerFull){
+    PageID searchFlag = _nNotFull;
+    if (NextNotFullUntil(_pManagerPage->GetTailID())) return;
+    _nNotFull = _pManagerPage->GetHeadID();
+    // searchFlag会重复搜索一次
+    if (NextNotFullUntil(searchFlag)) return;
+    _bFormerFull = true;
+  } else {
+    RecordPage page(_nNotFull);
+    if (!page.Full())
+      return;
+  }
 
   // 需要插入新的page
   RecordPage newPage(_pManagerPage->GetTotalSize(), true);
