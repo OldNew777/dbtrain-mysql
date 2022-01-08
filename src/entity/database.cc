@@ -92,10 +92,10 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   InsertEntity("@" + sTableName);
 
   // insert index
-  for (int i = 0; i < iSchema.GetSize(); ++i) {
-    const Column& column = iSchema.GetColumn(i);
-    if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
-  }
+  // for (int i = 0; i < iSchema.GetSize(); ++i) {
+  //   const Column& column = iSchema.GetColumn(i);
+  //   if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
+  // }
 
   //insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {

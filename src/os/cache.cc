@@ -130,9 +130,9 @@ void CacheGroup::DeletePage(PageID pid) {
       return;
     }
   }
-  auto e = CacheInvalideException();
-  std::cout << e.what() << "\n";
-  throw e;
+  // auto e = CacheInvalideException();
+  // std::cout << e.what() << "\n";
+  // throw e;
 }
 void CacheGroup::NewPage(PageID pid) {
   _cacheGroup.push_front(new CacheLine(pid));  // get a new page
