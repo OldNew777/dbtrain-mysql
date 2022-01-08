@@ -141,18 +141,19 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
       }
     } else if (iTargetFieldType == FieldType::DATE_TYPE) {
       try {
-        if (sRaw.size() != 10) throw Exception("DATA format error");
+        if (sRaw.size() != 10) throw Exception("DATE format error : " + sRaw);
         if (sRaw[4] != '-' || sRaw[7] != '-')
-          throw Exception("DATA format error");
+          throw Exception("DATE format error : " + sRaw);
         for (int i = 0; i < 10; ++i) {
           if (i == 4 || i == 7) continue;
           if (sRaw[i] < '0' || sRaw[i] > '9')
-            throw Exception("DATA format error");
+            throw Exception("DATE format error : " + sRaw);
         }
         int year = std::stoi(sRaw.substr(0, 4));
         int month = std::stoi(sRaw.substr(5, 2));
         int day = std::stoi(sRaw.substr(8, 2));
-        if (!LeagalDate(year, month, day)) throw Exception("DATA format error");
+        if (!LeagalDate(year, month, day))
+          throw Exception("DATE format error : " + sRaw);
         pField = new DateField(year, month, day);
       } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
@@ -178,11 +179,13 @@ bool LeagalDate(int year, int month, int day) {
   if (smallMonth.find(dayMax) != smallMonth.end())
     dayMax = 30;
   else if (month == 2) {
-    if (year % 400 == 0)
+    if (year % 3200 == 0)
+      dayMax = 28;
+    else if (year % 400 == 0)
       dayMax == 29;
     else if (year % 100 == 0)
       dayMax = 28;
-    else if (year & 4 == 0)
+    else if ((year & 3) == 0)
       dayMax = 29;
     else
       dayMax = 28;
