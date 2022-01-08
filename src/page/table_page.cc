@@ -23,7 +23,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
       // printf("name: %s\n", iCol.GetName());
       status |= 0b10;
     }
-    if(iCol.GetForeignKeyVec().size() != 0){
+    if (iCol.GetForeignKeyVec().size() != 0) {
       status |= 0b100;
     }
     _iStatusVec.push_back(status);
@@ -37,18 +37,18 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
 
 TablePage::TablePage(PageID nPageID) : ManagerPage(nPageID) {
   for (int i = 0; i < _iTypeVec.size(); i++) {
-    uint8_t iNull = 0;
-    GetData(&iNull, COLUMN_NOT_NULL_BYTES,
-            COLUMN_NOT_NULL_BYTES * i + COLUMN_STATUS_OFFSET);
-    _iStatusVec.push_back(iNull);
+    uint8_t status = 0;
+    GetData(&status, COLUMN_STATUS_BYTES,
+            COLUMN_STATUS_BYTES * i + COLUMN_STATUS_OFFSET);
+    _iStatusVec.push_back(status);
   }
   // printf("TablePage()\n");
 }
 TablePage::~TablePage() {
   for (int i = 0; i < _iStatusVec.size(); i++) {
-    uint8_t iNull = _iStatusVec[i];
-    SetData(&iNull, COLUMN_NOT_NULL_BYTES,
-            COLUMN_NOT_NULL_BYTES * i + COLUMN_STATUS_OFFSET);
+    uint8_t status = _iStatusVec[i];
+    SetData(&status, COLUMN_STATUS_BYTES,
+            COLUMN_STATUS_BYTES * i + COLUMN_STATUS_OFFSET);
   }
   // printf("~TablePage\n");
 }
@@ -70,24 +70,22 @@ Size TablePage::GetSize(const String& sCol) {
   return _iSizeVec[GetColPos(sCol)];
 }
 bool TablePage::GetCanBeNull(const String& sCol) {
-  return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1) && 
-    !((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10) && 
-    !((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);
+  return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1) &&
+         !((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10) &&
+         !((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);
 }
 bool TablePage::GetIsPrimary(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10);
 }
-bool TablePage::GetIsForeign(const String& sCol){
+bool TablePage::GetIsForeign(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b100) == 0b100);
 }
-bool TablePage::GetIsRefered(const String& sCol){
+bool TablePage::GetIsRefered(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);
 }
-bool TablePage::GetIsUnique(const String& sCol){
-  return (
-    ((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10)
-    || ((_iStatusVec[GetColPos(sCol)] & 0b10000) == 0b10000)
-  );
+bool TablePage::GetIsUnique(const String& sCol) {
+  return (((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10) ||
+          ((_iStatusVec[GetColPos(sCol)] & 0b10000) == 0b10000));
 }
 
 ManagerPageType TablePage::GetManagerPageType() const {

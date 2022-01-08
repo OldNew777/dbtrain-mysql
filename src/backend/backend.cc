@@ -12,14 +12,14 @@
 #include "parser/MYSQLLexer.h"
 #include "parser/MYSQLParser.h"
 #include "parser/SystemVisitor.h"
+#include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
 
 using namespace antlr4;
 
 bool Exists() {
-  std::ifstream fin(DB_BITMAP_NAME);
-  if (fin)
+  if (GetFiles(DB_DATA_PATH).size() > 0)
     return true;
   else
     return false;
@@ -42,10 +42,10 @@ void Init() {
 
 void Clear() {
   if (!Exists()) return;
-  printf("clear\n");
-  std::remove(DB_BITMAP_NAME);
-  std::remove(DB_PAGE_NAME);
-  // OS::WriteBack();
+  printf("Clear\n");
+  for (const String& filename : GetFiles(DB_DATA_PATH)) {
+    std::remove((DB_DATA_PATH + filename).c_str());
+  }
 }
 
 void Close() { OS::WriteBack(); }

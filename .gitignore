@@ -1,7 +1,6 @@
 .vs/
 build/
-DB_BITMAP.dat
-DB_PAGE.dat
+/data/*
 
 Makefile
 compile_commands.json

@@ -57,7 +57,6 @@ class OS {
   Size _maxSize;
 
   static OS* os;
-  uint8_t zeros[PAGE_SIZE];
 };
 
 }  // namespace dbtrain_mysql
