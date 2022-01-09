@@ -280,7 +280,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
   bool primaryKeyConflict = false;
   for (int i = 0; i < iTrans.size(); ++i) {
     const String& sColName = iColNameVec[iTrans[i].GetColPos()];
-    if (pTable->GetIsPrimary(sColName) || pTable->GetIsUnique(sColName)) {
+    if (pTable->GetIsPrimary(sColName)) {
       primaryKeyConflict = true;
       // check whether primary key conflicts with other records
       std::vector<PageSlotID> iDuplicated =
@@ -301,7 +301,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
   }
   if (primaryKeyConflict) {
     // add exception here
-    auto e = Exception("Unique Key Exists");
+    auto e = Exception("Primary Key Exists");
     std::cout << e.what() << "\n";
     throw e;
   }
@@ -370,11 +370,10 @@ PageSlotID Database::Insert(const String& sTableName,
   bool primaryKeyConflict = false;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
-    if (pTable->GetIsPrimary(sColName) || pTable->GetIsUnique(sColName)) {
+    if (pTable->GetIsPrimary(sColName)) {
       // check whether primary key conflicts with other records
       primaryKeyConflict = true;
       FieldType colType = pTable->GetType(sColName);
-      printf("iRawVec\n");
       Field* pField = BuildField(iRawVec[i], colType);
       if (_GetDuplicated(sTableName, sColName, pField).size() == 0) {
         primaryKeyConflict = false;
@@ -389,6 +388,21 @@ PageSlotID Database::Insert(const String& sTableName,
     auto e = Exception("Primary key existed");
     std::cout << e.what() << "\n";
     throw e;
+  }
+
+  // check Unique key
+  for (int i = 0; i < iColNameVec.size(); i++) {
+    const String& sColName = iColNameVec[i];
+    if (pTable->GetIsUnique(sColName)) {
+      FieldType colType = pTable->GetType(sColName);
+      Field* pField = BuildField(iRawVec[i], colType);
+      if (_GetDuplicated(sTableName, sColName, pField).size() != 0) {
+        auto e = Exception("Unique key existed");
+        std::cout << e.what() << "\n";
+        throw e;
+        break;
+      }
+    }
   }
 
   // check foreignkey
@@ -471,7 +485,7 @@ PageSlotID Database::Insert(const String& sTableName,
   bool primaryKeyConflict = false;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
-    if (pTable->GetIsPrimary(sColName) || pTable->GetIsUnique(sColName)) {
+    if (pTable->GetIsPrimary(sColName)) {
       primaryKeyConflict = true;
       if (_GetDuplicated(sTableName, sColName, iValueVec[i]).size() == 0) {
         primaryKeyConflict = false;
@@ -481,11 +495,23 @@ PageSlotID Database::Insert(const String& sTableName,
   }
   if (primaryKeyConflict) {
     // add exception here
-    auto e = Exception("Unique key existed");
+    auto e = Exception("Primary key existed");
     std::cout << e.what() << "\n";
     throw e;
   }
 
+  // check Unique key
+  for (int i = 0; i < iColNameVec.size(); i++) {
+    const String& sColName = iColNameVec[i];
+    if (pTable->GetIsUnique(sColName)) {
+      if (_GetDuplicated(sTableName, sColName, iValueVec[i]).size() != 0) {
+        auto e = Exception("Unique key existed");
+        std::cout << e.what() << "\n";
+        throw e;
+        break;
+      }
+    }
+  }
   // check foreignkey
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];

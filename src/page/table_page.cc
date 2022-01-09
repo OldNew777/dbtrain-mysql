@@ -71,9 +71,9 @@ Size TablePage::GetSize(const String& sCol) {
   return _iSizeVec[GetColPos(sCol)];
 }
 bool TablePage::GetCanBeNull(const String& sCol) {
-  return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1) &&
-         !((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10) &&
-         !((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);
+  return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1) && //can be null = true
+         !((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10) && //is primary = false
+         !((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);//is refered = false
 }
 bool TablePage::GetIsPrimary(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10);
@@ -85,8 +85,7 @@ bool TablePage::GetIsRefered(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);
 }
 bool TablePage::GetIsUnique(const String& sCol) {
-  return (((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10) ||
-          ((_iStatusVec[GetColPos(sCol)] & 0b10000) == 0b10000));
+  return (((_iStatusVec[GetColPos(sCol)] & 0b10000) == 0b10000));
 }
 
 ManagerPageType TablePage::GetManagerPageType() const {

@@ -743,24 +743,22 @@ antlrcpp::Any SystemVisitor::visitPrimary_key_field(
 antlrcpp::Any SystemVisitor::visitForeign_key_field(
     MYSQLParser::Foreign_key_fieldContext *ctx) {
 #ifndef NO_FOREIGN_KEY
-  if (ctx->Identifier().size() == 1) {
-    String sForeignTableName = ctx->Identifier()[0]->toString();
-    std::vector<String> sColName = ctx->identifiers()[0]->accept(this);
-    std::vector<String> sForeignColName = ctx->identifiers()[1]->accept(this);
-    std::vector<String> res;
-    res.push_back("#" + sForeignTableName);
-    for (int i = 0; i < sForeignColName.size(); i++) {
-      res.push_back(sForeignColName[i]);
-    }
-
-    for (int i = 0; i < sColName.size(); i++) {
-      res.push_back("#" + sColName[i]);
-    }
-
-    return res;
-  } else {
-    // TODO: 组合外键命名
+// TODO: 组合外键命名
+  String sForeignTableName = ctx->Identifier()[0]->toString();
+  std::vector<String> sColName = ctx->identifiers()[0]->accept(this);
+  std::vector<String> sForeignColName = ctx->identifiers()[1]->accept(this);
+  std::vector<String> res;
+  res.push_back("#" + sForeignTableName);
+  for (int i = 0; i < sForeignColName.size(); i++) {
+    res.push_back(sForeignColName[i]);
   }
+
+  for (int i = 0; i < sColName.size(); i++) {
+    res.push_back("#" + sColName[i]);
+  }
+
+  return res;
+
 #endif
   return std::vector<String>();
 }
