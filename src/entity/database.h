@@ -86,23 +86,15 @@ class Database : public EntityManager {
   
   void DropPrimaryKey(const String& sTableName, const String& sColName);
   void DropFroeignKey(const String& sTableName, const String& sColName);
-  void DropTableForeignKey(const String& sTableName);
   /**
-   * @brief 获得这个表上某个键依赖的其他表上的键
+   * @brief 获得这个表的所有组合外键
+   *        第一层：组合外键的集合
+   *        第二层：一个组合外键中的外键集合
+   *        第三层：描述一个外键 local column name, foreign table name, foreign column name
    */
-  std::vector<std::pair<String, String>> GetForeignKey(const String& sTableName, const String& sColName);
-  /**
-   * @brief 获得这个表上某个键依赖的其他表上的键
-   */
-  std::vector<std::pair<String, String>> GetReferedKey(const String& sTableName, const String& sColName);
-  /**
-   * @brief 获得依赖于这个表上键的其他表的键
-   */
-  std::vector<std::vector<String> > GetTableReferedKeys(const String& sTableName);//获取依赖一个表中键的所有其他表的键
-  /**
-   * @brief 获得这个表依赖的其他表上的键
-   */
-  std::vector<std::vector<String>> GetTableForeignKeys(const String& sTableName);//获取一个表中依赖的所有其他表的键
+ std::vector<std::vector<std::pair<String, String>>> 
+      GetForeignKeys(const String& sTableName);
+ 
   std::vector<Record*> GetIndexInfos();
 
   virtual void Clear() override;
@@ -116,11 +108,6 @@ class Database : public EntityManager {
                                         const String& sColName, Field* pField);
     bool _CheckHaveNull(const String& fTableName, const String& fColName);
     bool _CheckDuplicate(const String& sTableName, const String& sColName);
-    bool _CheckForeignKey(const String& fTableName,
-                                        const String& fColName, Field* pField);
-    uint32_t _DropShadowTableKey(const String& sTableName, const String& statusMode, 
-      const String& lColName, const String& rTableName, const String& fColName);
-    void _UpdateReferedKey(const String& sTableName, const String& fColname);
 };
 
 }  // namespace dbtrain_mysql

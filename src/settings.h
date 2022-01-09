@@ -8,7 +8,7 @@
 #include <typeinfo>
 
 // #define DEBUG
-#define FRONT_END_DEBUG;
+// #define FRONT_END_DEBUG;
 
 // #define PRINT_PAGE
 // #define JOIN_DEBUG
@@ -24,4 +24,5 @@
 // #define NO_INDEX
 // #define NO_INSERT_CHECK
 
+// #define SHADOW_PAGE
 #endif

@@ -259,19 +259,19 @@ antlrcpp::Any SystemVisitor::visitDescribe_table(
 }
 antlrcpp::Any SystemVisitor::visitDescribe_shadow_table(
     MYSQLParser::Describe_shadow_tableContext *ctx) {
-  // TODO: desc shadow table
-  String sTableName = ctx->Identifier()->toString();
-  int limit = INT32_MAX, offset = 0;
-  std::vector<PageSlotID> psidVec =
-      _pDB->Search("@" + sTableName, nullptr, {}, limit, offset);
-  Result *res =
-      new MemResult({SHADOW_STATUS_NAME, SHADOW_LOCAL_COLUMN_NAME,
-                     SHADOW_FOREIGN_TABLE_NAME, SHADOW_FOREIGN_COLUMN_NAME, 
-                     SHADOW_UNION_NAME});
-  for (auto &psid : psidVec) {
-    res->PushBack(_pDB->GetRecord("@" + sTableName, psid));
-  }
-  return res;
+      throw UnimplementedException();
+  // String sTableName = ctx->Identifier()->toString();
+  // int limit = INT32_MAX, offset = 0;
+  // std::vector<PageSlotID> psidVec =
+  //     _pDB->Search("@" + sTableName, nullptr, {}, limit, offset);
+  // Result *res =
+  //     new MemResult({SHADOW_STATUS_NAME, SHADOW_LOCAL_COLUMN_NAME,
+  //                    SHADOW_FOREIGN_TABLE_NAME, SHADOW_FOREIGN_COLUMN_NAME, 
+  //                    SHADOW_UNION_NAME});
+  // for (auto &psid : psidVec) {
+  //   res->PushBack(_pDB->GetRecord("@" + sTableName, psid));
+  // }
+  // return res;
 }
 antlrcpp::Any SystemVisitor::visitInsert_into_table(
     MYSQLParser::Insert_into_tableContext *ctx) {
@@ -559,7 +559,6 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_pk(
   return res;
   // printf("%s %s\n",
   // ctx->Identifier()[0]->getText().data(),ctx->Identifier()[1]->getText().data());
-  // TODO: CONSTRIANT起名没有实现
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
@@ -644,12 +643,6 @@ antlrcpp::Any SystemVisitor::visitField_list(
   std::map<String, int> colPosMap;
   int colPos = 0;
   //fk
-  /**
-   * @brief 第一层：组合外键的集合
-   *        第二层：一个组合外键中的外键集合
-   *        第三层：描述一个外键 local column name, foreign table name, foreign column name
-   * 
-   */
   std::vector<std::vector<std::vector<String> > > iFKVec; //lcolname fTableName fColname
   std::set<String> iFKSet;
 
@@ -768,7 +761,6 @@ antlrcpp::Any SystemVisitor::visitPrimary_key_field(
 antlrcpp::Any SystemVisitor::visitForeign_key_field(
     MYSQLParser::Foreign_key_fieldContext *ctx) {
 #ifndef NO_FOREIGN_KEY
-  // TODO: 组合外键命名
   String sForeignTableName = ctx->Identifier()[0]->toString();;
   String constriantName = "";
   if(ctx->Identifier().size() > 1){

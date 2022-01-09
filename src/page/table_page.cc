@@ -15,6 +15,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
   #ifndef FRONT_END_DEBUG
   for (Size i = 0; i < iSchema.GetSize(); ++i) {
     Column iCol = iSchema.GetColumn(i);
+    if(iCol.GetName() == "") break;
     _iColMap[iCol.GetName()] = i;
     _iTypeVec.push_back(iCol.GetType());
     _iSizeVec.push_back(iCol.GetSize());
@@ -24,7 +25,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
       // printf("name: %s\n", iCol.GetName());
       status |= 0b10;
     }
-    if (iCol.GetForeignKeyVec().size() != 0) {
+    if (iCol.GetIsForeign()) {
       status |= 0b100;
     }
     //refered and unique will not present in create table
