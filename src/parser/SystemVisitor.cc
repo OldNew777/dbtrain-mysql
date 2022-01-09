@@ -154,12 +154,10 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
     }
     std::string::size_type tail = str.find(",");
     std::string::size_type head = 0;
-    int pt = 0;
     while (tail != std::string::npos) {
       iValueListVec.back().push_back(str.substr(head, tail - head));
       head = tail + 1;
       tail = str.find(",", head);
-      pt++;
     }
     if (head != str.length()) {
       iValueListVec.back().push_back(str.substr(head));
@@ -174,12 +172,12 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
     try {
       _pDB->Insert(sTableName, iValueList);
       ++inserted;
-      if(inserted % 1000 == 0) printf("Inserted : %d\n", inserted);
+      if (inserted % 1000 == 0) printf("Inserted : %d\n", inserted);
     } catch (const std::exception &e) {
-      printf("%s\n",e.what());
-      #ifdef PRIMARY_KEY_DEBUG
+      printf("%s\n", e.what());
+#ifdef PRIMARY_KEY_DEBUG
       assert(0);
-      #endif
+#endif
     }
   }
   Result *res = new MemResult({"Insert"});

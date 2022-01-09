@@ -98,22 +98,22 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   InsertEntity(sTableName);
   InsertEntity("@" + sTableName);
 
-  #ifndef NO_INDEX
-  //insert index
+#ifndef NO_INDEX
+  // insert index
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
     if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
   }
-  #endif
+#endif
 
   // insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
     if (column.GetForeignKeyVec().size() != 0) {
-      for(auto& pPair: column.GetForeignKeyVec()){
+      for (auto& pPair : column.GetForeignKeyVec()) {
         String fTableName = pPair.first;
         String fColName = pPair.second;
-        //insert local shadow table
+        // insert local shadow table
         std::vector<Field*> LocalVec;
         LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
         LocalVec.push_back(new CharField(column.GetName()));
@@ -121,7 +121,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         LocalVec.push_back(new CharField(fColName));
         // printf("1\n");
         Insert("@" + sTableName, LocalVec);
-        //insert reference shadow table
+        // insert reference shadow table
         std::vector<Field*> ForeignVec;
         ForeignVec.push_back(new CharField(SHADOW_STATUS_REFERED_KEY));
         ForeignVec.push_back(new CharField(fColName));
@@ -291,7 +291,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
       printf("Intersection(iResVec, iDuplicated).size() = %d\n",
              Intersection(iResVec, iDuplicated).size());
 #endif
-      if(iDuplicated.size() != 0 && pTable->GetIsUnique(sColName)){
+      if (iDuplicated.size() != 0 && pTable->GetIsUnique(sColName)) {
         auto e = Exception("Update fail:Unique Key Exists");
         std::cout << e.what() << "\n";
         throw e;
@@ -311,51 +311,53 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
     throw e;
   }
 
-  
-  #ifndef NO_FOREIGN_KEY
-  //check fk
+#ifndef NO_FOREIGN_KEY
+  // check fk
   for (int i = 0; i < iTrans.size(); ++i) {
     const String& sColName = iColNameVec[iTrans[i].GetColPos()];
     if (pTable->GetIsForeign(sColName)) {
-      std::vector<std::pair<String, String> > fPairVec =  GetForeignKey(sTableName, sColName);
-      for(auto& iPair: fPairVec){
+      std::vector<std::pair<String, String>> fPairVec =
+          GetForeignKey(sTableName, sColName);
+      for (auto& iPair : fPairVec) {
         const String& fTableName = iPair.first;
         const String& fColName = iPair.second;
         std::vector<PageSlotID> iDuplicated =
-          _GetDuplicated(fTableName, fColName, iTrans[i].GetField());
-        if(iDuplicated.size() != 0){
+            _GetDuplicated(fTableName, fColName, iTrans[i].GetField());
+        if (iDuplicated.size() != 0) {
           ForeignKeyException e("Update fail: Foreign key not in range");
           printf("%s\n", e.what());
           throw e;
         }
       }
     }
-    if(pTable->GetIsRefered(sColName)){
-      //check refered key 需要确保改变的那个键的没有对应的依赖值
-      std::vector<std::pair<String, String> > rPairVec =  GetForeignKey(sTableName, sColName);
-      for(auto& iPair: rPairVec){
+    if (pTable->GetIsRefered(sColName)) {
+      // check refered key 需要确保改变的那个键的没有对应的依赖值
+      std::vector<std::pair<String, String>> rPairVec =
+          GetForeignKey(sTableName, sColName);
+      for (auto& iPair : rPairVec) {
         const String& rTableName = iPair.first;
         const String& rColName = iPair.second;
         MemResult* memRes = new MemResult(pTable->GetColumnNames());
-        for(auto& psid: iResVec){
+        for (auto& psid : iResVec) {
           memRes->PushBack(pTable->GetRecord(psid.first, psid.second));
         }
-        for(int j = 0; j < memRes->GetDataSize(); j ++){
-          std::vector<PageSlotID> iDuplicated =
-          _GetDuplicated(rTableName, rColName, memRes->GetField(j, iTrans[i].GetColPos()));
-          if(iDuplicated.size() != 0){
-            if(memRes) delete memRes;
-            ForeignKeyException e("Update fail: A key has a reference dependence");
+        for (int j = 0; j < memRes->GetDataSize(); j++) {
+          std::vector<PageSlotID> iDuplicated = _GetDuplicated(
+              rTableName, rColName, memRes->GetField(j, iTrans[i].GetColPos()));
+          if (iDuplicated.size() != 0) {
+            if (memRes) delete memRes;
+            ForeignKeyException e(
+                "Update fail: A key has a reference dependence");
             printf("%s\n", e.what());
             throw e;
           }
         }
-        if(memRes) delete memRes;
+        if (memRes) delete memRes;
       }
     }
   }
-  
-  #endif
+
+#endif
 
   bool bHasIndex = _pIndexManager->HasIndex(sTableName);
   for (const auto& iPair : iResVec) {
@@ -404,7 +406,7 @@ PageSlotID Database::Insert(const String& sTableName,
     throw e;
   }
 
-  #ifndef NO_INSERT_CHECK;
+#ifndef NO_INSERT_CHECK;
   // check null
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
@@ -428,21 +430,19 @@ PageSlotID Database::Insert(const String& sTableName,
   std::vector<PageSlotID> duplicatedVec;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
-    
+
     if (pTable->GetIsPrimary(sColName) || pTable->GetIsUnique(sColName)) {
       // check whether primary key conflicts with other records
       Field* pField = pRecord->GetField(i);
-      if(duplicatedVec.size() == 0){
+      if (duplicatedVec.size() == 0) {
         duplicatedVec = _GetDuplicated(sTableName, sColName, pField);
-      }
-      else{
-        duplicatedVec = Intersection(_GetDuplicated(sTableName, sColName, pField)
-                                      , duplicatedVec);
+      } else {
+        duplicatedVec = Intersection(
+            _GetDuplicated(sTableName, sColName, pField), duplicatedVec);
       }
       if (duplicatedVec.size() == 0) {
         break;
-      }
-      else if(pTable->GetIsUnique(sColName)){
+      } else if (pTable->GetIsUnique(sColName)) {
         auto e = Exception("Unique key existed");
         std::cout << e.what() << "\n";
         throw e;
@@ -452,11 +452,11 @@ PageSlotID Database::Insert(const String& sTableName,
   if (duplicatedVec.size() != 0) {
     // add exception here
     String str = "";
-    #ifdef PRIMARY_KEY_DEBUG
-    for(auto& row: iRawVec){
+#ifdef PRIMARY_KEY_DEBUG
+    for (auto& row : iRawVec) {
       str += row + " ";
     }
-    #endif
+#endif
     auto e = Exception("Primary key existed" + str);
     std::cout << e.what() << "\n";
     throw e;
@@ -476,16 +476,16 @@ PageSlotID Database::Insert(const String& sTableName,
         // printf("%s %s\n", fPair.first.data(), fPair.second.data());
         if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
           printf("key out of range:%s\n", pField->ToString().data());
-          ForeignKeyException e("key out of range:" +  pField->ToString());
+          ForeignKeyException e("key out of range:" + pField->ToString());
           throw e;
         }
       }
     }
   }
-  #endif
+#endif
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);
-  #ifndef NO_INDEX
+#ifndef NO_INDEX
   // Handle Insert on Index
   if (_pIndexManager->HasIndex(sTableName)) {
     auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
@@ -495,7 +495,7 @@ PageSlotID Database::Insert(const String& sTableName,
       _pIndexManager->GetIndex(sTableName, sCol)->Insert(pKey, iPair);
     }
   }
-  #endif
+#endif
 
   delete pRecord;
   return iPair;
@@ -535,25 +535,23 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
 #ifndef NO_INSERT_CHECK
-// check primary key
+  // check primary key
   std::vector<PageSlotID> duplicatedVec;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
-    
+
     if (pTable->GetIsPrimary(sColName) || pTable->GetIsUnique(sColName)) {
       // check whether primary key conflicts with other records
       Field* pField = pRecord->GetField(i);
-      if(duplicatedVec.size() == 0){
+      if (duplicatedVec.size() == 0) {
         duplicatedVec = _GetDuplicated(sTableName, sColName, pField);
-      }
-      else{
-        duplicatedVec = Intersection(_GetDuplicated(sTableName, sColName, pField)
-                                      , duplicatedVec);
+      } else {
+        duplicatedVec = Intersection(
+            _GetDuplicated(sTableName, sColName, pField), duplicatedVec);
       }
       if (duplicatedVec.size() == 0) {
         break;
-      }
-      else if(pTable->GetIsUnique(sColName)){
+      } else if (pTable->GetIsUnique(sColName)) {
         auto e = Exception("Unique key existed");
         std::cout << e.what() << "\n";
         throw e;
@@ -563,11 +561,11 @@ PageSlotID Database::Insert(const String& sTableName,
   if (duplicatedVec.size() != 0) {
     // add exception here
     String str = "";
-    #ifdef PRIMARY_KEY_DEBUG
-    for(auto& row: iValueVec){
+#ifdef PRIMARY_KEY_DEBUG
+    for (auto& row : iValueVec) {
       str += row->ToString() + " ";
     }
-    #endif
+#endif
     auto e = Exception("Primary key existed" + str);
     std::cout << e.what() << "\n";
     throw e;
@@ -587,16 +585,16 @@ PageSlotID Database::Insert(const String& sTableName,
         // printf("%s %s\n", fPair.first.data(), fPair.second.data());
         if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
           printf("key out of range:%s\n", pField->ToString().data());
-          ForeignKeyException e("key out of range:" +  pField->ToString());
+          ForeignKeyException e("key out of range:" + pField->ToString());
           throw e;
         }
       }
     }
   }
-  #endif
+#endif
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);
-  #ifndef NO_INDEX
+#ifndef NO_INDEX
   // Handle Insert on Index
   if (_pIndexManager->HasIndex(sTableName)) {
     auto iColNames = _pIndexManager->GetTableIndexes(sTableName);
@@ -606,7 +604,7 @@ PageSlotID Database::Insert(const String& sTableName,
       _pIndexManager->GetIndex(sTableName, sCol)->Insert(pKey, iPair);
     }
   }
-  #endif
+#endif
 
   delete pRecord;
   return iPair;
@@ -626,17 +624,17 @@ std::vector<PageSlotID> Database::_GetDuplicated(const String& sTableName,
   pHigh->Add();
   Condition* pCond = nullptr;
   std::vector<Condition*> iIndexCond{};
-  #ifndef NO_INDEX
+#ifndef NO_INDEX
   if (IsIndex(sTableName, sColName)) {
     iIndexCond.push_back(new IndexCondition(sTableName, sColName, pLow, pHigh));
   } else {
-  #endif
+#endif
 
     pCond = new RangeCondition(colPos, pLow, pHigh);
 
-  #ifndef NO_INDEX
+#ifndef NO_INDEX
   }
-  #endif
+#endif
   std::vector<PageSlotID> iPageSlotIDVec =
       Search(sTableName, pCond, iIndexCond);
 
@@ -762,14 +760,14 @@ void Database::AddPrimaryKey(const String& sTableName,
     }
   }
   //检查重复性和null性
-  if(needCheckDuplication){
+  if (needCheckDuplication) {
     int errorTimes = 0;
-    for(auto& colName: sColNameVec){
-      if(_CheckDuplicate(sTableName, colName)){
-        errorTimes ++;
+    for (auto& colName : sColNameVec) {
+      if (_CheckDuplicate(sTableName, colName)) {
+        errorTimes++;
       }
     }
-    if(errorTimes == sColName.size()){
+    if (errorTimes == sColName.size()) {
       printf("the new Primary Key column cannot be duplicated\n");
       throw AlterException("the new Primary Key column cannot be duplicated");
     }
@@ -804,8 +802,8 @@ bool Database::_CheckHaveNull(const String& fTableName,
   }
   // printf("into\n");
   FieldID colPos = fTable->GetColPos(fColName);
-  Field *pLow = new NullField();
-  Field *pHigh = pLow->Clone();
+  Field* pLow = new NullField();
+  Field* pHigh = pLow->Clone();
   pHigh->Add();
   Condition* pCond = nullptr;
   pCond = new RangeCondition(colPos, pLow, pHigh);
@@ -813,27 +811,29 @@ bool Database::_CheckHaveNull(const String& fTableName,
   return (iPageSlotIDVec.size() != 0);
 }
 
-bool Database::_CheckDuplicate(const String& sTableName, const String& sColName){
+bool Database::_CheckDuplicate(const String& sTableName,
+                               const String& sColName) {
   Table* fTable = GetTable(sTableName);
   std::vector<PageSlotID> fpsidVec = fTable->SearchRecord(nullptr);
   MemResult* result = new MemResult(fTable->GetColumnNames());
-  for(auto& psid: fpsidVec)
+  for (auto& psid : fpsidVec)
     result->PushBack(fTable->GetRecord(psid.first, psid.second));
   FieldID colPos = fTable->GetColPos(sColName);
   std::set<String> pSet;
-  for (int i = 0; i < result->GetDataSize(); i ++) {
-    //TODO: 这么写可能会重复遍历
-    if(pSet.count(result->GetFieldString(i, colPos)) != 0){
-      if(result) delete result;
+  for (int i = 0; i < result->GetDataSize(); i++) {
+    // TODO: 这么写可能会重复遍历
+    if (pSet.count(result->GetFieldString(i, colPos)) != 0) {
+      if (result) delete result;
       return true;
     }
     pSet.insert(result->GetFieldString(i, colPos));
   }
-  if(result) delete result;
+  if (result) delete result;
   return false;
 }
 
-std::vector<std::pair<String, String>> Database::GetReferedKey(const String& sTableName, const String& sColName){
+std::vector<std::pair<String, String>> Database::GetReferedKey(
+    const String& sTableName, const String& sColName) {
   Table* pTable = GetTable("@" + sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
@@ -1133,11 +1133,11 @@ void Database::DropTableForeignKey(const String& sTableName) {
     _DropShadowTableKey(tVec[1], SHADOW_STATUS_FOREIGN_KEY, tVec[2], sTableName,
                         tVec[0]);
     _UpdateReferedKey(tVec[1], tVec[2]);
-  } 
+  }
 }
 
-
-void Database::_UpdateReferedKey(const String& fTableName, const String& fColname){
+void Database::_UpdateReferedKey(const String& fTableName,
+                                 const String& fColname) {
   Table* fTable = GetTable("@" + fTableName);
   Table* sTable = GetTable(fTableName);
   if (fTable == nullptr) {
@@ -1176,17 +1176,18 @@ void Database::_UpdateReferedKey(const String& fTableName, const String& fColnam
   if (result) delete result;
 }
 
-
-void Database::AddUniqueKey(const String& sTableName, const String& sColName){
+void Database::AddUniqueKey(const String& sTableName, const String& sColName) {
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
     std::cout << e.what() << "\n";
     throw e;
   }
-  if(_CheckDuplicate(sTableName, sColName)){
+  if (_CheckDuplicate(sTableName, sColName)) {
     throw AlterException("the new Unique Key column cannot be duplicated");
   }
   pTable->AddUniqueKey(sColName);
+
+  if (!IsIndex(sTableName, sColName)) CreateIndex(sTableName, sColName);
 }
 }  // namespace dbtrain_mysql
