@@ -113,11 +113,11 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
     if (iTargetFieldType == FieldType::NULL_TYPE) {
       pField = new NullField();
     } else if (iTargetFieldType == FieldType::INT_TYPE) {
-      if (sRaw.find(".") != String::npos) {
-        auto e = RecordTypeException("RecordTypeException");
-        std::cout << e.what() << "\n";
-        throw e;
-      }
+      // if (sRaw.find(".") != String::npos) {
+      //   auto e = RecordTypeException("RecordTypeException");
+      //   std::cout << e.what() << "\n";
+      //   throw e;
+      // }
       try {
         int nVal = std::stoi(sRaw);
         pField = new IntField(nVal);
