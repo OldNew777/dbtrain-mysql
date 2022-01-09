@@ -640,7 +640,7 @@ antlrcpp::Any SystemVisitor::visitField_list(
   std::vector<std::vector<String>> sColVec;
   std::unordered_map<String, int> sColMap;
   std::vector<Column> iColVec;
-  std::unordered_map<String, std::vector<std::pair<String, String>>> fkMap;
+  std::map<String, std::vector<std::pair<String, String>>> fkMap;
   for (const auto &it : ctx->field()) {
     std::vector<String> tmp = it->accept(this);
     if (tmp.size() == 0) continue;
@@ -655,23 +655,11 @@ antlrcpp::Any SystemVisitor::visitField_list(
       }
     } else if (tmp[0][0] == '#') {  // foreign key
       String sForeignTableName = tmp[0].substr(1);
-      int i = 1;
-      std::vector<String> tmpNameVec;
-      std::vector<std::pair<String, String>> tmpFKVec;
-      for (; i < tmp.size(); i++) {
-        if (tmp[i][0] == '#') break;
-        tmpFKVec.push_back(std::make_pair(sForeignTableName, tmp[i]));
-      }
-      for (; i < tmp.size(); i++) {
-        tmpNameVec.push_back(tmp[i].substr(1));
-      }
-      for (auto &colName : tmpNameVec) {
-        if (fkMap.find(colName) == fkMap.end()) {
-          fkMap[colName] = std::vector<std::pair<String, String>>();
+      for(int i = 1; i < tmp.size(); i += 2){
+        if(fkMap.find(tmp[i]) == fkMap.end()){
+          fkMap[tmp[i]] = std::vector<std::pair<String, String>>();
         }
-        for (auto &fk : tmpFKVec) {
-          fkMap[colName].push_back(fk);
-        }
+        fkMap[tmp[i]].push_back(std::make_pair(sForeignTableName, tmp[i+1]));
       }
 
     } else {
@@ -753,12 +741,8 @@ antlrcpp::Any SystemVisitor::visitForeign_key_field(
   res.push_back("#" + sForeignTableName);
   for (int i = 0; i < sColName.size(); i++) {
     res.push_back(sColName[i]);
-  }
-  for (int i = 0; i < sForeignColName.size(); i++) {
     res.push_back(sForeignColName[i]);
-  }
-
-  
+  }  
 
   return res;
 

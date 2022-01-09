@@ -480,7 +480,8 @@ PageSlotID Database::Insert(const String& sTableName,
         const String& fTableName = fPair.first;
         const String& fColName = fPair.second;
         #ifdef FOREIGN_KEY_DEBUG
-        printf("%s: %s %s\n",sColName.data(), fTableName.data(), fColName.data());
+        printf("%s(%s): %s %s\n",sColName.data(), pField->ToString().data(),
+          fTableName.data(), fColName.data());
         #endif
         std::vector<PageSlotID> tmp = _GetDuplicated(fTableName, fColName, pField);
         tmpDuplicated.insert(tmpDuplicated.end(), tmp.begin(), tmp.end());
@@ -610,7 +611,8 @@ PageSlotID Database::Insert(const String& sTableName,
         const String& fTableName = fPair.first;
         const String& fColName = fPair.second;
         #ifdef FOREIGN_KEY_DEBUG
-        printf("%s: %s %s\n",sColName.data(), fTableName.data(), fColName.data());
+        printf("%s(%s): %s %s\n",sColName.data(), pField->ToString().data(),
+          fTableName.data(), fColName.data());
         #endif
         std::vector<PageSlotID> tmp = _GetDuplicated(fTableName, fColName, pField);
         tmpDuplicated.insert(tmpDuplicated.end(), tmp.begin(), tmp.end());
