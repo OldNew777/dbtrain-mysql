@@ -33,8 +33,20 @@ class KeyManager {
   ~KeyManager();
 
   PageID GetPageID() const;
-
   void Clear();
+
+  void AddPrimaryKey(const String& sLocalTableName,
+                     const std::vector<String>& sLocalColName,
+                     const String& sConstraintName = "");
+  void AddForeignKey(const String& sLocalTableName,
+                     const String& sForeignTableName,
+                     const std::vector<String>& sLocalColName,
+                     const std::vector<String>& sForeignColName,
+                     const String& sConstraintName = "");
+  void DropPrimaryKey(const String& sLocalTableName,
+                      const std::vector<String>& sLocalColName);
+  void DropForeignKey(const String& sLocalTableName,
+                      const String& sConstraintName);
 
  protected:
   PageID _nPageID;
