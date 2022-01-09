@@ -177,9 +177,7 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
       if(inserted % 1000 == 0) printf("Inserted : %d\n", inserted);
     } catch (const std::exception &e) {
       printf("%s\n",e.what());
-      #ifdef PRIMARY_KEY_DEBUG
       assert(0);
-      #endif
     }
   }
   Result *res = new MemResult({"Insert"});
@@ -753,13 +751,14 @@ antlrcpp::Any SystemVisitor::visitForeign_key_field(
   std::vector<String> sForeignColName = ctx->identifiers()[1]->accept(this);
   std::vector<String> res;
   res.push_back("#" + sForeignTableName);
+  for (int i = 0; i < sColName.size(); i++) {
+    res.push_back(sColName[i]);
+  }
   for (int i = 0; i < sForeignColName.size(); i++) {
     res.push_back(sForeignColName[i]);
   }
 
-  for (int i = 0; i < sColName.size(); i++) {
-    res.push_back("#" + sColName[i]);
-  }
+  
 
   return res;
 

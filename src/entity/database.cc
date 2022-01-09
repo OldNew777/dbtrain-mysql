@@ -463,24 +463,43 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
   // check foreignkey
+  bool ForeignKeyCheck = false;
+  std::vector<PageSlotID> iDuplicated;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
     if (pTable->GetIsForeign(sColName)) {
+      ForeignKeyCheck = true;
       // check whether primary key conflicts with other records
       Field* pField = pRecord->GetField(i);
       std::vector<std::pair<String, String>> fPairVec =
           GetForeignKey(sTableName, sColName);
       // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
       // fPair.second.data());
+      std::vector<PageSlotID> tmpDuplicated;
       for (auto& fPair : fPairVec) {
-        // printf("%s %s\n", fPair.first.data(), fPair.second.data());
-        if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
-          printf("key out of range:%s\n", pField->ToString().data());
-          ForeignKeyException e("key out of range:" +  pField->ToString());
-          throw e;
-        }
+        const String& fTableName = fPair.first;
+        const String& fColName = fPair.second;
+        #ifdef FOREIGN_KEY_DEBUG
+        printf("%s: %s %s\n",sColName.data(), fTableName.data(), fColName.data());
+        #endif
+        std::vector<PageSlotID> tmp = _GetDuplicated(fTableName, fColName, pField);
+        tmpDuplicated.insert(tmpDuplicated.end(), tmp.begin(), tmp.end());
+      }
+      if(iDuplicated.size() == 0){
+        iDuplicated = tmpDuplicated;
+      }
+      else{
+        iDuplicated = Intersection(iDuplicated, tmpDuplicated);
+      }
+      if(iDuplicated.size() == 0){
+        break;
       }
     }
+  }
+  if(ForeignKeyCheck && iDuplicated.size() == 0){
+    ForeignKeyException e("Foreign key out of range");
+    printf("%s\n", e.what());
+    throw e;
   }
   #endif
 
@@ -574,24 +593,43 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
   // check foreignkey
+  bool ForeignKeyCheck = false;
+  std::vector<PageSlotID> iDuplicated;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
     if (pTable->GetIsForeign(sColName)) {
+      ForeignKeyCheck = true;
       // check whether primary key conflicts with other records
       Field* pField = pRecord->GetField(i);
       std::vector<std::pair<String, String>> fPairVec =
           GetForeignKey(sTableName, sColName);
       // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
       // fPair.second.data());
+      std::vector<PageSlotID> tmpDuplicated;
       for (auto& fPair : fPairVec) {
-        // printf("%s %s\n", fPair.first.data(), fPair.second.data());
-        if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
-          printf("key out of range:%s\n", pField->ToString().data());
-          ForeignKeyException e("key out of range:" +  pField->ToString());
-          throw e;
-        }
+        const String& fTableName = fPair.first;
+        const String& fColName = fPair.second;
+        #ifdef FOREIGN_KEY_DEBUG
+        printf("%s: %s %s\n",sColName.data(), fTableName.data(), fColName.data());
+        #endif
+        std::vector<PageSlotID> tmp = _GetDuplicated(fTableName, fColName, pField);
+        tmpDuplicated.insert(tmpDuplicated.end(), tmp.begin(), tmp.end());
+      }
+      if(iDuplicated.size() == 0){
+        iDuplicated = tmpDuplicated;
+      }
+      else{
+        iDuplicated = Intersection(iDuplicated, tmpDuplicated);
+      }
+      if(iDuplicated.size() == 0){
+        break;
       }
     }
+  }
+  if(ForeignKeyCheck && iDuplicated.size() == 0){
+    ForeignKeyException e("Foreign key out of range");
+    printf("%s\n", e.what());
+    throw e;
   }
   #endif
 
@@ -893,6 +931,7 @@ std::vector<std::pair<String, String>> Database::GetForeignKey(
   //   printf("there should be a foreign key in shadow table\n");
   //   throw ForeignKeyException();
   // }
+  if(res) delete res;
   return retVec;
 }
 
@@ -952,10 +991,19 @@ std::vector<std::vector<String>> Database::GetTableForeignKeys(
   }
   return foreignKeyVec;
 }
-
+/**
+ * @brief true 满足约束 false不满足约束
+ * 
+ * 
+ * @param fTableName 
+ * @param fColName 
+ * @param pField 
+ * @return true 
+ * @return false 
+ */
 bool Database::_CheckForeignKey(const String& fTableName,
                                 const String& fColName,
-                                Field* pField) {  // false-wrong true-corrct
+                                Field* pField) {  // 
   // printf("%s %s on %s\n", fTableName.data(), fColName.data(),
   // pField->ToString().data());
   if (pField->ToString() == "NULL") {  //外键可为null
