@@ -266,7 +266,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
     throw e;
   }
 
-  // check NOT-NULL / PRIMARY-KEY
+  // check NOT-NULL / PRIMARY-KEY / UNIQUE KEY
   std::vector<String> iColNameVec = GetColumnNames(sTableName);
   for (int i = 0; i < iTrans.size(); ++i) {
     const String& sColName = iColNameVec[iTrans[i].GetColPos()];
@@ -280,7 +280,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
   bool primaryKeyConflict = false;
   for (int i = 0; i < iTrans.size(); ++i) {
     const String& sColName = iColNameVec[iTrans[i].GetColPos()];
-    if (pTable->GetIsPrimary(sColName)) {
+    if (pTable->GetIsPrimary(sColName) || pTable->GetIsUnique(sColName)) {
       primaryKeyConflict = true;
       // check whether primary key conflicts with other records
       std::vector<PageSlotID> iDuplicated =
@@ -291,6 +291,11 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
       printf("Intersection(iResVec, iDuplicated).size() = %d\n",
              Intersection(iResVec, iDuplicated).size());
 #endif
+      if(iDuplicated.size() != 0 && pTable->GetIsUnique(sColName)){
+        auto e = Exception("Update fail:Unique Key Exists");
+        std::cout << e.what() << "\n";
+        throw e;
+      }
       if (iResVec.size() + iDuplicated.size() -
               Intersection(iResVec, iDuplicated).size() <=
           1) {
@@ -301,11 +306,56 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
   }
   if (primaryKeyConflict) {
     // add exception here
-    auto e = Exception("Primary Key Exists");
+    auto e = Exception("Update fail:Primary Key Exists");
     std::cout << e.what() << "\n";
     throw e;
   }
+
+  
+  #ifndef NO_FOREIGN_KEY
   //check fk
+  for (int i = 0; i < iTrans.size(); ++i) {
+    const String& sColName = iColNameVec[iTrans[i].GetColPos()];
+    if (pTable->GetIsForeign(sColName)) {
+      std::vector<std::pair<String, String> > fPairVec =  GetForeignKey(sTableName, sColName);
+      for(auto& iPair: fPairVec){
+        const String& fTableName = iPair.first;
+        const String& fColName = iPair.second;
+        std::vector<PageSlotID> iDuplicated =
+          _GetDuplicated(fTableName, fColName, iTrans[i].GetField());
+        if(iDuplicated.size() != 0){
+          ForeignKeyException e("Update fail: Foreign key not in range");
+          printf("%s\n", e.what());
+          throw e;
+        }
+      }
+    }
+    if(pTable->GetIsRefered(sColName)){
+      //check refered key 需要确保改变的那个键的没有对应的依赖值
+      std::vector<std::pair<String, String> > rPairVec =  GetForeignKey(sTableName, sColName);
+      for(auto& iPair: rPairVec){
+        const String& rTableName = iPair.first;
+        const String& rColName = iPair.second;
+        MemResult* memRes = new MemResult(pTable->GetColumnNames());
+        for(auto& psid: iResVec){
+          memRes->PushBack(pTable->GetRecord(psid.first, psid.second));
+        }
+        for(int j = 0; j < memRes->GetDataSize(); j ++){
+          std::vector<PageSlotID> iDuplicated =
+          _GetDuplicated(rTableName, rColName, memRes->GetField(j, iTrans[i].GetColPos()));
+          if(iDuplicated.size() != 0){
+            if(memRes) delete memRes;
+            ForeignKeyException e("Update fail: A key has a reference dependence");
+            printf("%s\n", e.what());
+            throw e;
+          }
+        }
+        if(memRes) delete memRes;
+      }
+    }
+  }
+  
+  #endif
 
   bool bHasIndex = _pIndexManager->HasIndex(sTableName);
   for (const auto& iPair : iResVec) {

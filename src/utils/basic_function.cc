@@ -160,8 +160,11 @@ Field* BuildField(const String& sRaw, FieldType iTargetFieldType) {
         throw e;
       }
     } else if (iTargetFieldType == FieldType::CHAR_TYPE) {
-      // erase \' and \"
-      pField = new CharField(sRaw.substr(1, sRaw.size() - 2));
+      if (sRaw.size() > 0 && sRaw[0] == '\'')
+        // erase \' and \"
+        pField = new CharField(sRaw.substr(1, sRaw.size() - 2));
+      else
+        pField = new CharField(sRaw);
     } else {
       auto e = RecordTypeException();
       std::cout << e.what() << "\n";

@@ -37,12 +37,7 @@ String MemResult::Dump() const{
   String result;
   for (const auto& record : _iData) {
     for (uint32_t i = 0; i < record->GetSize(); i++) {
-      if(record->GetField(i)->GetType()==FieldType::CHAR_TYPE){
-        result += "\'" + record->GetField(i)->ToString() + "\'";
-      }
-      else{
-        result += record->GetField(i)->ToString();
-      }
+      result += record->GetField(i)->ToString();
       if (i != record->GetSize() - 1) {
         result += ",";
       }
