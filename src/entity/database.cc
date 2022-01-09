@@ -476,7 +476,8 @@ PageSlotID Database::Insert(const String& sTableName,
         // printf("%s %s\n", fPair.first.data(), fPair.second.data());
         if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
           printf("key out of range:%s\n", pField->ToString().data());
-          throw ForeignKeyException();
+          ForeignKeyException e("key out of range:" +  pField->ToString());
+          throw e;
         }
       }
     }
@@ -586,7 +587,8 @@ PageSlotID Database::Insert(const String& sTableName,
         // printf("%s %s\n", fPair.first.data(), fPair.second.data());
         if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
           printf("key out of range:%s\n", pField->ToString().data());
-          throw ForeignKeyException();
+          ForeignKeyException e("key out of range:" +  pField->ToString());
+          throw e;
         }
       }
     }
