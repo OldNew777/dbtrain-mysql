@@ -48,6 +48,17 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     std::cout << e.what() << "\n";
     throw e;
   }
+
+  #ifdef FRONT_END_DEBUG
+  printf("\n%s:\n", sTableName.data());
+  printf("name\t\ttype\tcanNull\tpk\tfk\n");
+  for(int i = 0; i < iSchema.GetSize(); i ++){
+    const Column& column = iSchema.GetColumn(i);
+    column.Show();
+  }
+  #endif //FRONT_END_DEBUG
+
+  #ifndef FRONT_END_DEBUG
   // check foreign key
   // insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {
@@ -138,9 +149,9 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         GetTable(sTableName)->SetForeignKey(column.GetName());
       }
     }
-
     // printf("3\n");
   }
+  #endif //FRONT_END_DEBUG
 }
 
 void Database::DropTable(const String& sTableName) {
@@ -1131,7 +1142,7 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
       printf("foreign key should have same type\n");
       throw ForeignKeyException("foreign key should have same type");
     }
-    
+
     // check reference not null
     if (_CheckHaveNull(fTableName, fColName)) {
       printf("reference key cannot be null\n");

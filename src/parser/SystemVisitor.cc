@@ -644,104 +644,97 @@ antlrcpp::Any SystemVisitor::visitField_list(
   std::map<String, int> colPosMap;
   int colPos = 0;
   //fk
-  std::vector<std::vector<std::vector<String> > > iFKVec;
+  /**
+   * @brief 第一层：组合外键的集合
+   *        第二层：一个组合外键中的外键集合
+   *        第三层：描述一个外键 local column name, foreign table name, foreign column name
+   * 
+   */
+  std::vector<std::vector<std::vector<String> > > iFKVec; //lcolname fTableName fColname
+  std::set<String> iFKSet;
+
   std::vector<String> iFKNameVec;
   std::set<String> iFKNameSet;
-  std::map<String, std::vector<int> > iFKMap;
+  
   //pk
   std::vector<std::vector<String> > iPKVec;
+  std::set<String> iPKSet;
+
+  std::vector<String> iPKNameVec;
+  std::set<String> iPKNameSet;
+
   std::vector<Column> iColVec;
 
-  for (const auto &it : ctx->field()) {
-    std::vector<String> retVec = it->accept(this);
+  for (const auto &field : ctx->field()) {
+    std::vector<String> retVec = field->accept(this);
     
     if (retVec.size() == 0) continue;
-    if (retVec[0][0] == '@') {  // primary key
+    if (retVec[0] == VISITOR_PK_FLAG) {// primary key
       iPKVec.push_back({});
-      for (String &str : retVec) {
-        iPKVec.back().push_back(str);
-      }
-    } else if (retVec[0][0] == '#') {  // foreign key
-      String sForeignTableName = retVec[0].substr(1);
-      //constraint name
-      String cName = retVec[1].substr(1);
-      if(cName != "" && iFKNameSet.find(cName) != iFKNameSet.end()){
-        Exception e("Foreign key constraint can not be duplicated");
-        printf("%s\n", e.what());
-        throw e;
-      }
-      iFKNameVec.push_back(cName);
-      iFKNameSet.insert(cName);
-      //fk insert
-      std::vector<std::vector<String> > tmpFKVec;
-      for(int i = 2; i < retVec.size(); i +=2){
-        //lColName fTableName fColName
-        #ifdef FOREIGN_KEY_DEBUG
-        printf("%s %s %s \n", retVec[i].data(), sForeignTableName.data(),
-             retVec[i+1].data());
-        #endif 
-        tmpFKVec.push_back({retVec[i], sForeignTableName, retVec[i+1]});
-        if(iFKMap.find(retVec[i]) == iFKMap.end()){
-          iFKMap[retVec[i]] = {};
+      //check name
+      const String& sPKName = retVec[1];
+      if(sPKName != ""){
+        if(iPKNameSet.find(sPKName) != iPKNameSet.end()){
+          Exception e("Primary constraint name should not duplicate");
+          printf("%s\n", e.what());
         }
-        iFKMap[retVec[i]].push_back(iFKVec.size());//某col在id位有一个fk
+        iPKNameSet.insert(sPKName);
       }
-      iFKVec.push_back(tmpFKVec);
+      iPKNameVec.push_back(sPKName);
+      //add vector
+      for (int i = 2; i < retVec.size(); i ++) {
+        iPKSet.insert(retVec[i]);
+        iPKVec.back().push_back(retVec[i]);
+      }
+    } else if (retVec[0]== VISITOR_FK_FLAG) {// foreign key
+      String fTableName = retVec[1];
+      //check name
+      const String& sFKName = retVec[2];
+      if(sFKName != ""){
+        if(iFKNameSet.find(sFKName) != iFKNameSet.end()){
+          Exception e("Foreign constraint name should not duplicate");
+          printf("%s\n", e.what());
+        }
+        iFKNameSet.insert(sFKName);
+      }
+      iFKNameVec.push_back(sFKName);
+      //add fk vector
+      std::vector<std::vector<String> > sFKVec;
+      for(int i = 3; i < retVec.size(); i += 2){
+        iFKSet.insert(retVec[i]);
+        sFKVec.push_back({retVec[i], fTableName, retVec[i + 1]});
+      }
+      iFKVec.push_back(sFKVec);
     } else {
       sColVec.push_back(retVec);
       colPosMap[retVec[0]] = colPos ++;
     }
   }
 
-  for (auto it = sColVec.begin(); it != sColVec.end(); it++) {
-    const String& sColName = (*it)[0];
+  for (auto& colDefVec : sColVec) {
+    const String& sColName = colDefVec[0];
     FieldType type = FieldType::NULL_TYPE;
     int size = 0;
-    if ((*it)[1] == "INT") {
+    if (colDefVec[1] == "INT") {
       type = FieldType::INT_TYPE;
       size = 4;
-    } else if ((*it)[1] == "FLOAT") {
+    } else if (colDefVec[1] == "FLOAT") {
       type = FieldType::FLOAT_TYPE;
       size = 4;
-    } else if ((*it)[1] == "DATE") {
+    } else if (colDefVec[1] == "DATE") {
       type = FieldType::DATE_TYPE;
       size = 3;
     } else {
       type = FieldType::CHAR_TYPE;
-      size = std::stoi((*it)[3]);
+      size = std::stoi(colDefVec[3]);
     }
-    bool canBeNull = ((*it)[2] == "1") ? true : false;
-    std::pair<String, String> tPair = std::make_pair("", "");
-    bool isPrimary = (pkSet.find(sColName) != pkSet.end());
-    
-    //TODO: fk construct
+    bool canBeNull = (colDefVec[2] == "1") ? true : false;
+    bool isPrimary = (iPKSet.find(sColName) != iPKSet.end());
+    bool isForeign = (iFKSet.find(sColName) != iFKSet.end());
     //process fk name
-    for(int i = 0; i < iFKNameVec.size(); i ++){
-      if(iFKNameVec[i] != "") continue;
-      String fkname = "";
-      for(auto& fkvec : iFKVec[i]){
-        fkname += std::to_string(colPosMap[fkvec[0]]) + "&";
-      }
-      iFKNameVec[i] = fkname;
-    }
-    //construct colfkvec
-    std::vector<std::vector<String> > colFKVec;
-    if(iFKMap.find(sColName) == iFKMap.end()){
-      colFKVec = {};
-    }
-    else{//fk exist
-      std::vector<int> iPosVec = iFKMap[sColName];
-      for(auto& pos : iPosVec){
-        std::vector<std::vector<String> > tmpFKVec = iFKVec[pos];
-        for(auto& tmpvec : tmpFKVec){
-          if(tmpvec[0] != sColName) continue;
-          colFKVec.push_back({iFKNameVec[pos], tmpvec[1], tmpvec[2]});
-        }
-      }
-    }
-    iColVec.push_back(Column(sColName, type, canBeNull, isPrimary, colFKVec.size(), size));
+    iColVec.push_back(Column(sColName, type, canBeNull, isPrimary, isForeign, size));
   }
-
+  iColVec.push_back(Column(iPKVec, iPKNameVec, iFKVec, iFKNameVec));
   return Schema(iColVec);
 }
 
@@ -760,10 +753,15 @@ antlrcpp::Any SystemVisitor::visitNormal_field(
 
 antlrcpp::Any SystemVisitor::visitPrimary_key_field(
     MYSQLParser::Primary_key_fieldContext *ctx) {
-  std::vector<String> vec = ctx->identifiers()->accept(this);
-  for (int i = 0; i < vec.size(); i++) {
-    vec[i] = "@" + vec[i];
+  String sPKName = "";
+  if(ctx->Identifier()){
+    sPKName = ctx->Identifier()->toString();
   }
+  std::vector<String> vec{};
+  vec.push_back(VISITOR_PK_FLAG);
+  vec.push_back(sPKName);
+  std::vector<String> retVec = ctx->identifiers()->accept(this);
+  vec.insert(vec.end(), retVec.begin(), retVec.end());
   return vec;
 }
 
@@ -776,13 +774,13 @@ antlrcpp::Any SystemVisitor::visitForeign_key_field(
   if(ctx->Identifier().size() > 1){
     constriantName = ctx->Identifier()[0]->toString();
     sForeignTableName =  ctx->Identifier()[1]->toString();
-    // printf("=======%s %s\n", constriantName.data(), sForeignTableName.data());
   }
   std::vector<String> sColName = ctx->identifiers()[0]->accept(this);
   std::vector<String> sForeignColName = ctx->identifiers()[1]->accept(this);
   std::vector<String> res;
-  res.push_back("#" + sForeignTableName);
-  res.push_back("#" + constriantName);
+  res.push_back(VISITOR_FK_FLAG);
+  res.push_back(sForeignTableName);
+  res.push_back(constriantName);
   for (int i = 0; i < sColName.size(); i++) {
     res.push_back(sColName[i]);
     res.push_back(sForeignColName[i]);

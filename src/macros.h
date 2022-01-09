@@ -49,6 +49,9 @@ const String SHADOW_FOREIGN_COLUMN_NAME = "ForeignColumnName";
 const String SHADOW_FOREIGN_TABLE_NAME = "ForeignTableName";
 const String SHADOW_UNION_NAME = "UnionName";
 
+const String VISITOR_PK_FLAG = "@";
+const String VISITOR_FK_FLAG = "#";
+
 }  // namespace dbtrain_mysql
 
 #endif

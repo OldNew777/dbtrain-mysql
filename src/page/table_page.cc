@@ -12,6 +12,7 @@
 namespace dbtrain_mysql {
 
 TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
+  #ifndef FRONT_END_DEBUG
   for (Size i = 0; i < iSchema.GetSize(); ++i) {
     Column iCol = iSchema.GetColumn(i);
     _iColMap[iCol.GetName()] = i;
@@ -34,6 +35,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
   _nHeadID = _nTailID = pPage->GetPageID();
   delete pPage;
   _bModified = true;
+  #endif
 }
 
 TablePage::TablePage(PageID nPageID) : ManagerPage(nPageID) {

@@ -12,7 +12,11 @@ class Column {
   Column(const String& sName, FieldType iType, bool CanBeNull, 
     bool isPrimary, bool isForeign, const Size& nSize);
   Column(const std::vector<std::vector<String> >& sPKVec, 
-    const std::vector<std::vector<std::pair<String, String> > >& sFKVec);
+    const std::vector<String>& sPKNameVec,
+    const std::vector<std::vector<std::vector<String> > >& sFKVec,
+    const std::vector<String>& sFKNameVec
+  );
+
   ~Column() = default;
 
   String GetName() const;
@@ -20,17 +24,25 @@ class Column {
   Size GetSize() const;
   bool GetCanBeNull() const;
   bool GetIsPrimary() const;
-  std::vector<std::pair<String, String> > GetForeignKeyVec() const;
-  String GetConstraintName(int pos) const;
+  bool GetIsForeign() const;
+  std::vector<String> GetPKNameVec() const;
+  std::vector<String> GetFKNameVec() const;
+  std::vector<std::vector<String> > GetPKVec() const;
+  std::vector<std::vector<std::vector<String> > > GetFKVec() const;
+  void Show() const;
 
  private:
-  String _sName;
+  String _sName = "";
   FieldType _iType;
   Size _nSize;
-  bool _canBeNull;
+  bool _CanBeNull;
   bool _isPrimary;
-  std::vector<String> _constraintName;
-  std::vector<std::pair<String, String> > _foreignKey; //@first: table name @second: column name
+  bool _isForeign;
+
+  std::vector<String> _sPKNameVec;
+  std::vector<String> _sFKNameVec;
+  std::vector<std::vector<String> > _PKVec;
+  std::vector<std::vector<std::vector<String> > > _FKVec; //@first: table name @second: column name
 };
 
 }  // namespace dbtrain_mysql
