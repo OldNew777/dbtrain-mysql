@@ -375,15 +375,21 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
   // check primary key
-  bool primaryKeyConflict = false;
+  std::vector<PageSlotID> duplicatedVec;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
+    
     if (pTable->GetIsPrimary(sColName) || pTable->GetIsUnique(sColName)) {
       // check whether primary key conflicts with other records
-      primaryKeyConflict = true;
       Field* pField = pRecord->GetField(i);
-      if (_GetDuplicated(sTableName, sColName, pField).size() == 0) {
-        primaryKeyConflict = false;
+      if(duplicatedVec.size() == 0){
+        duplicatedVec = _GetDuplicated(sTableName, sColName, pField);
+      }
+      else{
+        duplicatedVec = Intersection(_GetDuplicated(sTableName, sColName, pField)
+                                      , duplicatedVec);
+      }
+      if (duplicatedVec.size() == 0) {
         break;
       }
       else if(pTable->GetIsUnique(sColName)){
@@ -393,9 +399,15 @@ PageSlotID Database::Insert(const String& sTableName,
       }
     }
   }
-  if (primaryKeyConflict) {
+  if (duplicatedVec.size() != 0) {
     // add exception here
-    auto e = Exception("Primary key existed");
+    String str = "";
+    #ifdef PRIMARY_KEY_DEBUG
+    for(auto& row: iRawVec){
+      str += row + " ";
+    }
+    #endif
+    auto e = Exception("Primary key existed" + str);
     std::cout << e.what() << "\n";
     throw e;
   }
@@ -473,15 +485,21 @@ PageSlotID Database::Insert(const String& sTableName,
 
 #ifndef NO_INSERT_CHECK
 // check primary key
-  bool primaryKeyConflict = false;
+  std::vector<PageSlotID> duplicatedVec;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
+    
     if (pTable->GetIsPrimary(sColName) || pTable->GetIsUnique(sColName)) {
       // check whether primary key conflicts with other records
-      primaryKeyConflict = true;
       Field* pField = pRecord->GetField(i);
-      if (_GetDuplicated(sTableName, sColName, pField).size() == 0) {
-        primaryKeyConflict = false;
+      if(duplicatedVec.size() == 0){
+        duplicatedVec = _GetDuplicated(sTableName, sColName, pField);
+      }
+      else{
+        duplicatedVec = Intersection(_GetDuplicated(sTableName, sColName, pField)
+                                      , duplicatedVec);
+      }
+      if (duplicatedVec.size() == 0) {
         break;
       }
       else if(pTable->GetIsUnique(sColName)){
@@ -491,9 +509,15 @@ PageSlotID Database::Insert(const String& sTableName,
       }
     }
   }
-  if (primaryKeyConflict) {
+  if (duplicatedVec.size() != 0) {
     // add exception here
-    auto e = Exception("Primary key existed");
+    String str = "";
+    #ifdef PRIMARY_KEY_DEBUG
+    for(auto& row: iValueVec){
+      str += row->ToString() + " ";
+    }
+    #endif
+    auto e = Exception("Primary key existed" + str);
     std::cout << e.what() << "\n";
     throw e;
   }
@@ -550,11 +574,17 @@ std::vector<PageSlotID> Database::_GetDuplicated(const String& sTableName,
   pHigh->Add();
   Condition* pCond = nullptr;
   std::vector<Condition*> iIndexCond{};
+  #ifndef NO_INDEX
   if (IsIndex(sTableName, sColName)) {
     iIndexCond.push_back(new IndexCondition(sTableName, sColName, pLow, pHigh));
   } else {
+  #endif
+
     pCond = new RangeCondition(colPos, pLow, pHigh);
+
+  #ifndef NO_INDEX
   }
+  #endif
   std::vector<PageSlotID> iPageSlotIDVec =
       Search(sTableName, pCond, iIndexCond);
 

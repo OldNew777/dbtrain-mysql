@@ -174,9 +174,12 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
     try {
       _pDB->Insert(sTableName, iValueList);
       ++inserted;
-      if (inserted % 100 == 0) printf("Inserted : %d\n", inserted);
+      if(inserted % 1000 == 0) printf("Inserted : %d\n", inserted);
     } catch (const std::exception &e) {
+      printf("%s\n",e.what());
+      #ifdef PRIMARY_KEY_DEBUG
       assert(0);
+      #endif
     }
   }
   Result *res = new MemResult({"Insert"});
