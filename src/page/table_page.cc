@@ -3,6 +3,8 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <cstdlib>
+#include <cstring>
 
 #include "exception/exceptions.h"
 #include "macros.h"
@@ -12,6 +14,7 @@
 namespace dbtrain_mysql {
 
 TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
+  printf("[");
   for (Size i = 0; i < iSchema.GetSize(); ++i) {
     Column iCol = iSchema.GetColumn(i);
     _iColMap[iCol.GetName()] = i;
@@ -26,9 +29,17 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
     if (iCol.GetForeignKeyVec().size() != 0) {
       status |= 0b100;
     }
-    //refered and unique will not present in create table
+    // refered and unique will not present in create table
     _iStatusVec.push_back(status);
+
+    for (int i = 0; i < 8; ++i)
+      if (status & (0b10000000 >> i))
+        printf("1");
+      else
+        printf("0");
+    printf(", ", status);
   }
+  printf("]\n");
   assert(_iColMap.size() == _iTypeVec.size());
   RecordPage* pPage = new RecordPage(GetTotalSize(), true);
   _nHeadID = _nTailID = pPage->GetPageID();
@@ -71,9 +82,11 @@ Size TablePage::GetSize(const String& sCol) {
   return _iSizeVec[GetColPos(sCol)];
 }
 bool TablePage::GetCanBeNull(const String& sCol) {
-  return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1) && //can be null = true
-         !((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10) && //is primary = false
-         !((_iStatusVec[GetColPos(sCol)] & 0b1000) == 0b1000);//is refered = false
+  return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1) &&  // can be null = true
+         !((_iStatusVec[GetColPos(sCol)] & 0b10) ==
+           0b10) &&  // is primary = false
+         !((_iStatusVec[GetColPos(sCol)] & 0b1000) ==
+           0b1000);  // is refered = false
 }
 bool TablePage::GetIsPrimary(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10);
