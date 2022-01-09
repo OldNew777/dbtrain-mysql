@@ -56,8 +56,8 @@ void KeyManager::Store() {
         *pLocalColName, *pForeignColName;
     for (int i = 0; i < pPage->GetCap(), iter != _iKeyMap.end(); ++i) {
       const auto &key = iter->second;
-      pLocalTableName = new CharField(iter->first);
-      pConstraintName = new CharField(iter->second.sConstraintName);
+      pConstraintName = new CharField(iter->first);
+      pLocalTableName = new CharField(iter->second.sLocalTableName);
       pLocalColName = new CharField(iter->second.sLocalColName[index]);
       if (key.iType == KeyType::PRIMARY_KEY_TYPE) {
         pForeignTableName = new CharField(iter->second.sForeignTableName);
@@ -148,8 +148,8 @@ void KeyManager::Load() {
       String sConstraintName = pRecord->GetField(0)->ToString();
       String sLocalTableName = pRecord->GetField(1)->ToString();
       String sLocalColName = pRecord->GetField(2)->ToString();
-      Key &key = _iKeyMap[sLocalTableName];
-      key.sConstraintName = sConstraintName;
+      Key &key = _iKeyMap[sConstraintName];
+      key.sLocalTableName = sLocalTableName;
       key.sLocalColName.push_back(sLocalColName);
       if (sConstraintName.substr(0, 7) == "PRIMARY") {
         key.iType = KeyType::PRIMARY_KEY_TYPE;

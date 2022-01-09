@@ -15,14 +15,14 @@ enum class KeyType {
 };
 
 // PRIMARY KEY
-// | Constraint Name | Local Table Name | Local Column Name
+// | Constraint Name | Table Name | Column Name |
 
 // FOREIGN KEY
 // | Constraint Name | Local Table Name | Local Column Name
 // | Foreign Table Name | Foreign Column Name
 struct Key {
   KeyType iType;
-  String sConstraintName, sForeignTableName;
+  String sLocalTableName, sForeignTableName;
   std::vector<String> sLocalColName, sForeignColName;
 };
 
@@ -33,6 +33,7 @@ class KeyManager {
   ~KeyManager();
 
   PageID GetPageID() const;
+
   void Clear();
 
  protected:
