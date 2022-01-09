@@ -16,7 +16,7 @@ class IndexManager {
 
   Index *GetIndex(const String &sTableName, const String &sColName);
   Index *AddIndex(const String &sTableName, const String &sColName,
-                  FieldType iType);
+                  FieldType iType, Size nSize);
   void DropIndex(const String &sTableName, const String &sColName);
   void DropIndex(const String &sTableName);
   bool IsIndex(const String &sTableName, const String &sColName);

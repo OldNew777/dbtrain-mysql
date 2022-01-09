@@ -227,7 +227,6 @@ void Table::AddReferedKey(const String& sColName) {
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b00001000;
 }
 void Table::AddUniqueKey(const String& sColName) {
-  printf("sahodfipoahd\n");
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b00010000;
 }
 void Table::DropPrimaryKey(const String& sColName) {

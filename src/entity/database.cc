@@ -650,7 +650,6 @@ std::vector<PageSlotID> Database::_GetDuplicated(const String& sTableName,
 }
 
 void Database::CreateIndex(const String& sTableName, const String& sColName) {
-  auto iAll = Search(sTableName, nullptr, {});
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
@@ -658,32 +657,21 @@ void Database::CreateIndex(const String& sTableName, const String& sColName) {
     throw e;
   }
   FieldType iType = pTable->GetType(sColName);
-  _pIndexManager->AddIndex(sTableName, sColName, iType);
+  Size nSize = pTable->GetSize(sColName);
+  FieldID nPos = pTable->GetColPos(sColName);
+  _pIndexManager->AddIndex(sTableName, sColName, iType, nSize);
+  Index* pIndex = _pIndexManager->GetIndex(sTableName, sColName);
   // Handle Exists Data
+  auto iAll = Search(sTableName, nullptr, {});
   for (const auto& iPair : iAll) {
-    FieldID nPos = pTable->GetColPos(sColName);
     Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
     Field* pKey = pRecord->GetField(nPos);
-    _pIndexManager->GetIndex(sTableName, sColName)->Insert(pKey, iPair);
+    pIndex->Insert(pKey, iPair);
     delete pRecord;
   }
 }
 
 void Database::DropIndex(const String& sTableName, const String& sColName) {
-  auto iAll = Search(sTableName, nullptr, {});
-  Table* pTable = GetTable(sTableName);
-  if (pTable == nullptr) {
-    auto e = TableNotExistException(sTableName);
-    std::cout << e.what() << "\n";
-    throw e;
-  }
-  for (const auto& iPair : iAll) {
-    FieldID nPos = pTable->GetColPos(sColName);
-    Record* pRecord = pTable->GetRecord(iPair.first, iPair.second);
-    Field* pKey = pRecord->GetField(nPos);
-    _pIndexManager->GetIndex(sTableName, sColName)->Delete(pKey, iPair);
-    delete pRecord;
-  }
   _pIndexManager->DropIndex(sTableName, sColName);
 }
 

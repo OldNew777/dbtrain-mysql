@@ -13,7 +13,7 @@ class Index {
    * @brief 构建一个特定类型的索引
    * @param iType 字段类型
    */
-  Index(FieldType iType);
+  Index(FieldType iType, Size nSize);
   /**
    * @brief 从一个页面编号构建索引
    * @param nRootID

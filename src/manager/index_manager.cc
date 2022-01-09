@@ -59,14 +59,14 @@ Index *IndexManager::GetIndex(const String &sTableName,
 }
 
 Index *IndexManager::AddIndex(const String &sTableName, const String &sColName,
-                              FieldType iType) {
+                              FieldType iType, Size nSize) {
   if (IsIndex(sTableName, sColName)) {
     auto e = IndexException("Index not exist");
     std::cout << e.what() << "\n";
     throw e;
   }
   String sIndexName = GetIndexName(sTableName, sColName);
-  Index *pIndex = new Index(iType);
+  Index *pIndex = new Index(iType, nSize);
   PageID nRoot = pIndex->GetRootID();
   delete pIndex;
   pIndex = new Index(nRoot);
