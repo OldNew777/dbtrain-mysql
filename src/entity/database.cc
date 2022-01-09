@@ -89,6 +89,9 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   shadowTableColVec.push_back(Column(SHADOW_FOREIGN_COLUMN_NAME,
                                      FieldType::CHAR_TYPE, false, false,
                                      COLUMN_NAME_SIZE, {}));  //
+  shadowTableColVec.push_back(Column(SHADOW_UNION_NAME,
+                                     FieldType::CHAR_TYPE, false, false,
+                                     COLUMN_NAME_SIZE, {}));  //
   TablePage* shadowPage = new TablePage(Schema(shadowTableColVec));
   Table* shadowTable = new Table(shadowPage);
   _iEntityMap["@" + sTableName] = shadowTable;
@@ -110,15 +113,16 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
     if (column.GetForeignKeyVec().size() != 0) {
-      for(auto& pPair: column.GetForeignKeyVec()){
-        String fTableName = pPair.first;
-        String fColName = pPair.second;
+      for(int j = 0; j < column.GetForeignKeyVec().size(); j ++){
+        String fTableName = column.GetForeignKeyVec()[j].first;
+        String fColName = column.GetForeignKeyVec()[j].second;
         //insert local shadow table
         std::vector<Field*> LocalVec;
         LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
         LocalVec.push_back(new CharField(column.GetName()));
         LocalVec.push_back(new CharField(fTableName));
         LocalVec.push_back(new CharField(fColName));
+        LocalVec.push_back(new CharField(column.GetConstraintName(j)));
         // printf("1\n");
         Insert("@" + sTableName, LocalVec);
         //insert reference shadow table
@@ -127,6 +131,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         ForeignVec.push_back(new CharField(fColName));
         ForeignVec.push_back(new CharField(sTableName));
         ForeignVec.push_back(new CharField(column.GetName()));
+        ForeignVec.push_back(new CharField(""));//refered 条目暂时空着了
         // printf("2\n");
         Insert("@" + fTableName, ForeignVec);
         _UpdateReferedKey(fTableName, fColName);

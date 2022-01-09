@@ -10,7 +10,7 @@ class Column {
  public:
   // Column(const String& sName, FieldType iType, bool isNull);
   Column(const String& sName, FieldType iType, bool CanBeNull, 
-    bool isPrimary, Size nSize,std::vector<std::pair<String, String> > sForeignVec);
+    bool isPrimary, Size nSize,std::vector<std::vector<String> > sForeignVec);
   ~Column() = default;
 
   String GetName() const;
@@ -19,6 +19,7 @@ class Column {
   bool GetCanBeNull() const;
   bool GetIsPrimary() const;
   std::vector<std::pair<String, String> > GetForeignKeyVec() const;
+  String GetConstraintName(int pos) const;
 
  private:
   String _sName;
@@ -26,6 +27,7 @@ class Column {
   Size _nSize;
   bool _canBeNull;
   bool _isPrimary;
+  std::vector<String> _constraintName;
   std::vector<std::pair<String, String> > _foreignKey; //@first: table name @second: column name
 };
 

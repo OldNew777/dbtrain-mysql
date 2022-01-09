@@ -19,7 +19,8 @@
 #include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
-
+  //TODO: 没有处理这个数字超出范围后的情况，但我觉得有点难
+static uint32_t constraintID = 0;
 SystemVisitor::SystemVisitor(Instance *pDB) : _pDB{pDB} { assert(_pDB); }
 
 antlrcpp::Any SystemVisitor::visitProgram(MYSQLParser::ProgramContext *ctx) {
@@ -265,7 +266,8 @@ antlrcpp::Any SystemVisitor::visitDescribe_shadow_table(
       _pDB->Search("@" + sTableName, nullptr, {}, limit, offset);
   Result *res =
       new MemResult({SHADOW_STATUS_NAME, SHADOW_LOCAL_COLUMN_NAME,
-                     SHADOW_FOREIGN_TABLE_NAME, SHADOW_FOREIGN_COLUMN_NAME});
+                     SHADOW_FOREIGN_TABLE_NAME, SHADOW_FOREIGN_COLUMN_NAME, 
+                     SHADOW_UNION_NAME});
   for (auto &psid : psidVec) {
     res->PushBack(_pDB->GetRecord("@" + sTableName, psid));
   }
@@ -638,41 +640,62 @@ antlrcpp::Any SystemVisitor::visitAlter_table_rename(
 antlrcpp::Any SystemVisitor::visitField_list(
     MYSQLParser::Field_listContext *ctx) {
   std::vector<std::vector<String>> sColVec;
-  std::unordered_map<String, int> sColMap;
-  std::vector<Column> iColVec;
-  std::map<String, std::vector<std::pair<String, String>>> fkMap;
-  for (const auto &it : ctx->field()) {
-    std::vector<String> tmp = it->accept(this);
-    if (tmp.size() == 0) continue;
-    if (tmp[0][0] == '@') {  // primary key
-      for (String &str : tmp) {
-        if (sColMap.find(str.substr(1)) == sColMap.end()) {
-          auto e = Exception();
-          std::cout << e.what() << "\n";
-          throw e;
-        }
-        sColVec[sColMap[str.substr(1)]][3] = "1";
-      }
-    } else if (tmp[0][0] == '#') {  // foreign key
-      String sForeignTableName = tmp[0].substr(1);
-      for(int i = 1; i < tmp.size(); i += 2){
-        if(fkMap.find(tmp[i]) == fkMap.end()){
-          fkMap[tmp[i]] = std::vector<std::pair<String, String>>();
-        }
-        fkMap[tmp[i]].push_back(std::make_pair(sForeignTableName, tmp[i+1]));
-      }
+  //name->pos
+  std::map<String, int> colPosMap;
+  int colPos = 0;
+  //fk
+  std::vector<std::vector<std::vector<String> > > iFKVec;
+  std::vector<String> iFKNameVec;
+  std::set<String> iFKNameSet;
+  std::map<String, std::vector<int> > iFKMap;
+  
 
+  std::set<String> pkSet;
+  std::vector<Column> iColVec;
+
+  for (const auto &it : ctx->field()) {
+    std::vector<String> retVec = it->accept(this);
+    
+    if (retVec.size() == 0) continue;
+    if (retVec[0][0] == '@') {  // primary key
+      for (String &str : retVec) {
+        pkSet.insert(str);
+      }
+    } else if (retVec[0][0] == '#') {  // foreign key
+      String sForeignTableName = retVec[0].substr(1);
+      //constraint name
+      String cName = retVec[1].substr(1);
+      if(cName != "" && iFKNameSet.find(cName) != iFKNameSet.end()){
+        Exception e("Foreign key constraint can not be duplicated");
+        printf("%s\n", e.what());
+        throw e;
+      }
+      iFKNameVec.push_back(cName);
+      iFKNameSet.insert(cName);
+      //fk insert
+      std::vector<std::vector<String> > tmpFKVec;
+      for(int i = 2; i < retVec.size(); i +=2){
+        //lColName fTableName fColName
+        #ifdef FOREIGN_KEY_DEBUG
+        printf("%s %s %s \n", retVec[i].data(), sForeignTableName.data(),
+             retVec[i+1].data());
+        #endif 
+        tmpFKVec.push_back({retVec[i], sForeignTableName, retVec[i+1]});
+        if(iFKMap.find(retVec[i]) == iFKMap.end()){
+          iFKMap[retVec[i]] = {};
+        }
+        iFKMap[retVec[i]].push_back(iFKVec.size());//某col在id位有一个fk
+      }
+      iFKVec.push_back(tmpFKVec);
     } else {
-      sColVec.push_back(tmp);
-      sColMap[tmp[0]] = sColVec.size() - 1;
+      sColVec.push_back(retVec);
+      colPosMap[retVec[0]] = colPos ++;
     }
   }
+
   for (auto it = sColVec.begin(); it != sColVec.end(); it++) {
+    const String& sColName = (*it)[0];
     FieldType type = FieldType::NULL_TYPE;
-#ifdef DATABASE_DEBUG
-    printf("%s\t%s\t%s\t%s\t%s\t%s\n", (*it)[0].data(), (*it)[1].data(),
-           (*it)[2].data(), (*it)[3].data(), (*it)[4].data(), (*it)[5].data());
-#endif
     int size = 0;
     if ((*it)[1] == "INT") {
       type = FieldType::INT_TYPE;
@@ -685,22 +708,38 @@ antlrcpp::Any SystemVisitor::visitField_list(
       size = 3;
     } else {
       type = FieldType::CHAR_TYPE;
-      size = std::stoi((*it)[5]);
+      size = std::stoi((*it)[3]);
     }
     bool canBeNull = ((*it)[2] == "1") ? true : false;
-    bool isPrimary = ((*it)[3] == "1") ? true : false;
     std::pair<String, String> tPair = std::make_pair("", "");
-    if ((*it)[4] != "") {
-      Size pos = (*it)[4].find(" ");
-      tPair.first = (*it)[4].substr(0, pos);
-      tPair.second = (*it)[4].substr(pos + 1);
+    bool isPrimary = (pkSet.find(sColName) != pkSet.end());
+    
+    //TODO: fk construct
+    //process fk name
+    for(int i = 0; i < iFKNameVec.size(); i ++){
+      if(iFKNameVec[i] != "") continue;
+      String fkname = "";
+      for(auto& fkvec : iFKVec[i]){
+        fkname += std::to_string(colPosMap[fkvec[0]]) + "&";
+      }
+      iFKNameVec[i] = fkname;
     }
-    if (fkMap.find((*it)[0]) == fkMap.end()) {
-      iColVec.push_back(Column((*it)[0], type, canBeNull, isPrimary, size, {}));
-    } else {
-      iColVec.push_back(
-          Column((*it)[0], type, canBeNull, isPrimary, size, fkMap[(*it)[0]]));
+    //construct colfkvec
+    std::vector<std::vector<String> > colFKVec;
+    if(iFKMap.find(sColName) == iFKMap.end()){
+      colFKVec = {};
     }
+    else{//fk exist
+      std::vector<int> iPosVec = iFKMap[sColName];
+      for(auto& pos : iPosVec){
+        std::vector<std::vector<String> > tmpFKVec = iFKVec[pos];
+        for(auto& tmpvec : tmpFKVec){
+          if(tmpvec[0] != sColName) continue;
+          colFKVec.push_back({iFKNameVec[pos], tmpvec[1], tmpvec[2]});
+        }
+      }
+    }
+    iColVec.push_back(Column(sColName, type, canBeNull, isPrimary, size, colFKVec));
   }
 
   return Schema(iColVec);
@@ -712,11 +751,9 @@ antlrcpp::Any SystemVisitor::visitNormal_field(
   vec.push_back(ctx->Identifier()->getText());          // 0 Identifier
   vec.push_back(ctx->type_()->getText());               // 1 TYPE
   vec.push_back((ctx->Null() == nullptr) ? "1" : "0");  // 2 CAN BE NULL
-  vec.push_back("0");                                   // 3 PRIMARY
-  vec.push_back("");                                    // 4 Foreign
   vec.push_back((ctx->type_()->Integer() == nullptr)
                     ? "0"
-                    : ctx->type_()->Integer()->getText());  // 5 SIZE
+                    : ctx->type_()->Integer()->getText());  // 3 SIZE
   // TODO : add NULL/PRIMARY KEY/DEFAULT
   return vec;
 }
@@ -734,11 +771,18 @@ antlrcpp::Any SystemVisitor::visitForeign_key_field(
     MYSQLParser::Foreign_key_fieldContext *ctx) {
 #ifndef NO_FOREIGN_KEY
   // TODO: 组合外键命名
-  String sForeignTableName = ctx->Identifier()[0]->toString();
+  String sForeignTableName = ctx->Identifier()[0]->toString();;
+  String constriantName = "";
+  if(ctx->Identifier().size() > 1){
+    constriantName = ctx->Identifier()[0]->toString();
+    sForeignTableName =  ctx->Identifier()[1]->toString();
+    // printf("=======%s %s\n", constriantName.data(), sForeignTableName.data());
+  }
   std::vector<String> sColName = ctx->identifiers()[0]->accept(this);
   std::vector<String> sForeignColName = ctx->identifiers()[1]->accept(this);
   std::vector<String> res;
   res.push_back("#" + sForeignTableName);
+  res.push_back("#" + constriantName);
   for (int i = 0; i < sColName.size(); i++) {
     res.push_back(sColName[i]);
     res.push_back(sForeignColName[i]);

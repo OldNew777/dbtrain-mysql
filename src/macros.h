@@ -47,6 +47,8 @@ const String SHADOW_STATUS_NAME = "Status";
 const String SHADOW_LOCAL_COLUMN_NAME = "LocalColumnName";
 const String SHADOW_FOREIGN_COLUMN_NAME = "ForeignColumnName";
 const String SHADOW_FOREIGN_TABLE_NAME = "ForeignTableName";
+const String SHADOW_UNION_NAME = "UnionName";
+
 }  // namespace dbtrain_mysql
 
 #endif
