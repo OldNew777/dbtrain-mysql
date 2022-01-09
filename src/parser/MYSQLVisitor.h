@@ -31,6 +31,8 @@ public:
 
     virtual antlrcpp::Any visitUse_db(MYSQLParser::Use_dbContext *context) = 0;
 
+    virtual antlrcpp::Any visitRename_db(MYSQLParser::Rename_dbContext *context) = 0;
+
     virtual antlrcpp::Any visitShow_tables(MYSQLParser::Show_tablesContext *context) = 0;
 
     virtual antlrcpp::Any visitShow_indexes(MYSQLParser::Show_indexesContext *context) = 0;
@@ -70,6 +72,8 @@ public:
     virtual antlrcpp::Any visitAlter_table_add_foreign_key(MYSQLParser::Alter_table_add_foreign_keyContext *context) = 0;
 
     virtual antlrcpp::Any visitAlter_table_add_unique(MYSQLParser::Alter_table_add_uniqueContext *context) = 0;
+
+    virtual antlrcpp::Any visitAlter_table_drop_unique(MYSQLParser::Alter_table_drop_uniqueContext *context) = 0;
 
     virtual antlrcpp::Any visitAlter_table_rename(MYSQLParser::Alter_table_renameContext *context) = 0;
 

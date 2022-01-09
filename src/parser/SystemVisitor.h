@@ -41,6 +41,9 @@ class SystemVisitor : public MYSQLBaseVisitor {
   virtual antlrcpp::Any visitUse_db(
       MYSQLParser::Use_dbContext *context) override;
 
+  virtual antlrcpp::Any visitRename_db(
+      MYSQLParser::Rename_dbContext *context) override;
+
   virtual antlrcpp::Any visitShow_tables(
       MYSQLParser::Show_tablesContext *context) override;
 
@@ -61,7 +64,7 @@ class SystemVisitor : public MYSQLBaseVisitor {
 
   virtual antlrcpp::Any visitDescribe_table(
       MYSQLParser::Describe_tableContext *context) override;
-    virtual antlrcpp::Any visitDescribe_shadow_table(
+  virtual antlrcpp::Any visitDescribe_shadow_table(
       MYSQLParser::Describe_shadow_tableContext *context) override;
   virtual antlrcpp::Any visitInsert_into_table(
       MYSQLParser::Insert_into_tableContext *context) override;
@@ -98,6 +101,9 @@ class SystemVisitor : public MYSQLBaseVisitor {
 
   virtual antlrcpp::Any visitAlter_table_add_unique(
       MYSQLParser::Alter_table_add_uniqueContext *context) override;
+
+  virtual antlrcpp::Any visitAlter_table_drop_unique(
+      MYSQLParser::Alter_table_drop_uniqueContext *context) override;
 
   virtual antlrcpp::Any visitAlter_table_rename(
       MYSQLParser::Alter_table_renameContext *context) override;

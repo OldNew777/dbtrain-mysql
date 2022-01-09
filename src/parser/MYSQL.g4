@@ -33,12 +33,13 @@ statement:
 	| Null ';';
 
 db_statement:
-	'CREATE' 'DATABASE' Identifier	# create_db
-	| 'DROP' 'DATABASE' Identifier	# drop_db
-	| 'SHOW' 'DATABASES'			# show_dbs
-	| 'USE' Identifier				# use_db
-	| 'SHOW' 'TABLES'				# show_tables
-	| 'SHOW' 'INDEXES'				# show_indexes;
+	'CREATE' 'DATABASE' Identifier						# create_db
+	| 'DROP' 'DATABASE' Identifier						# drop_db
+	| 'SHOW' 'DATABASES'								# show_dbs
+	| 'USE' Identifier									# use_db
+	| 'RENAME' 'DATABASE' Identifier 'TO' Identifier	# rename_db
+	| 'SHOW' 'TABLES'									# show_tables
+	| 'SHOW' 'INDEXES'									# show_indexes;
 
 io_statement:
 	'LOAD' 'FROM' 'FILE' String 'TO' 'TABLE' Identifier		# load_data
@@ -68,18 +69,18 @@ alter_statement:
 	| 'ALTER' 'TABLE' Identifier 'DROP' 'FOREIGN' 'KEY' Identifier			# alter_table_drop_foreign_key
 	| 'ALTER' 'TABLE' Identifier 'ADD' ('CONSTRAINT' Identifier)? 'PRIMARY' 'KEY' '(' identifiers
 		')' # alter_table_add_pk
-	| 'ALTER' 'TABLE' Identifier 'ADD' ('CONSTRAINT' Identifier)? 'FOREIGN' 'KEY' '(' identifiers ')'
-		'REFERENCES' Identifier '(' identifiers ')'					# alter_table_add_foreign_key
-	| 'ALTER' 'TABLE' Identifier 'ADD' 'UNIQUE' '(' identifiers ')'	# alter_table_add_unique
-	| 'ALTER' 'TABLE' Identifier 'RENAME' 'TO' Identifier			# alter_table_rename;
+	| 'ALTER' 'TABLE' Identifier 'ADD' ('CONSTRAINT' Identifier)? 'FOREIGN' 'KEY' '(' identifiers
+		')' 'REFERENCES' Identifier '(' identifiers ')'					# alter_table_add_foreign_key
+	| 'ALTER' 'TABLE' Identifier 'ADD' 'UNIQUE' '(' identifiers ')'		# alter_table_add_unique
+	| 'ALTER' 'TABLE' Identifier 'DROP' 'UNIQUE' '(' identifiers ')'	# alter_table_drop_unique
+	| 'ALTER' 'TABLE' Identifier 'RENAME' 'TO' Identifier				# alter_table_rename;
 
 field_list: field (',' field)*;
 
 field:
 	Identifier type_ ('NOT' Null)? ('DEFAULT' value)?												# normal_field
 	| 'PRIMARY' 'KEY' (Identifier)? '(' identifiers ')'												# primary_key_field
-	| 'FOREIGN' 'KEY' (Identifier)? '(' identifiers ')' 'REFERENCES' Identifier '(' identifiers ')'	#
-		foreign_key_field;
+	| 'FOREIGN' 'KEY' (Identifier)? '(' identifiers ')' 'REFERENCES' Identifier '(' identifiers ')'	# foreign_key_field;
 
 type_: 'INT' | 'VARCHAR' '(' Integer ')' | 'FLOAT' | 'DATE';
 

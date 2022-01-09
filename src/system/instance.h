@@ -75,6 +75,7 @@ class Instance {
   void DropIndex(const String &sTableName, const String &sColName);
   void DropPrimaryKey(const String &sTableName, const String &sColName);
   void DropForeignKey(const String &sTableName, const String &sColName);
+  void DropUniqueKey(const String &sTableName, const String &sColName);
 
   /**
    * @brief 实现多个表的JOIN操作
@@ -89,10 +90,12 @@ class Instance {
       std::map<String, std::vector<PageSlotID>> &iResultMap,
       std::vector<Condition *> &iJoinConds);
 
-  void AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec);
-  void AddUniqueKey(const String& sTableName, const String& sColNameVec);
-  void AddForeignKey(const String& lTableName, const String& lColName,
-    const String& fTableName, const std::vector<String>& fColName);
+  void AddPrimaryKey(const String &sTableName,
+                     const std::vector<String> sColNameVec);
+  void AddUniqueKey(const String &sTableName, const String &sColNameVec);
+  void AddForeignKey(const String &lTableName, const String &lColName,
+                     const String &fTableName,
+                     const std::vector<String> &fColName);
 
  protected:
   DataManager *_pDataManager;

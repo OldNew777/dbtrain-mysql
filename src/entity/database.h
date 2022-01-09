@@ -8,7 +8,6 @@
 #include "result/results.h"
 #include "table.h"
 
-
 namespace dbtrain_mysql {
 
 class Database : public EntityManager {
@@ -79,30 +78,37 @@ class Database : public EntityManager {
   void DropIndex(const String& sTableName, const String& sColName);
   bool IsIndex(const String& sTableName, const String& sColName);
   Index* GetIndex(const String& sTableName, const String& sColName);
-  void AddPrimaryKey(const String& sTableName, const std::vector<String> sColName);
+  void AddPrimaryKey(const String& sTableName,
+                     const std::vector<String> sColName);
   void AddForeignKey(const String& lTableName, const String& lColName,
-    const String& fTableName, const std::vector<String>& fColNameVec);
+                     const String& fTableName,
+                     const std::vector<String>& fColNameVec);
   void AddUniqueKey(const String& sTableName, const String& sColName);
-  
+
   void DropPrimaryKey(const String& sTableName, const String& sColName);
   void DropFroeignKey(const String& sTableName, const String& sColName);
   void DropTableForeignKey(const String& sTableName);
+  void DropUniqueKey(const String& sTableName, const String& sColName);
   /**
    * @brief 获得这个表上某个键依赖的其他表上的键
    */
-  std::vector<std::pair<String, String>> GetForeignKey(const String& sTableName, const String& sColName);
+  std::vector<std::pair<String, String>> GetForeignKey(const String& sTableName,
+                                                       const String& sColName);
   /**
    * @brief 获得这个表上某个键依赖的其他表上的键
    */
-  std::vector<std::pair<String, String>> GetReferedKey(const String& sTableName, const String& sColName);
+  std::vector<std::pair<String, String>> GetReferedKey(const String& sTableName,
+                                                       const String& sColName);
   /**
    * @brief 获得依赖于这个表上键的其他表的键
    */
-  std::vector<std::vector<String> > GetTableReferedKeys(const String& sTableName);//获取依赖一个表中键的所有其他表的键
+  std::vector<std::vector<String>> GetTableReferedKeys(
+      const String& sTableName);  //获取依赖一个表中键的所有其他表的键
   /**
    * @brief 获得这个表依赖的其他表上的键
    */
-  std::vector<std::vector<String>> GetTableForeignKeys(const String& sTableName);//获取一个表中依赖的所有其他表的键
+  std::vector<std::vector<String>> GetTableForeignKeys(
+      const String& sTableName);  //获取一个表中依赖的所有其他表的键
   std::vector<Record*> GetIndexInfos();
 
   virtual void Clear() override;
@@ -113,14 +119,16 @@ class Database : public EntityManager {
   IndexManager* _pIndexManager;
 
   std::vector<PageSlotID> _GetDuplicated(const String& sTableName,
-                                        const String& sColName, Field* pField);
-    bool _CheckHaveNull(const String& fTableName, const String& fColName);
-    bool _CheckDuplicate(const String& sTableName, const String& sColName);
-    bool _CheckForeignKey(const String& fTableName,
-                                        const String& fColName, Field* pField);
-    uint32_t _DropShadowTableKey(const String& sTableName, const String& statusMode, 
-      const String& lColName, const String& rTableName, const String& fColName);
-    void _UpdateReferedKey(const String& sTableName, const String& fColname);
+                                         const String& sColName, Field* pField);
+  bool _CheckHaveNull(const String& fTableName, const String& fColName);
+  bool _CheckDuplicate(const String& sTableName, const String& sColName);
+  bool _CheckForeignKey(const String& fTableName, const String& fColName,
+                        Field* pField);
+  uint32_t _DropShadowTableKey(const String& sTableName,
+                               const String& statusMode, const String& lColName,
+                               const String& rTableName,
+                               const String& fColName);
+  void _UpdateReferedKey(const String& sTableName, const String& fColname);
 };
 
 }  // namespace dbtrain_mysql

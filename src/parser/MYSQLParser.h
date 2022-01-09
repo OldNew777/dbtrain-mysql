@@ -173,6 +173,18 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  Rename_dbContext : public Db_statementContext {
+  public:
+    Rename_dbContext(Db_statementContext *ctx);
+
+    std::vector<antlr4::tree::TerminalNode *> Identifier();
+    antlr4::tree::TerminalNode* Identifier(size_t i);
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  Show_indexesContext : public Db_statementContext {
   public:
     Show_indexesContext(Db_statementContext *ctx);
@@ -433,6 +445,18 @@ public:
 
     std::vector<antlr4::tree::TerminalNode *> Identifier();
     antlr4::tree::TerminalNode* Identifier(size_t i);
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  Alter_table_drop_uniqueContext : public Alter_statementContext {
+  public:
+    Alter_table_drop_uniqueContext(Alter_statementContext *ctx);
+
+    antlr4::tree::TerminalNode *Identifier();
+    IdentifiersContext *identifiers();
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
 

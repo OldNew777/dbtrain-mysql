@@ -566,6 +566,12 @@ void DataManager::AddUniqueKey(const String& sTableName,
   _pDatabase->AddUniqueKey(sTableName, sColName);
 }
 
+void DataManager::DropUniqueKey(const String& sTableName,
+                                const String& sColName) {
+  CheckDatabaseUsed();
+  _pDatabase->DropUniqueKey(sTableName, sColName);
+}
+
 void DataManager::AddForeignKey(const String& lTableName,
                                 const String& lColName,
                                 const String& fTableName,

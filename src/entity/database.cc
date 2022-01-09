@@ -64,7 +64,6 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
       }
       // insert local shadow table
     }
-    // printf("3\n");
   }
 
   // Create table and cache it
@@ -1136,6 +1135,16 @@ void Database::DropTableForeignKey(const String& sTableName) {
   }
 }
 
+void Database::DropUniqueKey(const String& sTableName, const String& sColName) {
+  Table* pTable = GetTable(sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException(sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  pTable->DropUniqueKey(sColName);
+}
+
 void Database::_UpdateReferedKey(const String& fTableName,
                                  const String& fColname) {
   Table* fTable = GetTable("@" + fTableName);
@@ -1190,4 +1199,5 @@ void Database::AddUniqueKey(const String& sTableName, const String& sColName) {
 
   if (!IsIndex(sTableName, sColName)) CreateIndex(sTableName, sColName);
 }
+
 }  // namespace dbtrain_mysql
