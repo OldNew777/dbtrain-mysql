@@ -1,180 +1,19 @@
---SELECT AVG(tmp.name),MAX(tmp.id),COUNT(*) FROM tmp WHERE tmp.name < 30 AND tmp.name < (SELECT * FROM tmp) AND tmp.name IS NULL;
+CREATE DATABASE DATASET;
+USE DATASET;
 
--- CREATE DATABASE THU;
--- CREATE DATABASE THU1;
+CREATE TABLE PART (
+    P_PARTKEY        INT,
+    P_NAME           VARCHAR(55),
+    P_MFGR           VARCHAR(25),
+    P_BRAND          VARCHAR(10),
+    P_TYPE           VARCHAR(25),
+    P_SIZE           INT,
+    P_CONTAINER      VARCHAR(10),
+    P_RETAILPRICE    FLOAT,
+    P_COMMENT        VARCHAR(23),
+    PRIMARY KEY (P_PARTKEY)
+);
 
--- DROP DATABASE THU;
--- DROP DATABASE THU1;
-
-
-
--- CREATE DATABASE THU1;
--- USE THU1;
--- CREATE TABLE student(name VARCHAR(1800), id INT);
-
-CREATE DATABASE THU;
-USE THU;
-CREATE TABLE order(id INT, customer VARCHAR(64), date DATE NOT NULL);
-
-INSERT INTO order VALUES(1, 'Jack', 2022-01-07);
-
-SELECT * FROM order WHERE order.date = 2022-01-07;
-SELECT * FROM order WHERE order.date > 2022-02-29;
-SELECT * FROM order WHERE order.date < 2023-01-07;
-
-CREATE TABLE student(name VARCHAR(64), id INT);
-CREATE TABLE math(id INT, score FLOAT NOT NULL, PRIMARY KEY(id));
-
-INSERT INTO math VALUES(20, 90.5);
-INSERT INTO math VALUES(21, 88.5);
-INSERT INTO math VALUES(872, 0);
-INSERT INTO math VALUES(873, NULL);
-INSERT INTO math VALUES(874, 30);
-INSERT INTO math VALUES(875, 78.5);
-INSERT INTO math VALUES(875, 78.5);
-
-UPDATE math SET score = NULL WHERE math.id > 1;
-UPDATE math SET id = 20 WHERE math.score = 0;
-
-SELECT * FROM math;
-SELECT * FROM math LIMIT 2 OFFSET 1;
-
-INSERT INTO student VALUES('Jack',20);
-INSERT INTO student VALUES('bob',20);
-INSERT INTO student VALUES('alice',21);
-INSERT INTO student VALUES('Mike',20);
-
-
--- INSERT INTO student VALUES('Mike',NULL);
--- INSERT INTO student VALUES(NULL,872);
-
-SELECT * FROM student, math WHERE student.id = math.id;
-SELECT * FROM student WHERE student.name = 'Jack' AND student.id = 20;
-SELECT * FROM student WHERE student.name IN ('Jack', 'Mike');
-
--- UPDATE student SET id = 777 WHERE student.name IN ('Jack', 'Mike');
-
-SELECT * FROM student WHERE student.id > 30;
-SELECT * FROM student WHERE student.name = 'Jack';
-ALTER TABLE student ADD INDEX(id);
-SELECT * FROM student WHERE student.id > 30;
-
-
--- DUMP TO FILE 'dump.txt' FROM TABLE student;
--- LOAD FROM FILE 'dump.txt' TO TABLE student;
-
-SELECT * FROM student WHERE student.name = 'Jack';
-
-
-
-SELECT * FROM student;
-DESC student;
-
-
--- DROP DATABASE THU;
-
-
--- CREATE TABLE student1(name VARCHAR(2000), id INT);
--- CREATE TABLE student2(name VARCHAR(2000), id INT);
--- CREATE TABLE student3(name VARCHAR(2000), id INT);
--- CREATE TABLE student4(name VARCHAR(2000), id INT);
--- CREATE TABLE student5(name VARCHAR(2000), id INT);
--- CREATE TABLE student6(name VARCHAR(2000), id INT);
--- CREATE TABLE student7(name VARCHAR(2000), id INT);
--- CREATE TABLE student8(name VARCHAR(2000), id INT);
--- CREATE TABLE student9(name VARCHAR(2000), id INT);
--- CREATE TABLE student10(name VARCHAR(2000), id INT);
--- CREATE TABLE student11(name VARCHAR(2000), id INT);
--- CREATE TABLE student12(name VARCHAR(2000), id INT);
--- CREATE TABLE student13(name VARCHAR(2000), id INT);
--- CREATE TABLE student14(name VARCHAR(2000), id INT);
--- CREATE TABLE student15(name VARCHAR(2000), id INT);
--- CREATE TABLE student16(name VARCHAR(2000), id INT);
--- CREATE TABLE student17(name VARCHAR(2000), id INT);
--- CREATE TABLE student18(name VARCHAR(2000), id INT);
--- CREATE TABLE student19(name VARCHAR(2000), id INT);
--- CREATE TABLE student20(name VARCHAR(2000), id INT);
--- CREATE TABLE student21(name VARCHAR(2000), id INT);
--- CREATE TABLE student22(name VARCHAR(2000), id INT);
--- CREATE TABLE student23(name VARCHAR(2000), id INT);
--- CREATE TABLE student24(name VARCHAR(2000), id INT);
--- CREATE TABLE student25(name VARCHAR(2000), id INT);
--- CREATE TABLE student26(name VARCHAR(2000), id INT);
--- CREATE TABLE student27(name VARCHAR(2000), id INT);
--- CREATE TABLE student28(name VARCHAR(2000), id INT);
--- CREATE TABLE student29(name VARCHAR(2000), id INT);
--- CREATE TABLE student30(name VARCHAR(2000), id INT);
--- CREATE TABLE student31(name VARCHAR(2000), id INT);
--- CREATE TABLE student32(name VARCHAR(2000), id INT);
--- CREATE TABLE student33(name VARCHAR(2000), id INT);
--- CREATE TABLE student34(name VARCHAR(2000), id INT);
--- CREATE TABLE student35(name VARCHAR(2000), id INT);
--- CREATE TABLE student36(name VARCHAR(2000), id INT);
--- CREATE TABLE student37(name VARCHAR(2000), id INT);
--- CREATE TABLE student38(name VARCHAR(2000), id INT);
--- CREATE TABLE student39(name VARCHAR(2000), id INT);
--- CREATE TABLE student40(name VARCHAR(2000), id INT);
--- CREATE TABLE student41(name VARCHAR(2000), id INT);
--- CREATE TABLE student42(name VARCHAR(2000), id INT);
--- CREATE TABLE student43(name VARCHAR(2000), id INT);
--- CREATE TABLE student44(name VARCHAR(2000), id INT);
--- CREATE TABLE student45(name VARCHAR(2000), id INT);
--- CREATE TABLE student46(name VARCHAR(2000), id INT);
--- CREATE TABLE student47(name VARCHAR(2000), id INT);
--- CREATE TABLE student48(name VARCHAR(2000), id INT);
--- CREATE TABLE student49(name VARCHAR(2000), id INT);
--- CREATE TABLE student50(name VARCHAR(2000), id INT);
--- CREATE TABLE student51(name VARCHAR(2000), id INT);
--- CREATE TABLE student52(name VARCHAR(2000), id INT);
--- CREATE TABLE student53(name VARCHAR(2000), id INT);
--- CREATE TABLE student54(name VARCHAR(2000), id INT);
--- CREATE TABLE student55(name VARCHAR(2000), id INT);
--- CREATE TABLE student56(name VARCHAR(2000), id INT);
--- CREATE TABLE student57(name VARCHAR(2000), id INT);
--- CREATE TABLE student58(name VARCHAR(2000), id INT);
--- CREATE TABLE student59(name VARCHAR(2000), id INT);
--- CREATE TABLE student60(name VARCHAR(2000), id INT);
--- CREATE TABLE student61(name VARCHAR(2000), id INT);
--- CREATE TABLE student62(name VARCHAR(2000), id INT);
--- CREATE TABLE student63(name VARCHAR(2000), id INT);
--- CREATE TABLE student64(name VARCHAR(2000), id INT);
--- CREATE TABLE student65(name VARCHAR(2000), id INT);
--- CREATE TABLE student66(name VARCHAR(2000), id INT);
--- CREATE TABLE student67(name VARCHAR(2000), id INT);
--- CREATE TABLE student68(name VARCHAR(2000), id INT);
--- CREATE TABLE student69(name VARCHAR(2000), id INT);
--- CREATE TABLE student70(name VARCHAR(2000), id INT);
-
-SHOW TABLES; 
-DESC student;
-ALTER TABLE student ADD PRIMARY KEY (name);
-
-INSERT INTO order VALUES(1, 'Mike', 2022-01-07);
-INSERT INTO order VALUES(2, 'Jack', 2022-01-06);
-INSERT INTO order VALUES(3, 'TOM', 2022-01-05);
-SELECT * FROM order;
--- ALTER TABLE order ADD PRIMARY KEY (customer, date);
--- DESC order;
--- ALTER TABLE order DROP PRIMARY KEY (date);
-DESC order;
-SHOW TABLES;
-
-CREATE TABLE teacher (id INT, customer VARCHAR(64), num INT);
-INSERT INTO teacher VALUES(1, 'TOM', 4);
--- SELECT * FROM teacher WHERE teacher.customer = 'TOM';
-
-INSERT INTO teacher VALUES(2, 'Jack', 5);
-INSERT INTO teacher VALUES(3, 'ZYH', 6);
--- INSERT INTO teacher VALUES(NULL, 'ZYH', 6);
-SELECT * FROM teacher;
--- CREATE TABLE teacher2 (id2 INT, customer2 VARCHAR(64), num2 INT);
-CREATE TABLE teacher2 (id2 INT, customer2 VARCHAR(64), num2 INT, FOREIGN KEY (id2) REFERENCES teacher (id, num));
-DESC SHADOW teacher;
-DESC SHADOW teacher2;
-
---          --
--- NEW TEST --
---          --
 CREATE TABLE REGION (
     R_REGIONKEY    INT,
     R_NAME         VARCHAR(25),
@@ -194,20 +33,89 @@ CREATE TABLE NATION (
 CREATE TABLE SUPPLIER (
     S_SUPPKEY        INT,
     S_NAME           VARCHAR(25),
-    S_REGIONKEY      INT NOT NULL,
+    S_ADDRESS        VARCHAR(40),
     S_NATIONKEY      INT NOT NULL,
+    S_PHONE          VARCHAR(15),
+    S_ACCTBAL        FLOAT,
     S_COMMENT        VARCHAR(101),
     PRIMARY KEY (S_SUPPKEY),
-    FOREIGN KEY (S_NATIONKEY, S_REGIONKEY) REFERENCES NATION(N_NATIONKEY, N_REGIONKEY)
+    FOREIGN KEY (S_NATIONKEY) REFERENCES NATION(N_NATIONKEY)
 );
-LOAD FROM FILE './data_test/REGION.csv' TO TABLE REGION;
-LOAD FROM FILE './data_test/NATION.csv' TO TABLE NATION;
-LOAD FROM FILE './data_test/SUPPLIER.csv' TO TABLE SUPPLIER;
-DESC REGION;
+
+CREATE TABLE CUSTOMER (
+    C_CUSTKEY        INT,
+    C_NAME           VARCHAR(25),
+    C_ADDRESS        VARCHAR(40),
+    C_NATIONKEY      INT NOT NULL,
+    C_PHONE          VARCHAR(15),
+    C_ACCTBAL        FLOAT,
+    C_MKTSEGMENT     VARCHAR(10),
+    C_COMMENT        VARCHAR(117),
+    PRIMARY KEY (C_CUSTKEY),
+    FOREIGN KEY (C_NATIONKEY) REFERENCES NATION(N_NATIONKEY)
+);
+
+
+CREATE TABLE PARTSUPP (
+    PS_PARTKEY        INT NOT NULL,
+    PS_SUPPKEY        INT NOT NULL,
+    PS_AVAILQTY       INT,
+    PS_SUPPLYCOST     FLOAT,
+    PS_COMMENT        VARCHAR(199),
+    PRIMARY KEY (PS_PARTKEY, PS_SUPPKEY),
+    FOREIGN KEY (PS_PARTKEY) REFERENCES PART(P_PARTKEY),
+    FOREIGN KEY (PS_SUPPKEY) REFERENCES SUPPLIER(S_SUPPKEY)
+);
+
+CREATE TABLE ORDERS (
+    O_ORDERKEY        INT,
+    O_CUSTKEY         INT NOT NULL,
+    O_ORDERSTATUS     VARCHAR(1),
+    O_TOTALPRICE      FLOAT,
+    O_ORDERDATE       DATE,
+    O_ORDERPRIORITY   VARCHAR(15),
+    O_CLERK           VARCHAR(15),
+    O_SHIPPRIORITY    INT,
+    O_COMMENT         VARCHAR(79),
+    PRIMARY KEY (O_ORDERKEY),
+    FOREIGN KEY (O_CUSTKEY) REFERENCES CUSTOMER(C_CUSTKEY)
+);
+
+
+CREATE TABLE LINEITEM (
+    L_ORDERKEY        INT NOT NULL,
+    L_PARTKEY         INT NOT NULL,
+    L_SUPPKEY         INT NOT NULL,
+    L_LINENUMBER      INT,
+    L_QUANTITY        FLOAT,
+    L_EXTENDEDPRICE   FLOAT,
+    L_DISCOUNT        FLOAT,
+    L_TAX             FLOAT,
+    L_RETURNFLAG      VARCHAR(1),
+    L_LINESTATUS      VARCHAR(1),
+    L_SHIPDATE        DATE,
+    L_COMMITDATE      DATE,
+    L_RECEIPTDATE     DATE,
+    L_SHIPINSTRUCT    VARCHAR(25),
+    L_SHIPMODE        VARCHAR(10),
+    L_COMMENT         VARCHAR(44),
+    PRIMARY KEY (L_ORDERKEY, L_LINENUMBER),
+    FOREIGN KEY (L_ORDERKEY) REFERENCES ORDERS(O_ORDERKEY),
+    FOREIGN KEY (L_PARTKEY,L_SUPPKEY) REFERENCES PARTSUPP(PS_PARTKEY,PS_SUPPKEY)
+);
 DESC NATION;
+DESC REGION;
 DESC SUPPLIER;
-SELECT * FROM REGION;
-SELECT * FROM NATION;
-SELECT * FROM SUPPLIER;
-
-
+DESC CUSTOMER;
+DESC PART;
+DESC PARTSUPP;
+DESC ORDERS;
+DESC LINEITEM;
+LOAD FROM FILE '../data-with-date/region.csv' TO TABLE REGION;
+LOAD FROM FILE '../data-with-date/nation.csv' TO TABLE NATION;
+LOAD FROM FILE '../data-with-date/supplier.csv' TO TABLE SUPPLIER;
+LOAD FROM FILE '../data-with-date/part.csv' TO TABLE PART;
+LOAD FROM FILE '../data-with-date/partsupp.csv' TO TABLE PARTSUPP;
+LOAD FROM FILE '../data-with-date/customer.csv' TO TABLE CUSTOMER;
+LOAD FROM FILE '../data-with-date/orders.csv' TO TABLE ORDERS;
+LOAD FROM FILE '../data-with-date/lineitem.csv' TO TABLE LINEITEM;
