@@ -25,9 +25,15 @@ KeyManager::~KeyManager() { Store(); }
 
 PageID KeyManager::GetPageID() const { return _nPageID; }
 
-void KeyManager::Clear() {}
+void KeyManager::Clear() {
+  _bCleared = true;
+  LinkedPage pLinkedPage(_nPageID);
+  pLinkedPage.ReleaseListAll();
+}
 
 void KeyManager::Store() {
+  if (_bCleared) return;
+
   FixedRecord *pRecord = new FixedRecord(
       5,
       {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::CHAR_TYPE,
@@ -50,8 +56,8 @@ void KeyManager::Store() {
         *pLocalColName, *pForeignColName;
     for (int i = 0; i < pPage->GetCap(), iter != _iKeyMap.end(); ++i) {
       const auto &key = iter->second;
-      pConstraintName = new CharField(iter->first);
-      pLocalTableName = new CharField(iter->second.sLocalTableName);
+      pLocalTableName = new CharField(iter->first);
+      pConstraintName = new CharField(iter->second.sConstraintName);
       pLocalColName = new CharField(iter->second.sLocalColName[index]);
       if (key.iType == KeyType::PRIMARY_KEY_TYPE) {
         pForeignTableName = new CharField(iter->second.sForeignTableName);
@@ -119,7 +125,8 @@ void KeyManager::Load() {
   RecordPage *pPage;
   if (_nPageID == NULL_PAGE) {
     pPage = new RecordPage(
-        CONSTRAINT_NAME_SIZE + 2 * (TABLE_NAME_SIZE + COLUMN_NAME_SIZE) + 1, true);
+        CONSTRAINT_NAME_SIZE + 2 * (TABLE_NAME_SIZE + COLUMN_NAME_SIZE) + 1,
+        true);
     _nPageID = pPage->GetPageID();
     _iDefaultKeyIndex = 0;
   } else {
@@ -141,8 +148,8 @@ void KeyManager::Load() {
       String sConstraintName = pRecord->GetField(0)->ToString();
       String sLocalTableName = pRecord->GetField(1)->ToString();
       String sLocalColName = pRecord->GetField(2)->ToString();
-      Key &key = _iKeyMap[sConstraintName];
-      key.sLocalTableName = sLocalTableName;
+      Key &key = _iKeyMap[sLocalTableName];
+      key.sConstraintName = sConstraintName;
       key.sLocalColName.push_back(sLocalColName);
       if (sConstraintName.substr(0, 7) == "PRIMARY") {
         key.iType = KeyType::PRIMARY_KEY_TYPE;
