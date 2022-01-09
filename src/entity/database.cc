@@ -1131,6 +1131,7 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
       printf("foreign key should have same type\n");
       throw ForeignKeyException("foreign key should have same type");
     }
+    
     // check reference not null
     if (_CheckHaveNull(fTableName, fColName)) {
       printf("reference key cannot be null\n");

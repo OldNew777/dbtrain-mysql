@@ -21,7 +21,7 @@ FieldType Column::GetType() const { return _iType; }
 
 Size Column::GetSize() const { return _nSize; }
 
-bool Column::GetCanBeNull() const {return _canBeNull || !_isPrimary;}
+bool Column::GetCanBeNull() const {return _canBeNull;}
 
 bool Column::GetIsPrimary() const {return _isPrimary;}
 std::vector<std::pair<String, String> > Column::GetForeignKeyVec() const{
