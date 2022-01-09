@@ -16,11 +16,13 @@ class DatabasePage : public ManagerPage {
   virtual ~DatabasePage() = default;
 
   PageID GetIndexManagerPageID() const;
+  PageID GetKeyManagerPageID() const;
 
   virtual ManagerPageType GetManagerPageType() const;
 
  protected:
-  PageID nIndexManagerPageID;
+  PageID _nIndexManagerPageID;
+  PageID _nKeyManagerPageID;
 
   friend class Database;
 };

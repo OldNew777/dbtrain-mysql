@@ -26,6 +26,7 @@ const PageID MYSQL_MANAGER_PAGEID = 0;
 const PageOffset DATABASE_NAME_SIZE = 64;
 const PageOffset TABLE_NAME_SIZE = 64;
 const PageOffset COLUMN_NAME_SIZE = 64;
+const PageOffset CONSTRAINT_NAME_SIZE = 64;
 const PageOffset INDEX_NAME_SIZE = TABLE_NAME_SIZE + 1 + COLUMN_NAME_SIZE;
 
 const Size FIELD_TYPE_BYTES = 1;
