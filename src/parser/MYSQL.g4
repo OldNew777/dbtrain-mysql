@@ -73,7 +73,8 @@ alter_statement:
 		')' 'REFERENCES' Identifier '(' identifiers ')'					# alter_table_add_foreign_key
 	| 'ALTER' 'TABLE' Identifier 'ADD' 'UNIQUE' '(' identifiers ')'		# alter_table_add_unique
 	| 'ALTER' 'TABLE' Identifier 'DROP' 'UNIQUE' '(' identifiers ')'	# alter_table_drop_unique
-	| 'ALTER' 'TABLE' Identifier 'RENAME' 'TO' Identifier				# alter_table_rename;
+	| 'ALTER' 'TABLE' Identifier 'RENAME' 'TO' Identifier				# alter_table_rename
+	;
 
 field_list: field (',' field)*;
 

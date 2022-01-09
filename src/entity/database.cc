@@ -48,6 +48,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     std::cout << e.what() << "\n";
     throw e;
   }
+#ifndef NO_FOREIGN_KEY
   // check foreign key
   // insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {
@@ -65,6 +66,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
       // insert local shadow table
     }
   }
+#endif //NO_FOREIGN_KEY
 
   // Create table and cache it
   TablePage* pPage = new TablePage(iSchema);
@@ -74,7 +76,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
   // create shadowpage
   // create a shadow table
-
+#ifndef NO_FOREIGN_KEY
   std::vector<Column> shadowTableColVec;
   shadowTableColVec.push_back(Column(SHADOW_STATUS_NAME, FieldType::CHAR_TYPE,
                                      false, false, SHADOW_STATUS_SIZE,
@@ -92,10 +94,14 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   Table* shadowTable = new Table(shadowPage);
   _iEntityMap["@" + sTableName] = shadowTable;
   _iEntityPageIDMap["@" + sTableName] = shadowPage->GetPageID();
+  InsertEntity("@" + sTableName);
+
+#endif //NO_FOREIGN_KEY
+  
 
   // insert entity to page
   InsertEntity(sTableName);
-  InsertEntity("@" + sTableName);
+  
 
 #ifndef NO_INDEX
   // insert index
@@ -104,7 +110,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
   }
 #endif
-
+#ifndef NO_FOREIGN_KEY
   // insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
@@ -132,9 +138,9 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         GetTable(sTableName)->SetForeignKey(column.GetName());
       }
     }
-
     // printf("3\n");
   }
+#endif //NO_FOREIGN KEY
 }
 
 void Database::DropTable(const String& sTableName) {
@@ -267,15 +273,29 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
 
   // check NOT-NULL / PRIMARY-KEY / UNIQUE KEY
   std::vector<String> iColNameVec = GetColumnNames(sTableName);
+#ifndef NO_PRIMARY_KEY
   for (int i = 0; i < iTrans.size(); ++i) {
     const String& sColName = iColNameVec[iTrans[i].GetColPos()];
     if (iTrans[i].GetField()->GetType() == FieldType::NULL_TYPE &&
-        (!pTable->GetCanBeNull(sColName) || pTable->GetIsPrimary(sColName))) {
+        (!pTable->GetCanBeNull(sColName) 
+        || pTable->GetIsPrimary(sColName))){
       auto e = FieldListException("Column should not be NULL");
       std::cout << e.what() << "\n";
       throw e;
     }
   }
+#else 
+  for (int i = 0; i < iTrans.size(); ++i) {
+    const String& sColName = iColNameVec[iTrans[i].GetColPos()];
+    if (iTrans[i].GetField()->GetType() == FieldType::NULL_TYPE &&
+        (!pTable->GetCanBeNull(sColName) )){
+      auto e = FieldListException("Column should not be NULL");
+      std::cout << e.what() << "\n";
+      throw e;
+    }
+  }
+#endif
+#ifndef NO_PRIMARY_KEY
   bool primaryKeyConflict = false;
   for (int i = 0; i < iTrans.size(); ++i) {
     const String& sColName = iColNameVec[iTrans[i].GetColPos()];
@@ -309,7 +329,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
     std::cout << e.what() << "\n";
     throw e;
   }
-
+#endif //NO_PRIMARY_KEY
 #ifndef NO_FOREIGN_KEY
   // check fk
   for (int i = 0; i < iTrans.size(); ++i) {
@@ -406,6 +426,7 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
 #ifndef NO_INSERT_CHECK;
+#ifndef NO_PRIMARY_KEY
   // check null
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
@@ -416,6 +437,17 @@ PageSlotID Database::Insert(const String& sTableName,
       throw e;
     }
   }
+#else
+  for (int i = 0; i < iColNameVec.size(); i++) {
+    const String& sColName = iColNameVec[i];
+    if (iRawVec[i] == "NULL" &&
+        (!pTable->GetCanBeNull(sColName))) {
+      auto e = FieldListException("Column should not be NULL");
+      std::cout << e.what() << "\n";
+      throw e;
+    }
+  }
+#endif //NOPRIMARY_KEY
 
   Record* pRecord = pTable->EmptyRecord();
   try {
@@ -424,7 +456,7 @@ PageSlotID Database::Insert(const String& sTableName,
     delete pRecord;
     throw e;
   }
-
+#ifndef NO_PRIMARY_KEY
   // check primary key
   std::vector<PageSlotID> duplicatedVec;
   for (int i = 0; i < iColNameVec.size(); i++) {
@@ -460,7 +492,8 @@ PageSlotID Database::Insert(const String& sTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
-
+#endif //NO_PRIMARY_KEY
+#ifndef NO_FOREIGN_KEY
   // check foreignkey
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
@@ -481,7 +514,8 @@ PageSlotID Database::Insert(const String& sTableName,
       }
     }
   }
-#endif
+#endif //NO_FOREIGN_KEY
+#endif //NO_INSERT_CHECK
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);
 #ifndef NO_INDEX
@@ -508,13 +542,14 @@ PageSlotID Database::Insert(const String& sTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
+
   std::vector<std::string> iColNameVec = pTable->GetColumnNames();
   if (iColNameVec.size() != iValueVec.size()) {
     auto e = FieldListException("Column num does not correspond");
     std::cout << e.what() << "\n";
     throw e;
   }
-
+#ifndef NO_PRIMARY_KEY
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
     if (iValueVec[i]->GetType() == FieldType::NULL_TYPE &&
@@ -524,7 +559,17 @@ PageSlotID Database::Insert(const String& sTableName,
       throw e;
     }
   }
-
+#else
+  for (int i = 0; i < iColNameVec.size(); i++) {
+    const String& sColName = iColNameVec[i];
+    if (iValueVec[i]->GetType() == FieldType::NULL_TYPE &&
+        (!pTable->GetCanBeNull(sColName))) {
+      auto e = FieldListException("Column should not be NULL");
+      std::cout << e.what() << "\n";
+      throw e;
+    }
+  }
+#endif //NO_PRIMARY_KEY
   Record* pRecord = pTable->EmptyRecord();
   try {
     pRecord->Build(iValueVec);
@@ -534,7 +579,9 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
 #ifndef NO_INSERT_CHECK
+#ifndef NO_PRIMARY_KEY
   // check primary key
+
   std::vector<PageSlotID> duplicatedVec;
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
@@ -569,7 +616,8 @@ PageSlotID Database::Insert(const String& sTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
-
+#endif //NO_PRIMARY_KEY
+#ifndef NO_FOREIGN_KEY
   // check foreignkey
   for (int i = 0; i < iColNameVec.size(); i++) {
     const String& sColName = iColNameVec[i];
@@ -590,7 +638,8 @@ PageSlotID Database::Insert(const String& sTableName,
       }
     }
   }
-#endif
+#endif //NO_FOREIGN_KEY
+#endif //NO_INSERT_CHECK
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);
 #ifndef NO_INDEX
@@ -1088,7 +1137,7 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
     _UpdateReferedKey(fTableName, fColName);
   }
 }
-void Database::DropFroeignKey(const String& sTableName,
+void Database::DropForeignKey(const String& sTableName,
                               const String& sColName) {
   std::vector<std::pair<String, String>> fPairVec =
       GetForeignKey(sTableName, sColName);

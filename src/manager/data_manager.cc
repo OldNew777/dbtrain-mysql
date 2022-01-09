@@ -586,6 +586,6 @@ void DataManager::DropPrimaryKey(const String& sTableName,
 void DataManager::DropForeignKey(const String& sTableName,
                                  const String& sColName) {
   CheckDatabaseUsed();
-  _pDatabase->DropFroeignKey(sTableName, sColName);
+  _pDatabase->DropForeignKey(sTableName, sColName);
 }
 }  // namespace dbtrain_mysql

@@ -772,11 +772,14 @@ antlrcpp::Any SystemVisitor::visitNormal_field(
 
 antlrcpp::Any SystemVisitor::visitPrimary_key_field(
     MYSQLParser::Primary_key_fieldContext *ctx) {
+  #ifndef NO_PRIMARY_KEY
   std::vector<String> vec = ctx->identifiers()->accept(this);
   for (int i = 0; i < vec.size(); i++) {
     vec[i] = "@" + vec[i];
   }
   return vec;
+  #endif //NO_PRIMARY_KEY
+  return std::vector<String>();
 }
 
 antlrcpp::Any SystemVisitor::visitForeign_key_field(

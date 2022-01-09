@@ -86,7 +86,7 @@ class Database : public EntityManager {
   void AddUniqueKey(const String& sTableName, const String& sColName);
 
   void DropPrimaryKey(const String& sTableName, const String& sColName);
-  void DropFroeignKey(const String& sTableName, const String& sColName);
+  void DropForeignKey(const String& sTableName, const String& sColName);
   void DropTableForeignKey(const String& sTableName);
   void DropUniqueKey(const String& sTableName, const String& sColName);
   /**
