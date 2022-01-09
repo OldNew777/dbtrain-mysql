@@ -648,9 +648,8 @@ antlrcpp::Any SystemVisitor::visitField_list(
   std::vector<String> iFKNameVec;
   std::set<String> iFKNameSet;
   std::map<String, std::vector<int> > iFKMap;
-  
-
-  std::set<String> pkSet;
+  //pk
+  std::vector<std::vector<String> > iPKVec;
   std::vector<Column> iColVec;
 
   for (const auto &it : ctx->field()) {
@@ -658,8 +657,9 @@ antlrcpp::Any SystemVisitor::visitField_list(
     
     if (retVec.size() == 0) continue;
     if (retVec[0][0] == '@') {  // primary key
+      iPKVec.push_back({});
       for (String &str : retVec) {
-        pkSet.insert(str);
+        iPKVec.back().push_back(str);
       }
     } else if (retVec[0][0] == '#') {  // foreign key
       String sForeignTableName = retVec[0].substr(1);
@@ -739,7 +739,7 @@ antlrcpp::Any SystemVisitor::visitField_list(
         }
       }
     }
-    iColVec.push_back(Column(sColName, type, canBeNull, isPrimary, size, colFKVec));
+    iColVec.push_back(Column(sColName, type, canBeNull, isPrimary, colFKVec.size(), size));
   }
 
   return Schema(iColVec);

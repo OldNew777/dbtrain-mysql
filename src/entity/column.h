@@ -10,7 +10,9 @@ class Column {
  public:
   // Column(const String& sName, FieldType iType, bool isNull);
   Column(const String& sName, FieldType iType, bool CanBeNull, 
-    bool isPrimary, Size nSize,std::vector<std::vector<String> > sForeignVec);
+    bool isPrimary, bool isForeign, const Size& nSize);
+  Column(const std::vector<std::vector<String> >& sPKVec, 
+    const std::vector<std::vector<std::pair<String, String> > >& sFKVec);
   ~Column() = default;
 
   String GetName() const;
