@@ -58,6 +58,11 @@ bool Index::Insert(Field *pKey, const PageSlotID &iPair) {
   }
 
   _bModified = true;
+
+#ifdef INDEX_DEBUG
+  print();
+#endif
+
   return true;
 }
 
@@ -74,6 +79,11 @@ Size Index::Delete(Field *pKey) {
     // merge node here
     rootPage->Arange(0, rootPage->size());
   }
+
+#ifdef INDEX_DEBUG
+  print();
+#endif
+
   return ans;
 }
 
@@ -98,6 +108,11 @@ bool Index::Delete(Field *pKey, const PageSlotID &iPair) {
   }
 
   _bModified = true;
+
+#ifdef INDEX_DEBUG
+  print();
+#endif
+
   return true;
 }
 
@@ -106,6 +121,10 @@ bool Index::Update(Field *pKey, const PageSlotID &iOld,
   // 利用根结点的Update执行删除
   _bModified = true;
   return rootPage->Update(pKey, iOld, iNew);
+
+#ifdef INDEX_DEBUG
+  print();
+#endif
 }
 
 std::vector<PageSlotID> Index::Range(Field *pLow, Field *pHigh) {
@@ -117,19 +136,24 @@ std::vector<PageSlotID> Index::Range(Field *pLow, Field *pHigh) {
   }
   std::vector<PageSlotID> ans = rootPage->Range(pLow, pHigh);
 
-#ifdef DEBUG
-  std::cout << "\n$$$$$$$ [" << pLow->ToString() << ", " << pHigh->ToString()
-            << ") $$$$$$$$\n";
+#ifdef INDEX_DEBUG
+  std::cout << "\n--------------------------------------------\n";
+  std::cout << "$$$$$$$ Index::Range [" << pLow->ToString() << ", "
+            << pHigh->ToString() << ") $$$$$$$$\n";
   for (Size i = 0; i < ans.size(); ++i)
     printf("(%d, %d)\n", (int)ans[i].first, (int)ans[i].second);
-  std::cout << "$$$$$$$$$$$$$$$\n\n";
-
-  print();
+  std::cout << "--------------------------------------------\n\n";
 #endif
 
   return ans;
 }
 
-void Index::print() const { rootPage->print(); }
+void Index::print() const {
+  std::cout << "\n++++++++++++++++++++++++++++++++++++++\n";
+  std::cout << "Start to Print Index : Root PageID = " << rootPage->GetPageID()
+            << std::endl;
+  rootPage->print();
+  std::cout << "++++++++++++++++++++++++++++++++++++++\n" << std::endl;
+}
 
 }  // namespace dbtrain_mysql

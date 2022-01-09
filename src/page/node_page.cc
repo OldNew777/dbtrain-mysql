@@ -244,6 +244,12 @@ bool NodePage::Delete(Field *pKey, const PageSlotID &iPair) {
   // 4.删除空结点情况下需要更新KeyVec和ChildVec
   else {
     Size child_index = LowerBound(pKey);
+
+#ifdef INDEX_DEBUG
+    printf("Children sum = %d, child_index = %d\n", int(_iChildVec.size()),
+           int(child_index));
+#endif
+
     NodePage *childNodePage = new NodePage(_iChildVec[child_index].first);
     ans = childNodePage->Delete(pKey, iPair);
     if (!ans) {
@@ -422,7 +428,7 @@ void NodePage::Arange(Size left, Size right) {
 }
 
 std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
-#ifdef DEBUG
+#ifdef INDEX_DEBUG
   std::cout << "Range start : [" << pLow->ToString() << ", "
             << pHigh->ToString() << ")\n";
 #endif
@@ -434,13 +440,14 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
   if (Empty()) return ans;
 
   if (_bLeaf) {
-#ifdef DEBUG
+#ifdef INDEX_DEBUG
     std::cout << "Leaf" << std::endl;
 #endif
 
     Size left_index = LowerBound(pLow), right_index = LessBound(pHigh);
-    if (left_index == right_index && (Less(_iKeyVec[left_index], pLow) ||
-                                      !Less(_iKeyVec[right_index], pHigh)))
+    if (left_index == right_index &&
+        (Less(_iKeyVec[left_index], pLow) ||
+         GreaterEqual(_iKeyVec[right_index], pHigh)))
       return ans;
     ans.insert(ans.end(), _iChildVec.begin() + left_index,
                _iChildVec.begin() + right_index + 1);
@@ -456,7 +463,8 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
       if (pPage->Empty()) return ans;
       Size child_index = pPage->LowerBound(pLow);
 
-#ifdef DEBUG
+      if (child_index >= _iChildVec.size()) --child_index;
+#ifdef INDEX_DEBUG
       std::cout << "child_index = " << child_index << std::endl;
 #endif
 
@@ -467,7 +475,7 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
     std::vector<PageSlotID> leaf_ans = pPage->Range(pLow, pHigh);
     ans.insert(ans.end(), leaf_ans.begin(), leaf_ans.end());
 
-#ifdef DEBUG
+#ifdef INDEX_DEBUG
     pPage->print();
     std::cout << "\n$$$$$$$$$$$$$$$\n";
     for (Size i = 0; i < leaf_ans.size(); ++i)
@@ -480,7 +488,7 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
            leaf_ans[leaf_ans.size() - 1] ==
                pPage->_iChildVec[pPage->_iChildVec.size() - 1] &&
            pPage->GetNextID() != NULL_PAGE) {
-#ifdef DEBUG
+#ifdef INDEX_DEBUG
       std::cout << "-------> (" << leaf_ans[leaf_ans.size() - 1].first << ", "
                 << leaf_ans[leaf_ans.size() - 1].second << ") == ("
                 << pPage->_iChildVec[pPage->_iChildVec.size() - 1].first << ", "
@@ -494,7 +502,7 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
       leaf_ans = pPage->Range(pLow, pHigh);
       ans.insert(ans.end(), leaf_ans.begin(), leaf_ans.end());
 
-#ifdef DEBUG
+#ifdef INDEX_DEBUG
       pPage->print();
       std::cout << "\n$$$$$$$$$$$$$$$\n";
       for (Size i = 0; i < leaf_ans.size(); ++i)
@@ -505,7 +513,7 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
     delete pPage;
   }
 
-#ifdef DEBUG
+#ifdef INDEX_DEBUG
   std::cout << "Range end\n";
 #endif
 
@@ -541,7 +549,7 @@ void NodePage::print() const {
     std::cout << i << " : " << _iKeyVec[i]->ToString() << " -> ("
               << _iChildVec[i].first << ", " << _iChildVec[i].second << ")\n";
   }
-  std::cout << "**************************************\n\n";
+  std::cout << "**************************************\n" << std::endl;
   if (!_bLeaf)
     for (int i = 0; i < _iChildVec.size(); ++i) {
       NodePage childNodePage(_iChildVec[i].first);
@@ -676,7 +684,7 @@ Size NodePage::LowerBound(Field *pField) {
   Size nBegin = 0, nEnd = size();
   while (nBegin < nEnd) {
     Size nMid = (nBegin + nEnd) / 2;
-    if (!Less(_iKeyVec[nMid], pField)) {
+    if (GreaterEqual(_iKeyVec[nMid], pField)) {
       nEnd = nMid;
     } else {
       nBegin = nMid + 1;

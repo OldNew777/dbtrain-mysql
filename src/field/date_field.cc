@@ -52,10 +52,10 @@ void DateField::Add() {
   if (!LeagalDate(year, month, day)) {
     day = 1;
     ++month;
-    if (month >= 13){
+    if (month >= 13) {
       month = 1;
       ++year;
-    } 
+    }
   }
 }
 

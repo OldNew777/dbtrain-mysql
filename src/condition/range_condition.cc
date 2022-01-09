@@ -23,7 +23,7 @@ RangeCondition::~RangeCondition() {
 
 bool RangeCondition::Match(const Record& iRecord) const {
   Field* pField = iRecord.GetField(_nPos);
-  return LessEqual(_pLow, pField) && Greater(_pHigh, pField);
+  return GreaterEqual(pField, _pLow) && Less(pField, _pHigh);
 }
 
 }  // namespace dbtrain_mysql
