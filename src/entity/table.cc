@@ -214,29 +214,32 @@ std::vector<Record*> Table::GetTableInfos() const {
 
 EntityType Table::GetEntityType() const { return EntityType::TABLE_TYPE; }
 
-void Table::AddPrimaryKey(const std::vector<String>& iColVec){
-  for(int i = 0; i < iColVec.size(); i ++){
-    _pTablePage->_iStatusVec[_pTablePage->GetColPos(iColVec[i])] |= 0b10 ;//add primary key
+void Table::AddPrimaryKey(const std::vector<String>& iColVec) {
+  for (int i = 0; i < iColVec.size(); i++) {
+    _pTablePage->_iStatusVec[_pTablePage->GetColPos(iColVec[i])] |=
+        0b00000010;  // add primary key
   }
 }
-void Table::SetForeignKey(const String& sColName){
-  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b100;
+void Table::SetForeignKey(const String& sColName) {
+  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b00000100;
 }
-void Table::AddReferedKey(const String& sColName){
-  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b1000;
+void Table::AddReferedKey(const String& sColName) {
+  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b00001000;
 }
-void Table::AddUniqueKey(const String& sColName){
-  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b10000;
+void Table::AddUniqueKey(const String& sColName) {
+  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b00010000;
 }
-void Table::DropPrimaryKey(const String& sColName){
+void Table::DropPrimaryKey(const String& sColName) {
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] &= 0b11111101;
 }
-void Table::DropForeignKey(const String& sColName){
+void Table::DropForeignKey(const String& sColName) {
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] &= 0b11111011;
 }
-void Table::DropReferedKey(const String& sColName){
+void Table::DropReferedKey(const String& sColName) {
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] &= 0b11110111;
 }
-
+void Table::DropUniqueKey(const String& sColName) {
+  _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] &= 0b11101111;
+}
 
 }  // namespace dbtrain_mysql

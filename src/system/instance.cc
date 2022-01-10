@@ -151,21 +151,30 @@ std::pair<std::vector<String>, std::vector<Record*>> Instance::Join(
     std::vector<Condition*>& iJoinConds) {
   return _pDataManager->Join(iResultMap, iJoinConds);
 }
-void Instance::AddPrimaryKey(const String& sTableName, const std::vector<String> sColNameVec){
+void Instance::AddPrimaryKey(const String& sTableName,
+                             const std::vector<String> sColNameVec) {
   _pDataManager->AddPrimaryKey(sTableName, sColNameVec);
 }
 void Instance::AddForeignKey(const String& lTableName, const String& lColName,
-    const String& fTableName, const std::vector<String>& fColName){
+                             const String& fTableName,
+                             const std::vector<String>& fColName) {
   _pDataManager->AddForeignKey(lTableName, lColName, fTableName, fColName);
 }
-void Instance::AddUniqueKey(const String& sTableName, const String& sColNameVec){
+void Instance::AddUniqueKey(const String& sTableName,
+                            const String& sColNameVec) {
   _pDataManager->AddUniqueKey(sTableName, sColNameVec);
 }
 
-void Instance::DropPrimaryKey(const String& sTableName, const String& sColName) {
+void Instance::DropPrimaryKey(const String& sTableName,
+                              const String& sColName) {
   _pDataManager->DropPrimaryKey(sTableName, sColName);
 }
-void Instance::DropForeignKey(const String& sTableName, const String& sColName) {
+void Instance::DropForeignKey(const String& sTableName,
+                              const String& sColName) {
   _pDataManager->DropForeignKey(sTableName, sColName);
 }
+void Instance::DropUniqueKey(const String& sTableName, const String& sColName) {
+  _pDataManager->DropUniqueKey(sTableName, sColName);
+}
+
 }  // namespace dbtrain_mysql

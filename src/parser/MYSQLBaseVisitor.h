@@ -39,6 +39,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitRename_db(MYSQLParser::Rename_dbContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitShow_tables(MYSQLParser::Show_tablesContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -116,6 +120,10 @@ public:
   }
 
   virtual antlrcpp::Any visitAlter_table_add_unique(MYSQLParser::Alter_table_add_uniqueContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitAlter_table_drop_unique(MYSQLParser::Alter_table_drop_uniqueContext *ctx) override {
     return visitChildren(ctx);
   }
 

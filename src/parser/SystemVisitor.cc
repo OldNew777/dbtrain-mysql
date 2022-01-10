@@ -109,6 +109,23 @@ antlrcpp::Any SystemVisitor::visitUse_db(MYSQLParser::Use_dbContext *ctx) {
   return res;
 }
 
+antlrcpp::Any SystemVisitor::visitRename_db(
+    MYSQLParser::Rename_dbContext *ctx) {
+  String sOldDatabaseName = ctx->Identifier(0)->getText(),
+         sNewDatabaseName = ctx->Identifier(1)->getText();
+  int nSize = 0;
+  try {
+    _pDB->RenameDatabase(sOldDatabaseName, sNewDatabaseName);
+    nSize = 1;
+  } catch (std::exception &) {
+  }
+  Result *res = new MemResult({"Rename Database"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(nSize));
+  res->PushBack(pRes);
+  return res;
+}
+
 antlrcpp::Any SystemVisitor::visitShow_tables(
     MYSQLParser::Show_tablesContext *ctx) {
   Result *res = new MemResult({"Show Tables"});
@@ -154,12 +171,10 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
     }
     std::string::size_type tail = str.find(",");
     std::string::size_type head = 0;
-    int pt = 0;
     while (tail != std::string::npos) {
       iValueListVec.back().push_back(str.substr(head, tail - head));
       head = tail + 1;
       tail = str.find(",", head);
-      pt++;
     }
     if (head != str.length()) {
       iValueListVec.back().push_back(str.substr(head));
@@ -174,10 +189,17 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
     try {
       _pDB->Insert(sTableName, iValueList);
       ++inserted;
-      if(inserted % 1000 == 0) printf("Inserted : %d\n", inserted);
+      if (inserted % 1000 == 0) printf("Inserted : %d\n", inserted);
     } catch (const std::exception &e) {
+<<<<<<< HEAD
       printf("%s\n",e.what());
       assert(0);
+=======
+      printf("%s\n", e.what());
+#ifdef PRIMARY_KEY_DEBUG
+      assert(0);
+#endif
+>>>>>>> chenxin
     }
   }
   Result *res = new MemResult({"Insert"});
@@ -611,6 +633,26 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_unique(
     }
   }
   Result *res = new MemResult({"Add Unique Key"});
+  FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
+  pRes->SetField(0, new IntField(nSize));
+  res->PushBack(pRes);
+  return res;
+}
+
+antlrcpp::Any SystemVisitor::visitAlter_table_drop_unique(
+    MYSQLParser::Alter_table_drop_uniqueContext *ctx) {
+  String sTableName = ctx->Identifier()->getText();
+  std::vector<String> sColNameVec = ctx->identifiers()->accept(this);
+  Size nSize = 0;
+  for (auto &sColName : sColNameVec) {
+    try {
+      _pDB->DropUniqueKey(sTableName, sColName);
+      nSize++;
+    } catch (const Exception &e) {
+      printf("%s\n", e.what());
+    }
+  }
+  Result *res = new MemResult({"Drop Unique Key"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
   pRes->SetField(0, new IntField(nSize));
   res->PushBack(pRes);

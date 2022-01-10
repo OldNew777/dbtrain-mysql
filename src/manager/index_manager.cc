@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "assert.h"
-#include "exception/index_exception.h"
+#include "exception/exceptions.h"
 #include "macros.h"
 #include "os/os.h"
 #include "page/record_page.h"
@@ -59,14 +59,14 @@ Index *IndexManager::GetIndex(const String &sTableName,
 }
 
 Index *IndexManager::AddIndex(const String &sTableName, const String &sColName,
-                              FieldType iType) {
+                              FieldType iType, Size nSize) {
   if (IsIndex(sTableName, sColName)) {
     auto e = IndexException("Index not exist");
     std::cout << e.what() << "\n";
     throw e;
   }
   String sIndexName = GetIndexName(sTableName, sColName);
-  Index *pIndex = new Index(iType);
+  Index *pIndex = new Index(iType, nSize);
   PageID nRoot = pIndex->GetRootID();
   delete pIndex;
   pIndex = new Index(nRoot);
@@ -133,13 +133,14 @@ void IndexManager::Store() {
   if (_bCleared) return;
 
   // Update Index Root
-  for (const auto &iPair : _iIndexMap)
-    _iIndexIDMap[iPair.first] = iPair.second->GetRootID();
-  RecordPage *pPage = new RecordPage(_nPageID);
-  PageID nNowPageID = _nPageID;
-  auto iter = _iIndexIDMap.begin();
   FixedRecord *pRecord = new FixedRecord(
       2, {FieldType::CHAR_TYPE, FieldType::INT_TYPE}, {INDEX_NAME_SIZE, 4});
+  RecordPage *pPage = new RecordPage(_nPageID);
+  PageID nNowPageID = _nPageID;
+
+  for (const auto &iPair : _iIndexMap)
+    _iIndexIDMap[iPair.first] = iPair.second->GetRootID();
+  auto iter = _iIndexIDMap.begin();
   while (iter != _iIndexIDMap.end()) {
     pPage->Clear();
     for (int i = 0; i < pPage->GetCap(), iter != _iIndexIDMap.end(); ++i) {
@@ -153,6 +154,8 @@ void IndexManager::Store() {
       pPage->InsertRecord(pData);
       ++iter;
     }
+
+    // insert new page
     if (iter == _iIndexIDMap.end()) break;
     nNowPageID = pPage->GetNextID();
     if (nNowPageID == NULL_PAGE) {
@@ -166,14 +169,19 @@ void IndexManager::Store() {
       pPage = new RecordPage(nNowPageID);
     }
   }
+
+  // delete empty page
   while (pPage->GetNextID() != NULL_PAGE) {
     pPage->PopBack();
   }
-  delete pRecord;
+
   delete pPage;
+  delete pRecord;
 }
 
 void IndexManager::Load() {
+  FixedRecord *pRecord = new FixedRecord(
+      2, {FieldType::CHAR_TYPE, FieldType::INT_TYPE}, {INDEX_NAME_SIZE, 4});
   RecordPage *pPage;
   if (_nPageID == NULL_PAGE) {
     pPage = new RecordPage(INDEX_NAME_SIZE + 4 + 1, true);
@@ -182,8 +190,7 @@ void IndexManager::Load() {
     pPage = new RecordPage(_nPageID);
   }
   PageID nNowPageID = _nPageID;
-  FixedRecord *pRecord = new FixedRecord(
-      2, {FieldType::CHAR_TYPE, FieldType::INT_TYPE}, {INDEX_NAME_SIZE, 4});
+
   while (true) {
     for (Size i = 0, num = 0; i < pPage->GetCap() && num < pPage->GetUsed();
          ++i) {
@@ -201,8 +208,9 @@ void IndexManager::Load() {
     delete pPage;
     pPage = new RecordPage(nNowPageID);
   }
-  delete pRecord;
+
   delete pPage;
+  delete pRecord;
 }
 
 void IndexManager::Init() {

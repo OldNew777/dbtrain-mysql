@@ -63,12 +63,13 @@ class Table : public Entity {
    * @return std::vector<PageSlotID> 符合条件记录的位置
    */
   void AddPrimaryKey(const std::vector<String>& sColVec);
-  void SetForeignKey(const String& sColVec);
-  void AddReferedKey(const String& sColVec);
-  void AddUniqueKey(const String& sColVec);
-  void DropReferedKey(const String& sColVec);
+  void SetForeignKey(const String& sColName);
+  void AddReferedKey(const String& sColName);
+  void AddUniqueKey(const String& sColName);
+  void DropReferedKey(const String& sColName);
   void DropPrimaryKey(const String& sColName);
   void DropForeignKey(const String& sColName);
+  void DropUniqueKey(const String& sColName);
 
   void SearchRecord(std::vector<PageSlotID>& iPairs, Condition* pCond);
 

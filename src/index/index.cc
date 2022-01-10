@@ -6,14 +6,20 @@
 
 namespace dbtrain_mysql {
 
-Index::Index(FieldType iType) {
+Index::Index(FieldType iType, Size nSize) {
   // 建立一个新的根结点，注意需要基于类型判断根结点的属性
   // 根结点需要设为中间结点
-  if (iType == FieldType::INT_TYPE) {
-    rootPage = new NodePage(4, iType, true);
-  } else if (iType == FieldType::FLOAT_TYPE) {
-    rootPage = new NodePage(8, iType, true);
+
+  if (iType == FieldType::INT_TYPE || iType == FieldType::FLOAT_TYPE) {
+    if (nSize != 4)
+      throw RecordTypeException("Index type Size does not correspond");
+  } else if (iType == FieldType::DATE_TYPE) {
+    if (nSize != 3)
+      throw RecordTypeException("Index type Size does not correspond");
+  } else if (iType == FieldType::CHAR_TYPE) {
+    throw UnimplementedException("Index type unimplemented");
   }
+  rootPage = new NodePage(nSize, iType, true);
 
   // 记录RootID
   _nRootID = rootPage->GetPageID();
