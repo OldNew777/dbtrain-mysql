@@ -17,18 +17,12 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
   // printf("[");
   for (Size i = 0; i < iSchema.GetSize(); ++i) {
     Column iCol = iSchema.GetColumn(i);
+    if(iCol.GetName() == "") break;
     _iColMap[iCol.GetName()] = i;
     _iTypeVec.push_back(iCol.GetType());
     _iSizeVec.push_back(iCol.GetSize());
     uint8_t status = 0b00000000;
     if (iCol.GetCanBeNull()) status |= 0b1;
-    if (iCol.GetIsPrimary()) {
-      // printf("name: %s\n", iCol.GetName());
-      status |= 0b10;
-    }
-    if (iCol.GetForeignKeyVec().size() != 0) {
-      status |= 0b100;
-    }
     // refered and unique will not present in create table
     _iStatusVec.push_back(status);
 
@@ -83,10 +77,7 @@ Size TablePage::GetSize(const String& sCol) {
 }
 bool TablePage::GetCanBeNull(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b1) == 0b1) &&  // can be null = true
-         !((_iStatusVec[GetColPos(sCol)] & 0b10) ==
-           0b10) &&  // is primary = false
-         !((_iStatusVec[GetColPos(sCol)] & 0b1000) ==
-           0b1000);  // is refered = false
+         !((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10);
 }
 bool TablePage::GetIsPrimary(const String& sCol) {
   return ((_iStatusVec[GetColPos(sCol)] & 0b10) == 0b10);

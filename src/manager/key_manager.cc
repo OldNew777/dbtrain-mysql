@@ -41,13 +41,13 @@ void KeyManager::Init(){
       if(_iTablePKMap.find(tKeyPair.second.sLocalTableName) == _iTablePKMap.end()){
         _iTablePKMap[tKeyPair.second.sLocalTableName] = {};
       }
-      _iTablePKMap[tKeyPair.second.sLocalTableName].insert(tKeyPair.second);
+      _iTablePKMap[tKeyPair.second.sLocalTableName].push_back(tKeyPair.second);
     }
     else{
       if(_iTableFKMap.find(tKeyPair.second.sLocalTableName) == _iTableFKMap.end()){
         _iTableFKMap[tKeyPair.second.sLocalTableName] = {};
       }
-      _iTableFKMap[tKeyPair.second.sLocalTableName].insert(tKeyPair.second);
+      _iTableFKMap[tKeyPair.second.sLocalTableName].push_back(tKeyPair.second);
     }
     
   }
@@ -204,7 +204,7 @@ String KeyManager::_GetDefaultKeyIndex(){
 }
 void KeyManager::AddPrimaryKey(const String& sLocalTableName,
                      const std::vector<String>& sLocalColName,
-                     const String& sConstraintName = ""){
+                     const String& sConstraintName){
   String cName = sConstraintName;
   if(sConstraintName == ""){
     cName = "PRIMARY" + _GetDefaultKeyIndex();
@@ -224,7 +224,7 @@ void KeyManager::AddPrimaryKey(const String& sLocalTableName,
   if(_iTablePKMap.find(sLocalTableName) == _iTablePKMap.end()){
     _iTablePKMap[sLocalTableName] = {};
   }
-  _iTablePKMap[sLocalTableName].insert(key);
+  _iTablePKMap[sLocalTableName].push_back(key);
 }
 
 void KeyManager::DropPrimaryKey(const String& sLocalTableName,
@@ -259,13 +259,13 @@ void KeyManager::DropPrimaryKey(const String& sLocalTableName,
     printf("%s\n", e.what());
     throw e;
   }
-  _iTablePKMap[sLocalTableName].erase(tmpKey);
+  Init();//傻逼写法 能跑就行
 }
 void KeyManager::AddForeignKey(const String& sLocalTableName,
                      const String& sForeignTableName,
                      const std::vector<String>& sLocalColName,
                      const std::vector<String>& sForeignColName,
-                     const String& sConstraintName = ""){
+                     const String& sConstraintName){
   String cName = sConstraintName;
   if(sConstraintName == ""){
     cName = "FOREIGN" + _GetDefaultKeyIndex();
@@ -287,7 +287,7 @@ void KeyManager::AddForeignKey(const String& sLocalTableName,
   if(_iTableFKMap.find(sLocalTableName) == _iTableFKMap.end()){
     _iTableFKMap[sLocalTableName] = {};
   }
-  _iTableFKMap[sLocalTableName].insert(key);
+  _iTableFKMap[sLocalTableName].push_back(key);
 }
 
 void KeyManager::DropForeignKey(const String& sLocalTableName,
@@ -299,12 +299,12 @@ void KeyManager::DropForeignKey(const String& sLocalTableName,
   }
   Key tmpkey = _iKeyMap[sConstraintName];
   _iKeyMap.erase(sConstraintName);
-  _iTableFKMap[sLocalTableName].erase(tmpkey);
+  Init();//傻逼写法，能跑就行
 }
-std::set<Key> KeyManager::GetForeignKey(const String& sLocalTableName) {
+std::vector<Key> KeyManager::GetForeignKey(const String& sLocalTableName) {
   return _iTableFKMap[sLocalTableName];
 }
-std::set<Key> KeyManager::GetPrimaryKey(const String& sLocalTableName) {
+std::vector<Key> KeyManager::GetPrimaryKey(const String& sLocalTableName) {
   return _iTablePKMap[sLocalTableName];
 }
 }  // namespace dbtrain_mysql

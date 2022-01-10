@@ -47,15 +47,15 @@ class KeyManager {
                       const std::vector<String>& sLocalColName);
   void DropForeignKey(const String& sLocalTableName,
                       const String& sConstraintName);
-  std::set<Key> GetForeignKey(const String& sLocalTableName);
-  std::set<Key> GetPrimaryKey(const String& sLocalTableName);
+  std::vector<Key> GetForeignKey(const String& sLocalTableName);
+  std::vector<Key> GetPrimaryKey(const String& sLocalTableName);
  protected:
   PageID _nPageID;
   bool _bCleared = false;
   Size _iDefaultKeyIndex;
   std::unordered_map<String, Key> _iKeyMap;
-  std::unordered_map<String, std::set<Key> > _iTableFKMap;
-  std::unordered_map<String, std::set<Key> > _iTablePKMap;
+  std::unordered_map<String, std::vector<Key> > _iTableFKMap;
+  std::unordered_map<String, std::vector<Key> > _iTablePKMap;
 
   void Store();
   void Load();
