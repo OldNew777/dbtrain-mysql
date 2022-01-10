@@ -177,9 +177,9 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
       if(inserted % 1000 == 0) printf("Inserted : %d\n", inserted);
     } catch (const std::exception &e) {
       printf("%s\n",e.what());
-      #ifdef PRIMARY_KEY_DEBUG
+#ifdef DEBUG
       assert(0);
-      #endif
+#endif
     }
   }
   Result *res = new MemResult({"Insert"});

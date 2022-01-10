@@ -7,7 +7,7 @@
 #include <iostream>
 #include <typeinfo>
 
-// #define DEBUG
+#define DEBUG
 // #define PRINT_PAGE
 // #define JOIN_DEBUG
 // #define INDEX_DEBUG
