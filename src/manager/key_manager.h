@@ -15,7 +15,7 @@ enum class KeyType {
 };
 
 // PRIMARY KEY
-// | Constraint Name | Table Name | Column Name |
+// | Constraint Name |Local Table Name | Local Column Name |
 
 // FOREIGN KEY
 // | Constraint Name | Local Table Name | Local Column Name
@@ -47,15 +47,20 @@ class KeyManager {
                       const std::vector<String>& sLocalColName);
   void DropForeignKey(const String& sLocalTableName,
                       const String& sConstraintName);
-
+  std::set<Key> GetForeignKey(const String& sLocalTableName);
+  std::set<Key> GetPrimaryKey(const String& sLocalTableName);
  protected:
   PageID _nPageID;
   bool _bCleared = false;
   Size _iDefaultKeyIndex;
   std::unordered_map<String, Key> _iKeyMap;
+  std::unordered_map<String, std::set<Key> > _iTableFKMap;
+  std::unordered_map<String, std::set<Key> > _iTablePKMap;
 
   void Store();
   void Load();
+  void Init();
+  String _GetDefaultKeyIndex();
 };
 
 }  // namespace dbtrain_mysql

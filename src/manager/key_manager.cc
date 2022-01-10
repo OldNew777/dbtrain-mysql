@@ -17,11 +17,13 @@ const PageOffset DEFAULT_KEY_INDEX_OFFSET = 20;
 KeyManager::KeyManager() { 
   _nPageID = NULL_PAGE;
   Load(); 
+  Init();
 }
 
 KeyManager::KeyManager(PageID nPageID) {
   _nPageID = nPageID;
   Load();
+  Init();
 }
 
 KeyManager::~KeyManager() { Store(); }
@@ -32,6 +34,23 @@ void KeyManager::Clear() {
   _bCleared = true;
   LinkedPage pLinkedPage(_nPageID);
   pLinkedPage.ReleaseListAll();
+}
+void KeyManager::Init(){
+  for(auto& tKeyPair: _iKeyMap){
+    if(tKeyPair.second.iType == KeyType::PRIMARY_KEY_TYPE){
+      if(_iTablePKMap.find(tKeyPair.second.sLocalTableName) == _iTablePKMap.end()){
+        _iTablePKMap[tKeyPair.second.sLocalTableName] = {};
+      }
+      _iTablePKMap[tKeyPair.second.sLocalTableName].insert(tKeyPair.second);
+    }
+    else{
+      if(_iTableFKMap.find(tKeyPair.second.sLocalTableName) == _iTableFKMap.end()){
+        _iTableFKMap[tKeyPair.second.sLocalTableName] = {};
+      }
+      _iTableFKMap[tKeyPair.second.sLocalTableName].insert(tKeyPair.second);
+    }
+    
+  }
 }
 
 void KeyManager::Store() {
@@ -180,4 +199,112 @@ void KeyManager::Load() {
   delete pRecord;
 }
 
+String KeyManager::_GetDefaultKeyIndex(){
+  return std::to_string(_iDefaultKeyIndex++);
+}
+void KeyManager::AddPrimaryKey(const String& sLocalTableName,
+                     const std::vector<String>& sLocalColName,
+                     const String& sConstraintName = ""){
+  String cName = sConstraintName;
+  if(sConstraintName == ""){
+    cName = "PRIMARY" + _GetDefaultKeyIndex();
+  }
+  if(_iKeyMap.find(cName) != _iKeyMap.end()){
+    Exception e("name duplicated: " + cName);
+    printf("%s\n", e.what());
+    throw e;
+  }
+  Key key;
+  key.iType = KeyType::PRIMARY_KEY_TYPE;
+  key.sLocalColName = sLocalColName;
+  key.sLocalTableName = sLocalTableName;
+  //add key map
+  _iKeyMap[cName] = key;
+  //add table map
+  if(_iTablePKMap.find(sLocalTableName) == _iTablePKMap.end()){
+    _iTablePKMap[sLocalTableName] = {};
+  }
+  _iTablePKMap[sLocalTableName].insert(key);
+}
+
+void KeyManager::DropPrimaryKey(const String& sLocalTableName,
+                      const std::vector<String>& sLocalColName){
+  std::set<String> tmpSet;
+  for(auto& str: sLocalColName){
+    tmpSet.insert(str);
+  }
+  auto it = _iKeyMap.begin();
+  Key tmpKey;
+  while(it != _iKeyMap.end()){
+    if(tmpSet.size() == it->second.sLocalColName.size()){
+      bool flag = true;
+      for(auto& colName : it->second.sLocalColName){
+        if (tmpSet.find(colName) == tmpSet.end()){
+          flag = false;
+          break;
+        }
+      }
+      if(flag){ //delete
+        tmpKey = it->second;
+        it = _iKeyMap.erase(it);
+        break;
+      } 
+    }
+    else{
+      it ++;
+    }
+  }
+  if(tmpKey.sLocalColName.size() == 0){
+    Exception e("drop pk fail: no such key");
+    printf("%s\n", e.what());
+    throw e;
+  }
+  _iTablePKMap[sLocalTableName].erase(tmpKey);
+}
+void KeyManager::AddForeignKey(const String& sLocalTableName,
+                     const String& sForeignTableName,
+                     const std::vector<String>& sLocalColName,
+                     const std::vector<String>& sForeignColName,
+                     const String& sConstraintName = ""){
+  String cName = sConstraintName;
+  if(sConstraintName == ""){
+    cName = "FOREIGN" + _GetDefaultKeyIndex();
+  }
+  if(_iKeyMap.find(cName) != _iKeyMap.end()){
+    Exception e("name duplicated: " + cName);
+    printf("%s\n", e.what());
+    throw e;
+  }
+  Key key;
+  key.iType = KeyType::PRIMARY_KEY_TYPE;
+  key.sLocalColName = sLocalColName;
+  key.sLocalTableName = sLocalTableName;
+  key.sForeignTableName = sForeignTableName;
+  key.sForeignColName = sForeignColName;
+  //add key map
+  _iKeyMap[cName] = key;
+  //add table map
+  if(_iTableFKMap.find(sLocalTableName) == _iTableFKMap.end()){
+    _iTableFKMap[sLocalTableName] = {};
+  }
+  _iTableFKMap[sLocalTableName].insert(key);
+}
+
+void KeyManager::DropForeignKey(const String& sLocalTableName,
+                      const String& sConstraintName){
+  if(_iKeyMap.find(sConstraintName) == _iKeyMap.end()){
+    Exception e("drop fk fail: no such key" + sConstraintName);
+    printf("%s\n", e.what());
+    throw e;
+  }
+  Key tmpkey = _iKeyMap[sConstraintName];
+  _iKeyMap.erase(sConstraintName);
+  _iTableFKMap[sLocalTableName].erase(tmpkey);
+}
+std::set<Key> KeyManager::GetForeignKey(const String& sLocalTableName) {
+  return _iTableFKMap[sLocalTableName];
+}
+std::set<Key> KeyManager::GetPrimaryKey(const String& sLocalTableName) {
+  return _iTablePKMap[sLocalTableName];
+}
 }  // namespace dbtrain_mysql
