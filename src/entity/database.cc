@@ -90,7 +90,8 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
     if(column.GetName() == "") continue;
-    if(iFKPKCol.isPK(column.GetName())) CreateIndex(sTableName, column.GetName());
+    // if(iFKPKCol.isPK(column.GetName())) CreateIndex(sTableName, column.GetName());
+    // CreateIndex(sTableName, column.GetName());
   }
 #endif
   //construct fk
@@ -110,7 +111,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for(int i = 0; i < iPKNameVec.size(); i ++){
     GetKeyManager()->AddPrimaryKey(sTableName, iPKVec[i], iPKNameVec[i]);
   }
-#ifndef PRIMARY_KEY_DEBUG
+#ifdef PRIMARY_KEY_DEBUG
   GetKeyManager()->ShowPK();
 #endif
 }
@@ -396,6 +397,13 @@ PageSlotID Database::Insert(const String& sTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
+  Record* pRecord = pTable->EmptyRecord();
+  try {
+    pRecord->Build(iRawVec);
+  } catch (const Exception& e) {
+    delete pRecord;
+    throw e;
+  }
 
 #ifndef NO_INSERT_CHECK;
 #ifndef NO_PRIMARY_KEY
@@ -422,47 +430,44 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 #endif //NOPRIMARY_KEY
 
-  Record* pRecord = pTable->EmptyRecord();
-  try {
-    pRecord->Build(iRawVec);
-  } catch (const Exception& e) {
-    delete pRecord;
-    throw e;
-  }
 #ifndef NO_PRIMARY_KEY
   // check primary key
-  std::vector<PageSlotID> duplicatedVec;
   const std::vector<Key>& uPKVec = GetKeyManager()->GetPrimaryKey(sTableName);
   for(auto& upk: uPKVec){
-    for (int i = 0; i < upk.sForeignColName.size(); i++) {
-      const String& sColName = upk.sForeignColName[i];
-
-      if (pTable->GetIsUnique(sColName)) {
-        // check whether primary key conflicts with other records
-        Field* pField = pRecord->GetField(i);
-        if (duplicatedVec.size() == 0) {
-          duplicatedVec = _GetDuplicated(sTableName, sColName, pField);
-        } else {
-          duplicatedVec = Intersection(
-              _GetDuplicated(sTableName, sColName, pField), duplicatedVec);
-        }
-        if (duplicatedVec.size() == 0) {
-          break;
-        } else if (pTable->GetIsUnique(sColName)) {
-          auto e = Exception("Unique key existed");
-          std::cout << e.what() << "\n";
-          throw e;
-        }
+#ifdef PRIMARY_KEY_DEBUG
+    printf("{ ");
+    for (auto& row : upk.sLocalColName) {
+      printf("%s ", row.data());
+    }
+    printf(" }\n");
+#endif
+    std::vector<PageSlotID> duplicatedVec;
+    for (int i = 0; i < upk.sLocalColName.size(); i++) {
+      const String& sColName = upk.sLocalColName[i];
+      // check whether primary key conflicts with other records
+      Field* pField = pRecord->GetField(i);
+      if (duplicatedVec.size() == 0) {
+        duplicatedVec = _GetDuplicated(sTableName, sColName, pField);
+      } else {
+        duplicatedVec = Intersection(
+            _GetDuplicated(sTableName, sColName, pField), duplicatedVec);
+      }
+      if (duplicatedVec.size() == 0) {
+        break;
+      } else if (pTable->GetIsUnique(sColName)) {
+        auto e = Exception("Unique key existed");
+        std::cout << e.what() << "\n";
+        throw e;
       }
     }
     if (duplicatedVec.size() != 0) {
       // add exception here
-      String str = "";
-  #ifdef PRIMARY_KEY_DEBUG
+      String str = " ";
+#ifdef PRIMARY_KEY_DEBUG
       for (auto& row : iRawVec) {
         str += row + " ";
       }
-  #endif
+#endif
       auto e = Exception("Primary key existed" + str);
       std::cout << e.what() << "\n";
       throw e;
