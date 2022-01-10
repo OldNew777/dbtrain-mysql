@@ -66,7 +66,7 @@ bool Index::Insert(Field *pKey, const PageSlotID &iPair) {
   _bModified = true;
 
 #ifdef INDEX_DEBUG
-  print();
+  // print();
 #endif
 
   return true;
@@ -87,7 +87,7 @@ Size Index::Delete(Field *pKey) {
   }
 
 #ifdef INDEX_DEBUG
-  print();
+  // print();
 #endif
 
   return ans;
@@ -116,7 +116,7 @@ bool Index::Delete(Field *pKey, const PageSlotID &iPair) {
   _bModified = true;
 
 #ifdef INDEX_DEBUG
-  print();
+  // print();
 #endif
 
   return true;
@@ -129,7 +129,7 @@ bool Index::Update(Field *pKey, const PageSlotID &iOld,
   return rootPage->Update(pKey, iOld, iNew);
 
 #ifdef INDEX_DEBUG
-  print();
+  // print();
 #endif
 }
 
@@ -148,6 +148,7 @@ std::vector<PageSlotID> Index::Range(Field *pLow, Field *pHigh) {
             << pHigh->ToString() << ") $$$$$$$$\n";
   for (Size i = 0; i < ans.size(); ++i)
     printf("(%d, %d)\n", (int)ans[i].first, (int)ans[i].second);
+  // print();
   std::cout << "--------------------------------------------\n\n";
 #endif
 

@@ -8,6 +8,7 @@
 #include "macros.h"
 #include "os/os.h"
 #include "settings.h"
+#include "utils/basic_function.h"
 
 namespace dbtrain_mysql {
 
@@ -188,6 +189,11 @@ Size NodePage::Delete(Field *pKey) {
     while (!pPage->_bLeaf) {
       if (pPage->Empty()) return ans;
       Size child_index = pPage->LowerBound(pKey);
+      if (child_index >= pPage->_iChildVec.size()) {
+        // larger than max
+        delete pPage;
+        return ans;
+      }
       PageID pageID = pPage->_iChildVec[child_index].first;
       delete pPage;
       pPage = new NodePage(pageID);
@@ -244,6 +250,10 @@ bool NodePage::Delete(Field *pKey, const PageSlotID &iPair) {
   // 4.删除空结点情况下需要更新KeyVec和ChildVec
   else {
     Size child_index = LowerBound(pKey);
+    if (child_index >= _iChildVec.size()) {
+      // larger than max
+      return ans;
+    }
 
 #ifdef INDEX_DEBUG
     printf("Children sum = %d, child_index = %d\n", int(_iChildVec.size()),
@@ -365,6 +375,10 @@ bool NodePage::Update(Field *pKey, const PageSlotID &iOld,
   // 2.对应的子结点执行更新函数
   else {
     Size child_index = LowerBound(pKey);
+    if (child_index >= _iChildVec.size()) {
+      // larger than max
+      return ans;
+    }
     NodePage childNodePage(_iChildVec[child_index].first);
     ans = childNodePage.Update(pKey, iOld, iNew);
     _bModified = _bModified || ans;
@@ -440,11 +454,13 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
   if (Empty()) return ans;
 
   if (_bLeaf) {
+    Size left_index = LowerBound(pLow), right_index = LessBound(pHigh);
+
 #ifdef INDEX_DEBUG
-    std::cout << "Leaf" << std::endl;
+    std::cout << "Leaf (index) : " << left_index << " -> " << right_index
+              << std::endl;
 #endif
 
-    Size left_index = LowerBound(pLow), right_index = LessBound(pHigh);
     if (left_index == right_index &&
         (Less(_iKeyVec[left_index], pLow) ||
          GreaterEqual(_iKeyVec[right_index], pHigh)))
@@ -462,10 +478,14 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
     while (!pPage->_bLeaf) {
       if (pPage->Empty()) return ans;
       Size child_index = pPage->LowerBound(pLow);
+      if (child_index >= pPage->_iChildVec.size()) {
+        // larger than max
+        return ans;
+      }
 
-      if (child_index >= _iChildVec.size()) --child_index;
 #ifdef INDEX_DEBUG
-      std::cout << "child_index = " << child_index << std::endl;
+      printf("Children sum = %d, child_index = %d\n",
+             int(pPage->_iChildVec.size()), int(child_index));
 #endif
 
       PageID pageID = pPage->_iChildVec[child_index].first;
@@ -689,6 +709,10 @@ Size NodePage::LowerBound(Field *pField) {
     } else {
       nBegin = nMid + 1;
     }
+#ifdef INDEX_DEBUG
+    PrintPageSlotID({nBegin, nEnd});
+    std::cout << std::endl;
+#endif
   }
   return nBegin;
 }

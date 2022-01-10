@@ -14,7 +14,6 @@
 namespace dbtrain_mysql {
 
 TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
-  printf("[");
   for (Size i = 0; i < iSchema.GetSize(); ++i) {
     Column iCol = iSchema.GetColumn(i);
     _iColMap[iCol.GetName()] = i;
@@ -31,15 +30,7 @@ TablePage::TablePage(const Schema& iSchema) : ManagerPage() {
     }
     // refered and unique will not present in create table
     _iStatusVec.push_back(status);
-
-    for (int i = 0; i < 8; ++i)
-      if (status & (0b10000000 >> i))
-        printf("1");
-      else
-        printf("0");
-    printf(", ", status);
   }
-  printf("]\n");
   assert(_iColMap.size() == _iTypeVec.size());
   RecordPage* pPage = new RecordPage(GetTotalSize(), true);
   _nHeadID = _nTailID = pPage->GetPageID();
