@@ -112,12 +112,12 @@ CREATE TABLE LINEITEM (
 -- DESC ORDERS;
 -- DESC LINEITEM;
 -- SHOW TABLES;
-LOAD FROM FILE '../data-with-date/region.csv' TO TABLE REGION;
-LOAD FROM FILE '../data-with-date/nation.csv' TO TABLE NATION;
-LOAD FROM FILE '../data-with-date/supplier.csv' TO TABLE SUPPLIER;
-LOAD FROM FILE '../data-with-date/part.csv' TO TABLE PART;
-SELECT * FROM PART WHERE PART.P_PARTKEY = 338;
-SELECT * FROM PART WHERE PART.P_PARTKEY = 339;
+-- LOAD FROM FILE '../data-with-date/region.csv' TO TABLE REGION;
+-- LOAD FROM FILE '../data-with-date/nation.csv' TO TABLE NATION;
+-- LOAD FROM FILE '../data-with-date/supplier.csv' TO TABLE SUPPLIER;
+-- LOAD FROM FILE '../data-with-date/part.csv' TO TABLE PART;
+-- SELECT * FROM PART WHERE PART.P_PARTKEY = 338;
+-- SELECT * FROM PART WHERE PART.P_PARTKEY = 339;
 -- LOAD FROM FILE '../data-with-date/partsupp.csv' TO TABLE PARTSUPP;
 -- LOAD FROM FILE '../data-with-date/customer.csv' TO TABLE CUSTOMER;
 -- LOAD FROM FILE '../data-with-date/orders.csv' TO TABLE ORDERS;

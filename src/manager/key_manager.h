@@ -51,6 +51,7 @@ class KeyManager {
   std::vector<Key> GetPrimaryKey(const String& sLocalTableName);
   bool IsPrimary(const String& sTableName, const String& sColName);
   void ShowPK();
+  void ShowFK();
  protected:
   PageID _nPageID;
   bool _bCleared = false;

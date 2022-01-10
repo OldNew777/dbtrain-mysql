@@ -74,9 +74,11 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for(auto& ufk: iFKVec)
     for(auto& fk: ufk)
       pairSet.insert(std::make_pair(fk[1], fk[2]));
+
   for(auto& rkPair: pairSet){
-    if(!_CheckHaveNull(rkPair.first, rkPair.second)){
-      ForeignKeyException e("refered key should not have null");
+    if(_CheckHaveNull(rkPair.first, rkPair.second)){
+      ForeignKeyException e("refered key (" + rkPair.first + ", " + rkPair.second + 
+       ") should not have null");
       printf("%s\n", e.what());
       throw e;
     }
@@ -90,7 +92,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
     if(column.GetName() == "") continue;
-    // if(iFKPKCol.isPK(column.GetName())) CreateIndex(sTableName, column.GetName());
+    if(iFKPKCol.isPK(column.GetName())) CreateIndex(sTableName, column.GetName());
     // CreateIndex(sTableName, column.GetName());
   }
 #endif
@@ -113,7 +115,10 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   }
 #ifdef PRIMARY_KEY_DEBUG
   GetKeyManager()->ShowPK();
-#endif
+#endif  
+#ifdef FOREIGN_KEY_DEBUG
+  GetKeyManager()->ShowFK();
+#endif 
 }
 
 void Database::DropTable(const String& sTableName) {
@@ -406,6 +411,7 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
 #ifndef NO_INSERT_CHECK;
+
 #ifndef NO_PRIMARY_KEY
   // check null
   for (int i = 0; i < iColNameVec.size(); i++) {
@@ -434,6 +440,7 @@ PageSlotID Database::Insert(const String& sTableName,
   // check primary key
   const std::vector<Key>& uPKVec = GetKeyManager()->GetPrimaryKey(sTableName);
   for(auto& upk: uPKVec){
+
 #ifdef PRIMARY_KEY_DEBUG
     printf("{ ");
     for (auto& row : upk.sLocalColName) {
@@ -441,6 +448,7 @@ PageSlotID Database::Insert(const String& sTableName,
     }
     printf(" }\n");
 #endif
+
     std::vector<PageSlotID> duplicatedVec;
     for (int i = 0; i < upk.sLocalColName.size(); i++) {
       const String& sColName = upk.sLocalColName[i];
@@ -476,25 +484,29 @@ PageSlotID Database::Insert(const String& sTableName,
 #endif //NO_PRIMARY_KEY
 #ifndef NO_FOREIGN_KEY
   // check foreignkey
-  for (int i = 0; i < iColNameVec.size(); i++) {
-    const String& sColName = iColNameVec[i];
-    if (pTable->GetIsForeign(sColName)) {
-      // check whether primary key conflicts with other records
-      Field* pField = pRecord->GetField(i);
-      std::vector<std::pair<String, String>> fPairVec =
-          GetForeignKey(sTableName, sColName);
-      // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
-      // fPair.second.data());
-      for (auto& fPair : fPairVec) {
-        // printf("%s %s\n", fPair.first.data(), fPair.second.data());
-        if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
-          printf("key out of range:%s\n", pField->ToString().data());
-          ForeignKeyException e("key out of range:" + pField->ToString());
-          throw e;
+  const std::vector<Key>& uFKVec = GetKeyManager()->GetForeignKey(sTableName);
+  for(auto& fk: uFKVec){
+    for (int i = 0; i < iColNameVec.size(); i++) {
+      const String& sColName = iColNameVec[i];
+      if (pTable->GetIsForeign(sColName)) {
+        // check whether primary key conflicts with other records
+        Field* pField = pRecord->GetField(i);
+        std::vector<std::pair<String, String>> fPairVec =
+            GetForeignKey(sTableName, sColName);
+        // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
+        // fPair.second.data());
+        for (auto& fPair : fPairVec) {
+          // printf("%s %s\n", fPair.first.data(), fPair.second.data());
+          if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
+            printf("key out of range:%s\n", pField->ToString().data());
+            ForeignKeyException e("key out of range:" + pField->ToString());
+            throw e;
+          }
         }
       }
     }
   }
+  
 #endif //NO_FOREIGN_KEY
 #endif //NO_INSERT_CHECK
 
@@ -813,7 +825,8 @@ bool Database::_CheckHaveNull(const String& fTableName,
     throw e;
   }
 
-  if (!fTable->GetCanBeNull(fColName) || fTable->GetIsPrimary(fColName)) {
+  if (!fTable->GetCanBeNull(fColName) || 
+    GetKeyManager()->IsPrimary(fTableName, fColName)) {
     return false;
   }
   // printf("into\n");

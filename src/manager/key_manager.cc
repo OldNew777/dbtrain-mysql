@@ -333,4 +333,19 @@ void KeyManager::ShowPK(){
     printf("}\n");
   }
 }
+void KeyManager::ShowFK(){
+  printf("ShowFK:\n");
+  for(auto& sPair: _iTableFKMap){
+    printf("\n%s\n{\n", sPair.first.data());
+    for(auto& pk: sPair.second){
+      printf("\t{ ");
+      for(int i = 0; i < pk.sLocalColName.size(); i ++)
+        printf("%s: %s.%s, ", pk.sLocalColName[i].data(), pk.sForeignTableName.data(),
+            pk.sForeignColName[i].data());
+      printf(" }\n");
+    }
+    printf("}\n");
+  }
+}
+
 }  // namespace dbtrain_mysql
