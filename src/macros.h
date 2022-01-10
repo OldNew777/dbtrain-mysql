@@ -41,13 +41,9 @@ const uint32_t CACHE_GROUP_NUM = 1 << 14;
 const uint32_t FIELD_INT_TYPE_SIZE = 4;
 const uint32_t FIELD_FLOAT_TYPE_SIZE = 4;
 
-const Size SHADOW_STATUS_SIZE = 4;
-const String SHADOW_STATUS_FOREIGN_KEY = "FORE";
-const String SHADOW_STATUS_REFERED_KEY = "REFE";
-const String SHADOW_STATUS_NAME = "Status";
-const String SHADOW_LOCAL_COLUMN_NAME = "LocalColumnName";
-const String SHADOW_FOREIGN_COLUMN_NAME = "ForeignColumnName";
-const String SHADOW_FOREIGN_TABLE_NAME = "ForeignTableName";
+const String VISITOR_PK_FLAG = "@";
+const String VISITOR_FK_FLAG = "#";
+
 }  // namespace dbtrain_mysql
 
 #endif

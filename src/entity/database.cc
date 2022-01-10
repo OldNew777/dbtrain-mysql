@@ -48,23 +48,36 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     std::cout << e.what() << "\n";
     throw e;
   }
+
+  #ifdef FRONT_END_DEBUG
+  printf("\n%s:\n", sTableName.data());
+  printf("name\t\ttype\tcanNull\tpk\tfk\n");
+  for(int i = 0; i < iSchema.GetSize(); i ++){
+    const Column& column = iSchema.GetColumn(i);
+    column.Show();
+  }
+  #endif //FRONT_END_DEBUG
+  const
+
+  #ifndef FRONT_END_DEBUG
   // check foreign key
   // insert foreign key
-  for (int i = 0; i < iSchema.GetSize(); ++i) {
+  const Column& FKPKCol = iSchema.GetColumn(iSchema.GetSize());
+  const std::vector<String>& sPKNameVec = FKPKCol.GetPKNameVec();
+  const std::vector<String>& sFKNameVec = FKPKCol.GetFKNameVec();
+  const std::vector<std::vector<String> >& iPKVec = FKPKCol.GetPKVec();
+  const std::vector<std::vector<std::vector<String> > >& 
+    iFKVec = FKPKCol.GetFKVec();
+
+  #ifndef NO_FOREIGN_KEY
+  for(int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
-    if (column.GetForeignKeyVec().size() != 0) {
-      for (auto& tPair : column.GetForeignKeyVec()) {
-        String fTableName = tPair.first;
-        String fColName = tPair.second;
-        // check reference table is null
-        if (_CheckHaveNull(fTableName, fColName)) {
-          printf("reference column should not be null\n");
-          throw ForeignKeyException("reference column should not be null");
-        }
-      }
+    if (column.GetIsForeign()) {
+      //TODO: 检查依赖表的相关列有没有null
       // insert local shadow table
     }
   }
+  #endif //NO_FOREIGN_KEY
 
   // Create table and cache it
   TablePage* pPage = new TablePage(iSchema);
@@ -72,6 +85,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   _iEntityMap[sTableName] = pTable;
   _iEntityPageIDMap[sTableName] = pPage->GetPageID();
 
+<<<<<<< HEAD
   // create shadowpage
   // create a shadow table
 
@@ -99,15 +113,19 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
 #ifndef NO_INDEX
   // insert index
+=======
+  #ifndef NO_INDEX
+  //insert index
+>>>>>>> gpc
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
     if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
   }
 #endif
 
-  // insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
+<<<<<<< HEAD
     if (column.GetForeignKeyVec().size() != 0) {
       for (auto& pPair : column.GetForeignKeyVec()) {
         String fTableName = pPair.first;
@@ -131,10 +149,14 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         _UpdateReferedKey(fTableName, fColName);
         GetTable(sTableName)->SetForeignKey(column.GetName());
       }
+=======
+    if (column.GetIsForeign()) {
+      //TODO: insert foreign key
+>>>>>>> gpc
     }
-
     // printf("3\n");
   }
+  #endif //FRONT_END_DEBUG
 }
 
 void Database::DropTable(const String& sTableName) {
@@ -155,7 +177,7 @@ void Database::DropTable(const String& sTableName) {
   OS::GetOS()->DeletePage(_iEntityPageIDMap[sTableName]);
   _iEntityMap.erase(sTableName);
   _iEntityPageIDMap.erase(sTableName);
-
+  //TODO: 清除key表的对应行
   DeleteEntity(sTableName, _iEntityPageSlotIDMap[sTableName]);
 }
 
@@ -172,7 +194,7 @@ void Database::RenameTable(const String& sOldTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
-
+  //TODO: RENAME key表的对应行
   DeleteEntity(sOldTableName, _iEntityPageSlotIDMap[sOldTableName]);
   InsertEntity(sNewTableName);
 
@@ -234,6 +256,7 @@ std::vector<PageSlotID> Database::Search(
 
 uint32_t Database::Delete(const String& sTableName, Condition* pCond,
                           const std::vector<Condition*>& iIndexCond) {
+  //TODO: delete to be finished
   auto iResVec = Search(sTableName, pCond, iIndexCond);
   Table* pTable = GetTable(sTableName);
   bool bHasIndex = _pIndexManager->HasIndex(sTableName);
@@ -257,6 +280,7 @@ uint32_t Database::Delete(const String& sTableName, Condition* pCond,
 uint32_t Database::Update(const String& sTableName, Condition* pCond,
                           const std::vector<Condition*>& iIndexCond,
                           const std::vector<Transform>& iTrans) {
+  //TODO: update to be finished
   auto iResVec = Search(sTableName, pCond, iIndexCond);
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) {
@@ -315,9 +339,14 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
   for (int i = 0; i < iTrans.size(); ++i) {
     const String& sColName = iColNameVec[iTrans[i].GetColPos()];
     if (pTable->GetIsForeign(sColName)) {
+<<<<<<< HEAD
       std::vector<std::pair<String, String>> fPairVec =
           GetForeignKey(sTableName, sColName);
       for (auto& iPair : fPairVec) {
+=======
+      std::vector<std::pair<String, String> > fPairVec =  GetForeignKeys(sTableName, sColName);
+      for(auto& iPair: fPairVec){
+>>>>>>> gpc
         const String& fTableName = iPair.first;
         const String& fColName = iPair.second;
         std::vector<PageSlotID> iDuplicated =
@@ -329,11 +358,18 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
         }
       }
     }
+<<<<<<< HEAD
     if (pTable->GetIsRefered(sColName)) {
       // check refered key 需要确保改变的那个键的没有对应的依赖值
       std::vector<std::pair<String, String>> rPairVec =
           GetForeignKey(sTableName, sColName);
       for (auto& iPair : rPairVec) {
+=======
+    if(pTable->GetIsRefered(sColName)){
+      //check refered key 需要确保改变的那个键的没有对应的依赖值
+      std::vector<std::pair<String, String> > rPairVec =  GetForeignKeys(sTableName, sColName);
+      for(auto& iPair: rPairVec){
+>>>>>>> gpc
         const String& rTableName = iPair.first;
         const String& rColName = iPair.second;
         MemResult* memRes = new MemResult(pTable->GetColumnNames());
@@ -471,7 +507,7 @@ PageSlotID Database::Insert(const String& sTableName,
       // check whether primary key conflicts with other records
       Field* pField = pRecord->GetField(i);
       std::vector<std::pair<String, String>> fPairVec =
-          GetForeignKey(sTableName, sColName);
+          GetForeignKeys(sTableName, sColName);
       // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
       // fPair.second.data());
       std::vector<PageSlotID> tmpDuplicated;
@@ -584,7 +620,7 @@ PageSlotID Database::Insert(const String& sTableName,
       // check whether primary key conflicts with other records
       Field* pField = pRecord->GetField(i);
       std::vector<std::pair<String, String>> fPairVec =
-          GetForeignKey(sTableName, sColName);
+          GetForeignKeys(sTableName, sColName);
       // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
       // fPair.second.data());
       std::vector<PageSlotID> tmpDuplicated;
@@ -827,8 +863,12 @@ bool Database::_CheckDuplicate(const String& sTableName,
   return false;
 }
 
+<<<<<<< HEAD
 std::vector<std::pair<String, String>> Database::GetReferedKey(
     const String& sTableName, const String& sColName) {
+=======
+std::vector<std::pair<String, String>> Database::GetReferedKeys(const String& sTableName, const String& sColName){
+>>>>>>> gpc
   Table* pTable = GetTable("@" + sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
@@ -858,8 +898,9 @@ std::vector<std::pair<String, String>> Database::GetReferedKey(
   //   throw ForeignKeyException();
   // }
 }
-std::vector<std::pair<String, String>> Database::GetForeignKey(
+std::vector<std::pair<String, String>> Database::GetForeignKeys(
     const String& sTableName, const String& sColName) {
+<<<<<<< HEAD
   Table* pTable = GetTable("@" + sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
@@ -1189,6 +1230,13 @@ void Database::_UpdateReferedKey(const String& fTableName,
   }
 
   if (result) delete result;
+=======
+  
+}
+
+void Database::DropFroeignKey(const String& sTableName, const String& sColName) {
+  //TODO: Drop FK to be done
+>>>>>>> gpc
 }
 
 void Database::AddUniqueKey(const String& sTableName, const String& sColName) {

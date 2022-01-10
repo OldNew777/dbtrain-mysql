@@ -8,6 +8,8 @@
 #include <typeinfo>
 
 // #define DEBUG
+// #define FRONT_END_DEBUG;
+
 // #define PRINT_PAGE
 // #define JOIN_DEBUG
 // #define INDEX_DEBUG
@@ -16,9 +18,11 @@
 // #define RAW2FIELD_BUILD_DEBUG
 // #define UPDATE_DEBUG
 // #define PRIMARY_KEY_DEBUG
-#define FOREIGN_KEY_DEBUG
+// #define FOREIGN_KEY_DEBUG
+
 // #define NO_FOREIGN_KEY
 // #define NO_INDEX
 // #define NO_INSERT_CHECK
 
+// #define SHADOW_PAGE
 #endif
