@@ -90,6 +90,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   // insert index
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
+    if(column.GetName() == "") continue;
     if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
   }
 #endif
