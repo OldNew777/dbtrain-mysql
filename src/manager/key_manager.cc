@@ -57,7 +57,6 @@ void KeyManager::Init(){
 
 void KeyManager::Store() {
   if (_bCleared) return;
-  printf("1\n");
   FixedRecord *pRecord = new FixedRecord(
       5,
       {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::CHAR_TYPE,
@@ -66,11 +65,9 @@ void KeyManager::Store() {
        COLUMN_NAME_SIZE});
   RecordPage *pPage = new RecordPage(_nPageID);
   PageID nNowPageID = _nPageID;
-  printf("2\n");
 
   // header
   pPage->SetHeader((uint8_t *)&_iDefaultKeyIndex, 4, DEFAULT_KEY_INDEX_OFFSET);
-  printf("3\n");
 
   // data
   auto iter = _iKeyMap.begin();
@@ -85,13 +82,14 @@ void KeyManager::Store() {
       pConstraintName = new CharField(iter->first);
       pLocalTableName = new CharField(iter->second.sLocalTableName);
       pLocalColName = new CharField(iter->second.sLocalColName[index]);
-      if (key.iType == KeyType::PRIMARY_KEY_TYPE) {
+      if (key.iType == KeyType::FOREIGN_KEY_TYPE) {
         pForeignTableName = new CharField(iter->second.sForeignTableName);
         pForeignColName = new CharField(iter->second.sForeignColName[index]);
-      } else if (key.iType == KeyType::FOREIGN_KEY_TYPE) {
+      } else if (key.iType == KeyType::PRIMARY_KEY_TYPE) {
         pForeignTableName = new CharField();
         pForeignColName = new CharField();
       } else {
+
         delete pPage;
         delete pRecord;
         delete pConstraintName;
@@ -99,6 +97,7 @@ void KeyManager::Store() {
         delete pLocalColName;
         throw Exception("Constraint type error");
       }
+
       pRecord->SetField(0, pConstraintName);
       pRecord->SetField(1, pLocalTableName);
       pRecord->SetField(2, pLocalColName);
@@ -130,13 +129,11 @@ void KeyManager::Store() {
       pPage = new RecordPage(nNowPageID);
     }
   }
-  printf("4\n");
 
   // delete empty page
   while (pPage->GetNextID() != NULL_PAGE) {
     pPage->PopBack();
   }
-  printf("5\n");
 
   delete pPage;
   delete pRecord;

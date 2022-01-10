@@ -110,8 +110,9 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for(int i = 0; i < iPKNameVec.size(); i ++){
     GetKeyManager()->AddPrimaryKey(sTableName, iPKVec[i], iPKNameVec[i]);
   }
-
-  // GetKeyManager()->ShowPK();
+#ifndef PRIMARY_KEY_DEBUG
+  GetKeyManager()->ShowPK();
+#endif
 }
 
 void Database::DropTable(const String& sTableName) {
@@ -584,11 +585,6 @@ try {
     if (duplicatedVec.size() != 0) {
       // add exception here
       String str = "";
-  #ifdef PRIMARY_KEY_DEBUG
-      for (auto& row : iRawVec) {
-        str += row + " ";
-      }
-  #endif
       auto e = Exception("Primary key existed" + str);
       std::cout << e.what() << "\n";
       throw e;
