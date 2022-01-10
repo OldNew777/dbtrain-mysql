@@ -54,7 +54,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     std::cout << e.what() << "\n";
     throw e;
   }
-
+  
   const Column& iFKPKCol = iSchema.GetColumn(iSchema.GetSize() - 1);
   const std::vector<std::vector<std::vector<String> > >& iFKVec = iFKPKCol.GetFKVec();
   const std::vector<std::vector<String> >& iPKVec = iFKPKCol.GetPKVec();
@@ -110,6 +110,8 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for(int i = 0; i < iPKNameVec.size(); i ++){
     GetKeyManager()->AddPrimaryKey(sTableName, iPKVec[i], iPKNameVec[i]);
   }
+
+  // GetKeyManager()->ShowPK();
 }
 
 void Database::DropTable(const String& sTableName) {

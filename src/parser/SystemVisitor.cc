@@ -769,7 +769,7 @@ antlrcpp::Any SystemVisitor::visitField_list(
     //process fk name
     iColVec.push_back(Column(sColName, type, canBeNull, size));
   }
-  // iColVec.push_back(Column(iPKVec, iPKNameVec, iFKVec, iFKNameVec));
+  iColVec.push_back(Column(iPKVec, iPKNameVec, iFKVec, iFKNameVec, iPKSet));
   return Schema(iColVec);
 }
 

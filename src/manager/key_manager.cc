@@ -26,7 +26,9 @@ KeyManager::KeyManager(PageID nPageID) {
   Init();
 }
 
-KeyManager::~KeyManager() { Store(); }
+KeyManager::~KeyManager() { 
+  Store(); 
+}
 
 PageID KeyManager::GetPageID() const { return _nPageID; }
 
@@ -55,7 +57,7 @@ void KeyManager::Init(){
 
 void KeyManager::Store() {
   if (_bCleared) return;
-
+  printf("1\n");
   FixedRecord *pRecord = new FixedRecord(
       5,
       {FieldType::CHAR_TYPE, FieldType::CHAR_TYPE, FieldType::CHAR_TYPE,
@@ -64,9 +66,11 @@ void KeyManager::Store() {
        COLUMN_NAME_SIZE});
   RecordPage *pPage = new RecordPage(_nPageID);
   PageID nNowPageID = _nPageID;
+  printf("2\n");
 
   // header
   pPage->SetHeader((uint8_t *)&_iDefaultKeyIndex, 4, DEFAULT_KEY_INDEX_OFFSET);
+  printf("3\n");
 
   // data
   auto iter = _iKeyMap.begin();
@@ -126,11 +130,13 @@ void KeyManager::Store() {
       pPage = new RecordPage(nNowPageID);
     }
   }
+  printf("4\n");
 
   // delete empty page
   while (pPage->GetNextID() != NULL_PAGE) {
     pPage->PopBack();
   }
+  printf("5\n");
 
   delete pPage;
   delete pRecord;
@@ -317,5 +323,17 @@ bool KeyManager::IsPrimary(const String& sTableName, const String& sColName){
   }
   false;
 }
-
+void KeyManager::ShowPK(){
+  printf("ShowPK:\n");
+  for(auto& sPair: _iTablePKMap){
+    printf("\n%s\n{\n", sPair.first.data());
+    for(auto& pk: sPair.second){
+      printf("\t{ ");
+      for(auto& colName: pk.sLocalColName)
+        printf("%s ", colName.data());
+      printf(" }\n");
+    }
+    printf("}\n");
+  }
+}
 }  // namespace dbtrain_mysql
