@@ -79,7 +79,11 @@ bool NodePage::Insert(Field *pKey, const PageSlotID &iPair) {
   // 4.子结点分裂情况下需要更新KeyVec和ChildVec
   else {
     // 中间节点必定非空
-    Size child_index = UpperBound(pKey);
+    Size child_index = LowerBound(pKey);
+    if (child_index >= _iChildVec.size()) {
+      // larger than max
+      child_index = _iChildVec.size() - 1;
+    }
 
     NodePage *childNodePage = new NodePage(_iChildVec[child_index].first);
     childNodePage->Insert(pKey, iPair);
@@ -119,8 +123,10 @@ bool NodePage::Insert(Field *pKey, const PageSlotID &iPair) {
         processed = true;
         NodePage *childNodePage_split = childNodePage->Split();
         // 插入分裂之后的新节点key和pageid
-        _iKeyVec.insert(_iKeyVec.begin() + child_index + 1,
-                        childNodePage_split->LastKey()->Clone());
+        _iKeyVec.insert(_iKeyVec.begin() + child_index,
+                        childNodePage->LastKey()->Clone());
+        delete _iKeyVec[child_index + 1];
+        _iKeyVec[child_index + 1] = childNodePage_split->LastKey()->Clone();
         _iChildVec.insert(
             _iChildVec.begin() + child_index + 1,
             PageSlotID(childNodePage_split->GetPageID(), NULL_SLOT));
@@ -408,7 +414,7 @@ NodePage *NodePage::Split() {
 void NodePage::MergePrev(NodePage *pPrevPage) {
   // 保证合并后不超过最大容量
   assert(size() + pPrevPage->size() <= _nCap);
-  // 保证是last page
+  // 保证是prev page
   assert(GetPrevID() == pPrevPage->GetPageID());
 
   _bModified = true;
@@ -710,8 +716,8 @@ Size NodePage::LowerBound(Field *pField) {
       nBegin = nMid + 1;
     }
 #ifdef INDEX_DEBUG
-    PrintPageSlotID({nBegin, nEnd});
-    std::cout << std::endl;
+    // PrintPageSlotID({nBegin, nEnd});
+    // std::cout << std::endl;
 #endif
   }
   return nBegin;
