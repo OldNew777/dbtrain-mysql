@@ -14,7 +14,10 @@ namespace dbtrain_mysql {
 
 const PageOffset DEFAULT_KEY_INDEX_OFFSET = 20;
 
-KeyManager::KeyManager() { Load(); }
+KeyManager::KeyManager() { 
+  _nPageID = NULL_PAGE;
+  Load(); 
+}
 
 KeyManager::KeyManager(PageID nPageID) {
   _nPageID = nPageID;
