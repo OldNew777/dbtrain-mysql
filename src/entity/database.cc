@@ -74,8 +74,8 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for(auto& ufk: iFKVec)
     for(auto& fk: ufk)
       pairSet.insert(std::make_pair(fk[1], fk[2]));
-
   for(auto& rkPair: pairSet){
+    printf("fk:%s %s\n", rkPair.first.data(), rkPair.second.data());
     if(_CheckHaveNull(rkPair.first, rkPair.second)){
       ForeignKeyException e("refered key (" + rkPair.first + ", " + rkPair.second + 
        ") should not have null");
@@ -87,16 +87,8 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   // insert entity to page
   InsertEntity(sTableName);
 
-#ifndef NO_INDEX
-  // insert index
-  for (int i = 0; i < iSchema.GetSize(); ++i) {
-    const Column& column = iSchema.GetColumn(i);
-    if(column.GetName() == "") continue;
-    if(iFKPKCol.isPK(column.GetName())) CreateIndex(sTableName, column.GetName());
-    // CreateIndex(sTableName, column.GetName());
-  }
-#endif
   //construct fk
+  std::set<std::pair<String, String> > IndexSet;
   for(int i = 0; i < iFKNameVec.size(); i ++){
     const std::vector<std::vector<String> >& ufk = iFKVec[i];
     const String& sForeignTableName = ufk[0][1];//任意一个单独外键的第二个元素
@@ -108,8 +100,12 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     }
 #ifndef NO_INDEX
   // insert ref key index
-  for (auto& fColNmae: sForeignColName)
-    CreateIndex(sForeignTableName, fColNmae);
+    for (auto& fColName: sForeignColName){
+      if(GetTable(sForeignTableName)->GetType(fColName) == FieldType::INT_TYPE ||
+         GetTable(sForeignTableName)->GetType(fColName) == FieldType::FLOAT_TYPE){
+          IndexSet.insert(std::make_pair(sForeignTableName, fColName));
+        }  
+    }
 #endif
     GetKeyManager()->AddForeignKey(sTableName, sForeignTableName, sLocalColName,
         sForeignColName, iFKNameVec[i]);
@@ -118,10 +114,18 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for(int i = 0; i < iPKNameVec.size(); i ++){
 #ifndef NO_INDEX
   // insert primary key index
-  for(auto& colName: iPKVec[i])
-    CreateIndex(sTableName, colName);
+    for(auto& colName: iPKVec[i]){
+      if(pTable->GetType(colName) == FieldType::INT_TYPE ||
+        pTable->GetType(colName) == FieldType::FLOAT_TYPE){
+          // printf("index:%s %s\n", sTableName.data(), colName.data());
+          IndexSet.insert(std::make_pair(sTableName, colName));
+        }
+    }
 #endif
     GetKeyManager()->AddPrimaryKey(sTableName, iPKVec[i], iPKNameVec[i]);
+  }
+  for(auto& id: IndexSet) {
+    if(!IsIndex(id.first, id.second)) CreateIndex(id.first, id.second);
   }
 
   // GetKeyManager()->ShowPK();
@@ -580,35 +584,7 @@ PageSlotID Database::Insert(const String& sTableName,
   }
   
 #endif //NO_PRIMARY_KEY
-#ifndef NO_FOREIGN_KEY
-  // check foreignkey
-  const std::vector<Key>& uFKVec = GetKeyManager()->GetForeignKey(sTableName);
-  for(auto& ufk: uFKVec){
-    std::vector<PageSlotID> iDuplicated;
-    for (int i = 0; i < ufk.sLocalColName.size(); i++) {
-      const String& lColName = ufk.sLocalColName[i];
-      const String& fTableName = ufk.sForeignTableName;
-      const String& fColName = ufk.sForeignColName[i];
-      // check whether primary key conflicts with other records
-      Field* pField = pRecord->GetField(pTable->GetColPos(lColName));
-      // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
-      if(iDuplicated.size() == 0){
-        iDuplicated = _GetDuplicated(fTableName, fColName, pField);
-      }else{
-        iDuplicated = Intersection(iDuplicated,  _GetDuplicated(fTableName, fColName, pField));
-      }
-      if(iDuplicated.size() == 0){
-        break;
-      }
-    }
-    if(iDuplicated.size() == 0){
-      ForeignKeyException e("fk insert fail: not in refered key");
-      printf("%s\n", e.what());
-      throw e;
-    }
-  }
-  
-#endif //NO_PRIMARY_KEY
+
 #ifndef NO_FOREIGN_KEY
   // check foreignkey
   const std::vector<Key>& uFKVec = GetKeyManager()->GetForeignKey(sTableName);
@@ -641,28 +617,7 @@ PageSlotID Database::Insert(const String& sTableName,
     }
   }
 #endif //NO_PRIMARY_KEY
-#ifndef NO_FOREIGN_KEY
-  // check foreignkey
-  for (int i = 0; i < iColNameVec.size(); i++) {
-    const String& sColName = iColNameVec[i];
-    if (pTable->GetIsForeign(sColName)) {
-      // check whether primary key conflicts with other records
-      Field* pField = pRecord->GetField(i);
-      std::vector<std::pair<String, String>> fPairVec =
-          GetForeignKey(sTableName, sColName);
-      // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
-      // fPair.second.data());
-      for (auto& fPair : fPairVec) {
-        // printf("%s %s\n", fPair.first.data(), fPair.second.data());
-        if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
-          printf("key out of range:%s\n", pField->ToString().data());
-          ForeignKeyException e("key out of range:" + pField->ToString());
-          throw e;
-        }
-      }
-    }
-  }
-#endif //NO_FOREIGN_KEY
+
 #endif //NO_INSERT_CHECK
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);
@@ -862,7 +817,6 @@ bool Database::_CheckHaveNull(const String& fTableName,
     GetKeyManager()->IsPrimary(fTableName, fColName)) {
     return false;
   }
-  // printf("into\n");
   FieldID colPos = fTable->GetColPos(fColName);
   Field* pLow = new NullField();
   Field* pHigh = pLow->Clone();

@@ -61,7 +61,7 @@ Index *IndexManager::GetIndex(const String &sTableName,
 Index *IndexManager::AddIndex(const String &sTableName, const String &sColName,
                               FieldType iType, Size nSize) {
   if (IsIndex(sTableName, sColName)) {
-    auto e = IndexException("Index not exist");
+    auto e = IndexException("Index already exist");
     std::cout << e.what() << "\n";
     throw e;
   }
