@@ -44,7 +44,9 @@ void LinkedPage::SetPrevID(PageID nPrevID) {
 }
 
 bool LinkedPage::PushBack(LinkedPage* pPage) {
-  if (!pPage) return false;
+  if (!pPage || pPage->GetPrevID() != NULL_PAGE ||
+      pPage->GetNextID() != NULL_PAGE)
+    return false;
   // 链表结点后增加一个新的链表页面结点
   // ALERT: ！！！一定要注意！！！
   // 不要同时建立两个指向相同磁盘位置的且可变对象，否则会出现一致性问题
@@ -65,12 +67,12 @@ bool LinkedPage::PushBack(LinkedPage* pPage) {
   return true;
 }
 
-PageID LinkedPage::PopBack() {
+LinkedPage* LinkedPage::PopBack() {
   // 删除下一个链表结点，返回删除结点的PageID
   // 需要判断当前页面是否存在后续页面
   PageID pageID_next = GetNextID();
   if (pageID_next == NULL_PAGE) {
-    auto e = PageException();
+    auto e = PageException("Page PopBack NULL_PAGE");
     std::cout << e.what() << "\n";
     throw e;
   }
@@ -85,8 +87,27 @@ PageID LinkedPage::PopBack() {
 
   // OS::DeletePage在最后释放被删除的页面
   // 必须先析构page再释放OS页面，否则会引起写入错误
-  delete page_next;
-  OS::GetOS()->DeletePage(pageID_next);
+  page_next->_bModified = false;
+  return page_next;
+}
+
+LinkedPage* LinkedPage::PopPrev() {
+  PageID pageID_prev = GetPrevID();
+  if (pageID_prev == NULL_PAGE) {
+    auto e = PageException("Page PopPrev NULL_PAGE");
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+
+  LinkedPage* page_prev = new LinkedPage(pageID_prev);
+  if (page_prev->GetPrevID() != NULL_PAGE) {
+    LinkedPage page_prev2(page_prev->GetPrevID());
+    page_prev2.SetNextID(GetPageID());
+  }
+  SetPrevID(page_prev->GetPrevID());
+
+  page_prev->_bModified = false;
+  return page_prev;
 }
 
 void LinkedPage::RemoveCurrent() {

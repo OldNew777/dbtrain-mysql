@@ -167,7 +167,9 @@ void IndexManager::Store() {
     }
   }
   while (pPage->GetNextID() != NULL_PAGE) {
-    pPage->PopBack();
+    LinkedPage *pPageDeleted = pPage->PopBack();
+    OS::GetOS()->DeletePage(pPageDeleted->GetPageID());
+    delete pPageDeleted;
   }
   delete pRecord;
   delete pPage;

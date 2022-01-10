@@ -87,7 +87,7 @@ Size Index::Delete(Field *pKey) {
   }
 
 #ifdef INDEX_DEBUG
-  // print();
+  print();
 #endif
 
   return ans;
@@ -140,15 +140,19 @@ std::vector<PageSlotID> Index::Range(Field *pLow, Field *pHigh) {
     rootPage = new NodePage(_nRootID);
     _bModified = false;
   }
+
+#ifdef INDEX_DEBUG
+  print();
+#endif
+
   std::vector<PageSlotID> ans = rootPage->Range(pLow, pHigh);
 
 #ifdef INDEX_DEBUG
   std::cout << "\n--------------------------------------------\n";
   std::cout << "$$$$$$$ Index::Range [" << pLow->ToString() << ", "
             << pHigh->ToString() << ") $$$$$$$$\n";
-  for (Size i = 0; i < ans.size(); ++i)
-    printf("(%d, %d)\n", (int)ans[i].first, (int)ans[i].second);
-  print();
+  // for (Size i = 0; i < ans.size(); ++i)
+  //   printf("(%d, %d)\n", (int)ans[i].first, (int)ans[i].second);
   std::cout << "--------------------------------------------\n\n";
 #endif
 

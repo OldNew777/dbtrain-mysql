@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <float.h>
 
+#include "algorithm"
 #include "exception/exceptions.h"
 #include "field/fields.h"
 #include "macros.h"
@@ -82,7 +83,7 @@ bool NodePage::Insert(Field *pKey, const PageSlotID &iPair) {
     Size child_index = LowerBound(pKey);
     if (child_index >= _iChildVec.size()) {
       // larger than max
-      child_index = _iChildVec.size() - 1;
+      child_index = _iChildVec.size() > 0 ? _iChildVec.size() - 1 : 0;
     }
 
     NodePage *childNodePage = new NodePage(_iChildVec[child_index].first);
@@ -174,7 +175,7 @@ Size NodePage::Delete(Field *pKey) {
   // 1.确定删除位置后删除数据即可
   if (_bLeaf) {
     Size left_index = LowerBound(pKey), right_index = UpperBound(pKey);
-    if (left_index == right_index && !Equal(pKey, _iKeyVec[left_index]))
+    if (left_index >= right_index && !Equal(pKey, _iKeyVec[left_index]))
       return 0;
     for (Size i = left_index; i <= right_index; ++i) {
       delete _iKeyVec[i];
@@ -276,55 +277,65 @@ bool NodePage::Delete(Field *pKey, const PageSlotID &iPair) {
     // 以下皆为删除成功的情况
     // 若将子节点删得 < _nCap / 2，则需要进行调整（向左右节点借一些过来）
     vector<Size> check_index;
+    vector<Size> deleted_index;
+
+    bool pageArrange = childNodePage->LessThanHalf();
+#ifdef INDEX_DEBUG
+    if (pageArrange)
+      printf("\n----------- Delete iPair Page Arrange -----------\n");
+#endif
 
     // 目前仍然是伪B+树，因此只看prev和next，不看其他的
-    bool deleted = false;
-    if (childNodePage->LessThanHalf()) {
+    if (pageArrange) {
       bool processed = false;
 
       // 可以与prev节点调整
       if (!processed && child_index > 0) {
         processed = true;
-        check_index.push_back(child_index - 1);
-        NodePage prevPage(_iChildVec[child_index - 1].first);
+        NodePage *prevPage = new NodePage(_iChildVec[child_index - 1].first);
         // 可以借元素
-        if (childNodePage->size() + prevPage.size() >= _nCap) {
-          Size move_num = (prevPage.size() - childNodePage->size()) >> 1;
-          std::pair<std::vector<Field *>, std::vector<PageSlotID>> nodes =
-              prevPage.PopBackNodes(move_num);
-          childNodePage->PushFrontNodes(nodes);
+        if (childNodePage->size() + prevPage->size() >= _nCap) {
+#ifdef INDEX_DEBUG
+          printf("Average prev %d\n", int(prevPage->GetPageID()));
+#endif
+          check_index.push_back(child_index - 1);
+          Size move_num = (prevPage->size() - childNodePage->size()) >> 1;
+          childNodePage->PushFrontNodes(prevPage->PopBackNodes(move_num));
+          delete prevPage;
         }
         // 合并节点
         else {
-          deleted = true;
-          prevPage.PushBackNodes(childNodePage->PopAll());
-          delete _iKeyVec[child_index];
-          _iKeyVec.erase(_iKeyVec.begin() + child_index);
-          _iChildVec.erase(_iChildVec.begin() + child_index);
-          childNodePage->RemoveCurrent();
-          childNodePage->Clear();
+#ifdef INDEX_DEBUG
+          printf("Merge prev %d\n", int(prevPage->GetPageID()));
+#endif
+          deleted_index.push_back(child_index - 1);
+          delete prevPage;
+          childNodePage->MergePrev();
         }
       }
       // 可以与next节点调整
       if (!processed && child_index + 1 < size()) {
         processed = true;
-        NodePage nextPage(_iChildVec[child_index + 1].first);
+        NodePage *nextPage = new NodePage(_iChildVec[child_index + 1].first);
         // 可以借元素
-        if (childNodePage->size() + nextPage.size() >= _nCap) {
-          Size move_num = (nextPage.size() - childNodePage->size()) >> 1;
-          std::pair<std::vector<Field *>, std::vector<PageSlotID>> nodes =
-              nextPage.PopFrontNodes(move_num);
-          childNodePage->PushBackNodes(nodes);
+        if (childNodePage->size() + nextPage->size() >= _nCap) {
+#ifdef INDEX_DEBUG
+          printf("Average next %d\n", int(nextPage->GetPageID()));
+#endif
+          check_index.push_back(child_index);
+          Size move_num = (nextPage->size() - childNodePage->size()) >> 1;
+          childNodePage->PushBackNodes(nextPage->PopFrontNodes(move_num));
+          delete nextPage;
         }
         // 合并节点
         else {
-          deleted = true;
-          nextPage.PushFrontNodes(childNodePage->PopAll());
-          delete _iKeyVec[child_index];
-          _iKeyVec.erase(_iKeyVec.begin() + child_index);
-          _iChildVec.erase(_iChildVec.begin() + child_index);
-          childNodePage->RemoveCurrent();
-          childNodePage->Clear();
+#ifdef INDEX_DEBUG
+          printf("Merge next %d\n", int(nextPage->GetPageID()));
+#endif
+          check_index.push_back(child_index);
+          deleted_index.push_back(child_index + 1);
+          delete nextPage;
+          childNodePage->MergeNext();
         }
       }
       // 没有左右节点的情况：只有根节点存在，交给Index处理根节点情况
@@ -333,23 +344,50 @@ bool NodePage::Delete(Field *pKey, const PageSlotID &iPair) {
     // child_index一定需要检查
     // 这是大部分情况仅有的需要检查的部分，因此占耗时很大部分
     // 不放在check_index中统一处理，可以节约一次构造页面的时间
-    if (!deleted && !Equal(_iKeyVec[child_index], childNodePage->LastKey())) {
-      delete _iKeyVec[child_index];
-      _iKeyVec[child_index] = childNodePage->LastKey()->Clone();
-    }
+
+#ifdef INDEX_DEBUG
+    if (pageArrange)
+      printf("page %d, childNodePage %d\n", int(_nPageID),
+             int(childNodePage->GetPageID()));
+#endif
+
     delete childNodePage;
 
     // 若更新了子节点的LastKey，需要刷新_iKeyVec
     for (int i = 0; i < check_index.size(); ++i) {
       Size index = check_index[i];
       if (index < size()) {
+#ifdef INDEX_DEBUG
+        printf("check_index %d, ", int(_iChildVec[index].first));
+#endif
+
         NodePage node(_iChildVec[index].first);
-        if (!Equal(_iKeyVec[index], node.LastKey())) {
+        Field *pLastKey = node.LastKey();
+        if (pLastKey != nullptr && !Equal(_iKeyVec[index], pLastKey)) {
           delete _iKeyVec[index];
-          _iKeyVec[index] = node.LastKey()->Clone();
+          _iKeyVec[index] = pLastKey->Clone();
         }
       }
     }
+
+    std::sort(deleted_index.begin(), deleted_index.end());
+    for (int i = deleted_index.size() - 1; i >= 0; --i) {
+      int index = deleted_index[i];
+
+#ifdef INDEX_DEBUG
+      printf("deleted_index %d, ", _iChildVec[index]);
+#endif
+
+      delete _iKeyVec[index];
+      _iKeyVec.erase(_iKeyVec.begin() + index);
+      _iChildVec.erase(_iChildVec.begin() + index);
+    }
+
+#ifdef INDEX_DEBUG
+    printf("\n");
+    if (pageArrange)
+      printf("-------------------------------------------------\n\n");
+#endif
   }
 
   // ALERT:
@@ -411,35 +449,35 @@ NodePage *NodePage::Split() {
   return newNodePage;
 }
 
-void NodePage::MergePrev(NodePage *pPrevPage) {
+void NodePage::MergePrev() {
+  // 保证prev page
+  assert(GetPrevID() != NULL_PAGE);
   // 保证合并后不超过最大容量
+  NodePage *pPrevPage = new NodePage(GetPrevID());
   assert(size() + pPrevPage->size() <= _nCap);
-  // 保证是prev page
-  assert(GetPrevID() == pPrevPage->GetPageID());
 
   _bModified = true;
-  std::pair<std::vector<Field *>, std::vector<PageSlotID>> nodes =
-      pPrevPage->PopAll();
-  PushFrontNodes(nodes);
-  pPrevPage->RemoveCurrent();
-  pPrevPage->_bModified = false;
-  OS::GetOS()->DeletePage(pPrevPage->GetPageID());
+  PushFrontNodes(pPrevPage->PopAll());
+  LinkedPage *pPageDeleted = PopPrev();
+  delete pPageDeleted;
+
+  pPrevPage->Clear();
   delete pPrevPage;
 }
 
-void NodePage::MergeNext(NodePage *pNextPage) {
+void NodePage::MergeNext() {
+  // 保证next page
+  assert(GetNextID() != NULL_PAGE);
   // 保证合并后不超过最大容量
+  NodePage *pNextPage = new NodePage(GetNextID());
   assert(size() + pNextPage->size() <= _nCap);
-  // 保证是next page
-  assert(GetNextID() == pNextPage->GetPageID());
 
   _bModified = true;
-  std::pair<std::vector<Field *>, std::vector<PageSlotID>> nodes =
-      pNextPage->PopAll();
-  PushBackNodes(nodes);
-  pNextPage->RemoveCurrent();
-  pNextPage->_bModified = false;
-  OS::GetOS()->DeletePage(pNextPage->GetPageID());
+  PushBackNodes(pNextPage->PopAll());
+  LinkedPage *pPageDeleted = PopBack();
+  delete pPageDeleted;
+
+  pNextPage->Clear();
   delete pNextPage;
 }
 
@@ -449,8 +487,8 @@ void NodePage::Arange(Size left, Size right) {
 
 std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
 #ifdef INDEX_DEBUG
-  std::cout << "Range start : [" << pLow->ToString() << ", "
-            << pHigh->ToString() << ")\n";
+  // std::cout << "Range start : [" << pLow->ToString() << ", "
+  //           << pHigh->ToString() << ")\n";
 #endif
 
   // 需要基于结点类型判断执行过程
@@ -502,11 +540,11 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
     ans.insert(ans.end(), leaf_ans.begin(), leaf_ans.end());
 
 #ifdef INDEX_DEBUG
-    pPage->print();
-    std::cout << "\n$$$$$$$$$$$$$$$\n";
-    for (Size i = 0; i < leaf_ans.size(); ++i)
-      printf("(%d, %d)\n", (int)leaf_ans[i].first, (int)leaf_ans[i].second);
-    std::cout << "$$$$$$$$$$$$$$$\n\n";
+    // pPage->print();
+    // std::cout << "\n$$$$$$$$$$$$$$$\n";
+    // for (Size i = 0; i < leaf_ans.size(); ++i)
+    //   printf("(%d, %d)\n", (int)leaf_ans[i].first, (int)leaf_ans[i].second);
+    // std::cout << "$$$$$$$$$$$$$$$\n\n";
 #endif
 
     // 按链表向右寻找符合条件的，直到某个页面不全符合条件
@@ -529,18 +567,19 @@ std::vector<PageSlotID> NodePage::Range(Field *pLow, Field *pHigh) {
       ans.insert(ans.end(), leaf_ans.begin(), leaf_ans.end());
 
 #ifdef INDEX_DEBUG
-      pPage->print();
-      std::cout << "\n$$$$$$$$$$$$$$$\n";
-      for (Size i = 0; i < leaf_ans.size(); ++i)
-        printf("(%d, %d)\n", (int)leaf_ans[i].first, (int)leaf_ans[i].second);
-      std::cout << "$$$$$$$$$$$$$$$\n\n";
+      // pPage->print();
+      // std::cout << "\n$$$$$$$$$$$$$$$\n";
+      // for (Size i = 0; i < leaf_ans.size(); ++i)
+      //   printf("(%d, %d)\n", (int)leaf_ans[i].first,
+      //   (int)leaf_ans[i].second);
+      // std::cout << "$$$$$$$$$$$$$$$\n\n";
 #endif
     }
     delete pPage;
   }
 
 #ifdef INDEX_DEBUG
-  std::cout << "Range end\n";
+  // std::cout << "Range end\n";
 #endif
 
   // ALERT: 注意叶结点可能为空结点，需要针对这种情况进行特判

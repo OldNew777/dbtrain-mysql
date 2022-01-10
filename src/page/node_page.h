@@ -147,14 +147,12 @@ class NodePage : public LinkedPage {
   NodePage *Split();
   /**
    * @brief 将相邻的两个节点合并为当前这一个节点，并删除last节点
-   * @param pNextPage 左侧节点（相邻）
    */
-  void MergePrev(NodePage *pPrevPage);
+  void MergePrev();
   /**
    * @brief 将相邻的两个节点合并为当前这一个节点，并删除next节点
-   * @param pNextPage 右侧节点（相邻）
    */
-  void MergeNext(NodePage *pNextPage);
+  void MergeNext();
   /**
    * @brief 整理 [left, right) 内的各子节点
    */

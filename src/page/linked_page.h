@@ -27,9 +27,10 @@ class LinkedPage : public Page {
   /**
    * @brief 删除当前页面后的第一个页面
    *
-   * @return PageID 被删除页面的页面编号
+   * @return LinkedPage* 被删除页面
    */
-  PageID PopBack();
+  LinkedPage* PopBack();
+  LinkedPage* PopPrev();
   /**
    * @brief 从链表中删除当前页面
    */
