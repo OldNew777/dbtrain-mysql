@@ -2,6 +2,7 @@
 
 #include <unordered_set>
 
+#include "algorithm"
 #include "condition/conditions.h"
 #include "datastruct/hashes.h"
 #include "exception/exceptions.h"
@@ -124,9 +125,36 @@ std::vector<Record*> DataManager::GetTableInfos(
   return GetTable(sTableName)->GetTableInfos();
 }
 
+void DataManager::ApplySelectors(
+    std::pair<std::vector<String>, std::vector<Record*>>& iData,
+    const std::vector<std::pair<String, String>>& selectors,
+    std::unordered_map<String, Size>& fieldID_base_map) {
+  CheckDatabaseUsed();
+  if (selectors.size() == 0) return;
+  std::vector<Size> iKeepVec;
+  for (int i = 0; i < selectors.size(); ++i) {
+    String sTableName = selectors[i].first;
+    String sColName = selectors[i].second;
+    iKeepVec.push_back(GetTable(sTableName)->GetColPos(sColName) +
+                       fieldID_base_map[sTableName]);
+  }
+  for (Record* pRecord : iData.second) {
+    pRecord->Sub(iKeepVec);
+  }
+  std::vector<String> iColNameVec = iData.first;
+  std::vector<String> iKeepColNameVec{};
+  for (Size i = 0; i < iColNameVec.size(); ++i) {
+    if (find(iKeepVec.begin(), iKeepVec.end(), i) != iKeepVec.end()) {
+      iKeepColNameVec.push_back(iColNameVec[i]);
+    }
+  }
+  iData.first = iKeepColNameVec;
+}
+
 std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
     std::map<String, std::vector<PageSlotID>>& iResultMap,
-    std::vector<Condition*>& iJoinConds) {  // 表之间JOIN过程
+    std::vector<Condition*>& iJoinConds,
+    std::unordered_map<String, Size>& fieldID_base_map) {  // 表之间JOIN过程
 
   // 由于实现临时表存储具有一定难度，所以JOIN过程中将中间结果保留在内存中，不存入临时表
   // 存在JOIN字段值相同的情况，需要特别重视
@@ -143,6 +171,7 @@ std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
 
   // 预先获取各record
   std::map<String, std::vector<Record*>> iRecordMap;
+  fieldID_base_map.clear();
 
   std::pair<std::vector<String>, std::vector<Record*>> ans;
   if (iResultMap.size() == 0) return ans;
@@ -245,12 +274,10 @@ std::pair<std::vector<String>, std::vector<Record*>> DataManager::Join(
 #endif
 
     // 拼接Record
-    Size filedID_base;
     std::vector<Record*> recordVec;
+    Size filedID_base;
     // 并查集
     std::unordered_set<String> tableJoint;
-
-    std::map<String, Size> fieldID_base_map;
 
     // 初始化一个
     for (Size i = 0; i < iJoinConds.size(); ++i) {

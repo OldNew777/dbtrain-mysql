@@ -14,89 +14,25 @@
 -- Build files have been written to: /home/kasumi/Documents/4thYear1/DatabaseIntro/dbtrain-mysql/build
 [  1%] Built target gtest
 [ 63%] Built target antlr4-runtime
-[ 64%] Built target gtest_main
-[ 65%] Built target gmock
+[ 64%] Built target gmock
+[ 65%] Built target gtest_main
 [ 65%] Built target gmock_main
 Scanning dependencies of target dbtrain_mysql_shared
-[ 66%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/condition/condition.cc.o
-[ 66%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/condition/and_condition.cc.o
-[ 66%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/backend/backend.cc.o
-[ 66%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/condition/in_condition.cc.o
-[ 67%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/condition/index_condition.cc.o
-[ 67%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/condition/join_condition.cc.o
-[ 68%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/condition/not_condition.cc.o
-[ 68%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/condition/null_condition.cc.o
-[ 69%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/condition/or_condition.cc.o
-[ 69%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/condition/range_condition.cc.o
-[ 70%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/entity/column.cc.o
-[ 70%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/entity/database.cc.o
-[ 71%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/entity/entity.cc.o
-[ 71%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/entity/entity_manager.cc.o
-[ 72%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/entity/schema.cc.o
-[ 72%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/entity/table.cc.o
-[ 73%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/entity/whole.cc.o
-[ 73%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/field/char_field.cc.o
-[ 73%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/field/compare.cc.o
-[ 74%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/field/date_field.cc.o
-[ 74%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/field/field.cc.o
-[ 75%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/field/float_field.cc.o
-[ 75%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/field/int_field.cc.o
-[ 76%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/field/null_field.cc.o
-[ 76%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/index/index.cc.o
-[ 77%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/manager/data_manager.cc.o
-[ 77%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/manager/index_manager.cc.o
-[ 78%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/os/cache.cc.o
-[ 78%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/os/os.cc.o
-[ 79%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/os/raw_page.cc.o
-[ 79%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/page/database_page.cc.o
-[ 80%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/page/linked_page.cc.o
-[ 80%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/page/manager_page.cc.o
-[ 80%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/page/node_page.cc.o
-[ 81%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/page/page.cc.o
-[ 81%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/page/record_page.cc.o
-[ 82%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/page/table_page.cc.o
-[ 82%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/page/whole_page.cc.o
-[ 83%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/parser/ErrorListener.cc.o
-[ 83%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/parser/SystemVisitor.cc.o
-[ 83%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/record/fixed_record.cc.o
-[ 84%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/record/record.cc.o
-[ 84%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/record/transform.cc.o
-[ 85%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/result/mem_result.cc.o
-[ 85%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/result/result.cc.o
-[ 86%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/system/instance.cc.o
-[ 86%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/utils/basic_function.cc.o
-[ 87%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/utils/bitmap.cc.o
-[ 87%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/utils/display.cc.o
-[ 88%] Linking CXX shared library lib/libdbtrain_mysql_shared.so
+[ 65%] Building CXX object CMakeFiles/dbtrain_mysql_shared.dir/src/parser/SystemVisitor.cc.o
+[ 66%] Linking CXX shared library lib/libdbtrain_mysql_shared.so
 [ 91%] Built target dbtrain_mysql_shared
-Scanning dependencies of target dbtrain_mysql_clear
-Scanning dependencies of target dbtrain_mysql_shell
-Scanning dependencies of target dbtrain_mysql_main
-Scanning dependencies of target test1_test
-[ 91%] Building CXX object CMakeFiles/dbtrain_mysql_shell.dir/executable/shell.cc.o
-[ 91%] Building CXX object CMakeFiles/dbtrain_mysql_main.dir/executable/main.cc.o
-[ 91%] Building CXX object CMakeFiles/dbtrain_mysql_clear.dir/executable/clear.cc.o
-[ 92%] Building CXX object CMakeFiles/test1_test.dir/home/kasumi/Documents/4thYear1/DatabaseIntro/dbtrain-mysql-test/test/test1/exception_test.cc.o
-[ 93%] Linking CXX executable bin/dbtrain_mysql_clear
-[ 94%] Linking CXX executable bin/dbtrain_mysql_shell
-[ 95%] Linking CXX executable bin/dbtrain_mysql_main
+[ 92%] Linking CXX executable bin/dbtrain_mysql_clear
+[ 93%] Linking CXX executable bin/dbtrain_mysql_shell
+[ 94%] Linking CXX executable bin/dbtrain_mysql_main
+[ 95%] Linking CXX executable test/test1_test
 [ 95%] Built target dbtrain_mysql_clear
-Scanning dependencies of target test2_test
-[ 95%] Building CXX object CMakeFiles/test2_test.dir/home/kasumi/Documents/4thYear1/DatabaseIntro/dbtrain-mysql-test/test/test2/database_test.cc.o
-[ 95%] Built target dbtrain_mysql_main
-Scanning dependencies of target dbtrain_mysql_init
-[ 95%] Building CXX object CMakeFiles/dbtrain_mysql_init.dir/executable/init.cc.o
 [ 95%] Built target dbtrain_mysql_shell
-[ 95%] Building CXX object CMakeFiles/test2_test.dir/home/kasumi/Documents/4thYear1/DatabaseIntro/dbtrain-mysql-test/test/test2/table_test.cc.o
-[ 96%] Linking CXX executable bin/dbtrain_mysql_init
-[ 96%] Built target dbtrain_mysql_init
-[ 96%] Building CXX object CMakeFiles/test1_test.dir/home/kasumi/Documents/4thYear1/DatabaseIntro/dbtrain-mysql-test/test/test1/field_test.cc.o
-[ 97%] Building CXX object CMakeFiles/test1_test.dir/home/kasumi/Documents/4thYear1/DatabaseIntro/dbtrain-mysql-test/test/test1/main.cc.o
-[ 97%] Building CXX object CMakeFiles/test1_test.dir/home/kasumi/Documents/4thYear1/DatabaseIntro/dbtrain-mysql-test/test/test1/start_test.cc.o
-[ 98%] Linking CXX executable test/test2_test
-[ 99%] Built target test2_test
-[100%] Linking CXX executable test/test1_test
-[100%] Built target test1_test
+[ 96%] Linking CXX executable test/test2_test
+[ 96%] Built target dbtrain_mysql_main
+[ 97%] Linking CXX executable bin/dbtrain_mysql_init
+[ 99%] Built target test1_test
+[ 99%] Built target dbtrain_mysql_init
+[100%] Built target test2_test
 Clear
 Database Init.
 OS()
@@ -210,6 +146,8 @@ Inserted : 60000
  |  60000 | 
  +--------+
 (1 rows )
+> 
+> 
 > ALTER TABLE PART ADD INDEX(P_PARTKEY);
  +--------------+
  | Create Index | 
@@ -217,44 +155,34 @@ Inserted : 60000
  |            1 | 
  +--------------+
 (1 rows )
-> 
-> 
-> 
-> 
-> 
-> DELETE FROM PART WHERE PART.P_PARTKEY >= 900 AND PART.P_PARTKEY < 1000;
- +--------+
- | Delete | 
- +--------+
- |    100 | 
- +--------+
+> SELECT * FROM PART WHERE PART.P_PARTKEY IN (23, 34);
+ +-----------+----------------------------------------+----------------+----------+----------------------+--------+-------------+---------------+----------------+
+ | P_PARTKEY |                                 P_NAME |         P_MFGR |  P_BRAND |               P_TYPE | P_SIZE | P_CONTAINER | P_RETAILPRICE |      P_COMMENT | 
+ +-----------+----------------------------------------+----------------+----------+----------------------+--------+-------------+---------------+----------------+
+ |        23 | coral lavender seashell rosy burlywood | Manufacturer#3 | Brand#35 | MEDIUM BURNISHED TIN |     42 |   JUMBO JAR |        923.02 |      nic  fina | 
+ |        34 |          khaki steel rose ghost salmon | Manufacturer#1 | Brand#13 |  LARGE BRUSHED STEEL |      8 |   JUMBO BOX |        934.03 | riously ironic | 
+ +-----------+----------------------------------------+----------------+----------+----------------------+--------+-------------+---------------+----------------+
+(2 rows )
+> SELECT * FROM PART WHERE PART.P_PARTKEY = 23;
+ +-----------+----------------------------------------+----------------+----------+----------------------+--------+-------------+---------------+-----------+
+ | P_PARTKEY |                                 P_NAME |         P_MFGR |  P_BRAND |               P_TYPE | P_SIZE | P_CONTAINER | P_RETAILPRICE | P_COMMENT | 
+ +-----------+----------------------------------------+----------------+----------+----------------------+--------+-------------+---------------+-----------+
+ |        23 | coral lavender seashell rosy burlywood | Manufacturer#3 | Brand#35 | MEDIUM BURNISHED TIN |     42 |   JUMBO JAR |        923.02 | nic  fina | 
+ +-----------+----------------------------------------+----------------+----------+----------------------+--------+-------------+---------------+-----------+
 (1 rows )
-> SELECT * FROM PART WHERE PART.P_PARTKEY >= 890 AND PART.P_PARTKEY < 1010;
- +-----------+-----------------------------------------+----------------+----------+-------------------------+--------+-------------+---------------+------------------------+
- | P_PARTKEY |                                  P_NAME |         P_MFGR |  P_BRAND |                  P_TYPE | P_SIZE | P_CONTAINER | P_RETAILPRICE |              P_COMMENT | 
- +-----------+-----------------------------------------+----------------+----------+-------------------------+--------+-------------+---------------+------------------------+
- |       890 |         sandy lawn chartreuse peru blue | Manufacturer#5 | Brand#52 |     SMALL BRUSHED STEEL |     23 |     MED PKG |       1790.89 |                 ests d | 
- |       891 |         plum floral dodger lemon almond | Manufacturer#4 | Brand#42 |  ECONOMY POLISHED STEEL |      5 |    MED CASE |       1791.89 |      yly regular  expr | 
- |       892 |     thistle chocolate sandy powder drab | Manufacturer#2 | Brand#22 |    SMALL BRUSHED NICKEL |      3 |     LG DRUM |       1792.89 |      quickly regular r | 
- |       893 |         dark moccasin bisque cyan azure | Manufacturer#1 | Brand#14 |     PROMO BRUSHED STEEL |      9 |      LG JAR |       1793.89 |            ly regular  | 
- |       894 |        chocolate blue smoke azure sandy | Manufacturer#3 | Brand#35 |     SMALL BURNISHED TIN |     43 |     MED BAG |       1794.89 |      s. carefully expr | 
- |       895 |    thistle azure magenta mint burnished | Manufacturer#4 | Brand#41 |    MEDIUM BRUSHED STEEL |     17 |      SM BOX |       1795.89 |            eaves might | 
- |       896 |          peach ivory rose honeydew lace | Manufacturer#4 | Brand#43 |      PROMO ANODIZED TIN |      7 |     LG CASE |       1796.89 |               e across | 
- |       897 |            misty olive purple cream red | Manufacturer#4 | Brand#41 |    SMALL BRUSHED COPPER |     26 |      SM JAR |       1797.89 |             cajole bli | 
- |       898 |        olive burlywood royal cream drab | Manufacturer#4 | Brand#45 |   PROMO POLISHED NICKEL |      8 |    WRAP BAG |       1798.89 |     e against the pack | 
- |       899 |        gainsboro dim misty violet coral | Manufacturer#2 | Brand#25 |   SMALL ANODIZED NICKEL |     50 |   WRAP CASE |       1799.89 | lithely pending excuse | 
- |      1000 | wheat frosted chiffon aquamarine saddle | Manufacturer#2 | Brand#24 |  ECONOMY BRUSHED NICKEL |     10 |     SM DRUM |           901 |                 g fluf | 
- |      1001 |         plum ivory wheat thistle salmon | Manufacturer#5 | Brand#53 |    LARGE BRUSHED NICKEL |     29 |   WRAP PACK |           902 |     posits x-ray acros | 
- |      1002 |        khaki dark blush moccasin floral | Manufacturer#3 | Brand#31 |   SMALL ANODIZED NICKEL |      5 |     MED PKG |           903 |  y ironic instructions | 
- |      1003 |           khaki white violet tan forest | Manufacturer#1 | Brand#14 |  ECONOMY ANODIZED STEEL |     19 |   JUMBO BOX |           904 |                  en id | 
- |      1004 |            light navy deep papaya olive | Manufacturer#2 | Brand#21 |     LARGE BRUSHED BRASS |     16 |   WRAP CASE |           905 |           ckly ironic  | 
- |      1005 |    seashell orange firebrick peach rose | Manufacturer#5 | Brand#52 |     PROMO BRUSHED STEEL |     39 |    WRAP CAN |           906 |        even accounts s | 
- |      1006 |      tan tomato burlywood drab midnight | Manufacturer#1 | Brand#11 |  MEDIUM POLISHED COPPER |      3 |   WRAP CASE |           907 |   express  even packag | 
- |      1007 |          dodger navajo navy peru salmon | Manufacturer#1 | Brand#14 |      ECONOMY PLATED TIN |      9 |   JUMBO PKG |           908 |         deas believe a | 
- |      1008 |                puff cyan beige tan blue | Manufacturer#5 | Brand#55 |        PROMO PLATED TIN |      8 |     LG DRUM |           909 |                 intain | 
- |      1009 |         sandy ghost steel cornsilk pale | Manufacturer#4 | Brand#42 | MEDIUM BURNISHED NICKEL |     47 |      SM JAR |           910 |                 agains | 
- +-----------+-----------------------------------------+----------------+----------+-------------------------+--------+-------------+---------------+------------------------+
-(20 rows )
+> SELECT PART.P_PARTKEY, PART.P_BRAND FROM PART WHERE PART.P_PARTKEY = 23;
+ +-----------+----------+
+ | P_PARTKEY |  P_BRAND | 
+ +-----------+----------+
+ |        23 | Brand#35 | 
+ +-----------+----------+
+(1 rows )
+> 
+> 
+> 
+> 
+> 
+> 
 > 
 > 
 ~OS()

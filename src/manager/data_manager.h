@@ -1,6 +1,8 @@
 #ifndef DBTRAIN_MYSQL_DATA_MANAGER_H
 #define DBTRAIN_MYSQL_DATA_MANAGER_H
 
+#include <unordered_map>>
+
 #include "defines.h"
 #include "entity/database.h"
 #include "entity/table.h"
@@ -108,7 +110,12 @@ class DataManager {
   // ------------------------ RECORD ------------------------
   std::pair<std::vector<String>, std::vector<Record*>> Join(
       std::map<String, std::vector<PageSlotID>>& iResultMap,
-      std::vector<Condition*>& iJoinConds);
+      std::vector<Condition*>& iJoinConds,
+      std::unordered_map<String, Size>& fieldID_base_map);
+  void ApplySelectors(
+      std::pair<std::vector<String>, std::vector<Record*>>& iData,
+      const std::vector<std::pair<String, String>>& selectors,
+      std::unordered_map<String, Size>& fieldID_base_map);
   std::vector<PageSlotID> Search(const String& sTableName, Condition* pCond,
                                  const std::vector<Condition*>& iIndexCond,
                                  int limit, int offset);

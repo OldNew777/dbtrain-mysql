@@ -88,7 +88,12 @@ class Instance {
    */
   std::pair<std::vector<String>, std::vector<Record *>> Join(
       std::map<String, std::vector<PageSlotID>> &iResultMap,
-      std::vector<Condition *> &iJoinConds);
+      std::vector<Condition *> &iJoinConds,
+      std::unordered_map<String, Size> &fieldID_base_map);
+  void ApplySelectors(
+      std::pair<std::vector<String>, std::vector<Record *>> &iData,
+      const std::vector<std::pair<String, String>> &selectors,
+      std::unordered_map<String, Size> &fieldID_base_map);
 
   void AddPrimaryKey(const String &sTableName,
                      const std::vector<String> sColNameVec);

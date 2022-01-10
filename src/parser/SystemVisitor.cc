@@ -460,21 +460,31 @@ antlrcpp::Any SystemVisitor::visitSelect_table(
     iJoinConds = iCondMap.find("JOIN")->second;
   }
   std::pair<std::vector<String>, std::vector<Record *>> iHeadDataPair{};
-  if (bJoin) iHeadDataPair = _pDB->Join(iResultMap, iJoinConds);
-  // Generate Result
-  std::vector<PageSlotID> iData;
-  if (!bJoin) {
+  std::unordered_map<String, Size> fieldID_base_map;
+  for (const String &sTableName : _pDB->GetTableNames())
+    fieldID_base_map[sTableName] = 0;
+  if (bJoin)
+    iHeadDataPair = _pDB->Join(iResultMap, iJoinConds, fieldID_base_map);
+  else {
+    std::vector<PageSlotID> iData;
     String sTableName = iTableNameVec[0];
     iData = iResultMap[sTableName];
-    Result *pResult = new MemResult(_pDB->GetColumnNames(sTableName));
+    std::vector<Record *> iRecordVec;
     for (const auto &it : iData)
-      pResult->PushBack(_pDB->GetRecord(iTableNameVec[0], it));
-    return pResult;
-  } else {
-    Result *pResult = new MemResult(iHeadDataPair.first);
-    for (const auto &pRecord : iHeadDataPair.second) pResult->PushBack(pRecord);
-    return pResult;
+      iRecordVec.push_back(_pDB->GetRecord(iTableNameVec[0], it));
+    iHeadDataPair.first = _pDB->GetColumnNames(sTableName);
+    iHeadDataPair.second = iRecordVec;
   }
+
+  // selectors
+  std::vector<std::pair<String, String>> selectors =
+      ctx->selectors()->accept(this);
+  _pDB->ApplySelectors(iHeadDataPair, selectors, fieldID_base_map);
+
+  // Generate Result
+  Result *pResult = new MemResult(iHeadDataPair.first);
+  for (const auto &pRecord : iHeadDataPair.second) pResult->PushBack(pRecord);
+  return pResult;
 }
 
 antlrcpp::Any SystemVisitor::visitAlter_add_index(
@@ -1005,11 +1015,21 @@ antlrcpp::Any SystemVisitor::visitSet_clause(
 
 antlrcpp::Any SystemVisitor::visitSelectors(
     MYSQLParser::SelectorsContext *ctx) {
-  return visitChildren(ctx);
+  std::vector<std::pair<String, String>> selectors;
+  if (ctx->selector().size() > 0) {
+    for (auto iter : ctx->selector()) {
+      selectors.push_back(iter->accept(this));
+    }
+  }
+  return selectors;
 }
 
 antlrcpp::Any SystemVisitor::visitSelector(MYSQLParser::SelectorContext *ctx) {
-  throw UnimplementedException();
+  if (ctx->column() != nullptr) {
+    return ctx->column()->accept(this);
+  } else {
+    throw UnimplementedException();
+  }
 }
 
 antlrcpp::Any SystemVisitor::visitIdentifiers(
