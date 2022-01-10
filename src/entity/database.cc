@@ -440,20 +440,11 @@ PageSlotID Database::Insert(const String& sTableName,
   // check primary key
   const std::vector<Key>& uPKVec = GetKeyManager()->GetPrimaryKey(sTableName);
   for(auto& upk: uPKVec){
-
-#ifdef PRIMARY_KEY_DEBUG
-    printf("{ ");
-    for (auto& row : upk.sLocalColName) {
-      printf("%s ", row.data());
-    }
-    printf(" }\n");
-#endif
-
     std::vector<PageSlotID> duplicatedVec;
     for (int i = 0; i < upk.sLocalColName.size(); i++) {
       const String& sColName = upk.sLocalColName[i];
       // check whether primary key conflicts with other records
-      Field* pField = pRecord->GetField(i);
+      Field* pField = pRecord->GetField(pTable->GetColPos(sColName));
       if (duplicatedVec.size() == 0) {
         duplicatedVec = _GetDuplicated(sTableName, sColName, pField);
       } else {
@@ -470,40 +461,38 @@ PageSlotID Database::Insert(const String& sTableName,
     }
     if (duplicatedVec.size() != 0) {
       // add exception here
-      String str = " ";
-#ifdef PRIMARY_KEY_DEBUG
-      for (auto& row : iRawVec) {
-        str += row + " ";
-      }
-#endif
-      auto e = Exception("Primary key existed" + str);
+      auto e = Exception("Primary key existed");
       std::cout << e.what() << "\n";
       throw e;
     }
   }
+  
 #endif //NO_PRIMARY_KEY
 #ifndef NO_FOREIGN_KEY
   // check foreignkey
   const std::vector<Key>& uFKVec = GetKeyManager()->GetForeignKey(sTableName);
-  for(auto& fk: uFKVec){
-    for (int i = 0; i < iColNameVec.size(); i++) {
-      const String& sColName = iColNameVec[i];
-      if (pTable->GetIsForeign(sColName)) {
-        // check whether primary key conflicts with other records
-        Field* pField = pRecord->GetField(i);
-        std::vector<std::pair<String, String>> fPairVec =
-            GetForeignKey(sTableName, sColName);
-        // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
-        // fPair.second.data());
-        for (auto& fPair : fPairVec) {
-          // printf("%s %s\n", fPair.first.data(), fPair.second.data());
-          if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
-            printf("key out of range:%s\n", pField->ToString().data());
-            ForeignKeyException e("key out of range:" + pField->ToString());
-            throw e;
-          }
-        }
+  for(auto& ufk: uFKVec){
+    std::vector<PageSlotID> iDuplicated;
+    for (int i = 0; i < ufk.sLocalColName.size(); i++) {
+      const String& lColName = ufk.sLocalColName[i];
+      const String& fTableName = ufk.sForeignTableName;
+      const String& fColName = ufk.sForeignColName[i];
+      // check whether primary key conflicts with other records
+      Field* pField = pRecord->GetField(pTable->GetColPos(lColName));
+      // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
+      if(iDuplicated.size() == 0){
+        iDuplicated = _GetDuplicated(fTableName, fColName, pField);
+      }else{
+        iDuplicated = Intersection(iDuplicated,  _GetDuplicated(fTableName, fColName, pField));
       }
+      if(iDuplicated.size() == 0){
+        break;
+      }
+    }
+    if(iDuplicated.size() == 0){
+      ForeignKeyException e("fk insert fail: not in refered key");
+      printf("%s\n", e.what());
+      throw e;
     }
   }
   
@@ -542,68 +531,103 @@ PageSlotID Database::Insert(const String& sTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
-Record* pRecord = pTable->EmptyRecord();
-try {
-  pRecord->Build(iValueVec);
-} catch (const Exception& e) {
-  delete pRecord;
-  throw e;
-}
+  Record* pRecord = pTable->EmptyRecord();
+  try {
+    pRecord->Build(iValueVec);
+  } catch (const Exception& e) {
+    delete pRecord;
+    throw e;
+  }
 #ifndef NO_INSERT_CHECK;
 #ifndef NO_PRIMARY_KEY
-  // check null
-  for (int i = 0; i < iColNameVec.size(); i++) {
-    const String& sColName = iColNameVec[i];
-    if (iValueVec[i]->GetType() == FieldType::NULL_TYPE &&
-        (!pTable->GetCanBeNull(sColName) || 
-          GetKeyManager()->IsPrimary(sTableName, sColName))) {
-      auto e = FieldListException("Column should not be NULL");
-      std::cout << e.what() << "\n";
-      throw e;
-    }
-  }
-#else
-  for (int i = 0; i < iColNameVec.size(); i++) {
-    const String& sColName = iColNameVec[i];
-    if (iRawVec[i] == "NULL" &&
-        (!pTable->GetCanBeNull(sColName))) {
-      auto e = FieldListException("Column should not be NULL");
-      std::cout << e.what() << "\n";
-      throw e;
-    }
-  }
-#endif //NOPRIMARY_KEY
-#ifndef NO_PRIMARY_KEY
   // check primary key
-  std::vector<PageSlotID> duplicatedVec;
   const std::vector<Key>& uPKVec = GetKeyManager()->GetPrimaryKey(sTableName);
   for(auto& upk: uPKVec){
-    for (int i = 0; i < upk.sForeignColName.size(); i++) {
-      const String& sColName = upk.sForeignColName[i];
-
-      if (pTable->GetIsUnique(sColName)) {
-        // check whether primary key conflicts with other records
-        Field* pField = pRecord->GetField(i);
-        if (duplicatedVec.size() == 0) {
-          duplicatedVec = _GetDuplicated(sTableName, sColName, pField);
-        } else {
-          duplicatedVec = Intersection(
-              _GetDuplicated(sTableName, sColName, pField), duplicatedVec);
-        }
-        if (duplicatedVec.size() == 0) {
-          break;
-        } else if (pTable->GetIsUnique(sColName)) {
-          auto e = Exception("Unique key existed");
-          std::cout << e.what() << "\n";
-          throw e;
-        }
+    std::vector<PageSlotID> duplicatedVec;
+    for (int i = 0; i < upk.sLocalColName.size(); i++) {
+      const String& sColName = upk.sLocalColName[i];
+      // check whether primary key conflicts with other records
+      Field* pField = pRecord->GetField(pTable->GetColPos(sColName));
+      if (duplicatedVec.size() == 0) {
+        duplicatedVec = _GetDuplicated(sTableName, sColName, pField);
+      } else {
+        duplicatedVec = Intersection(
+            _GetDuplicated(sTableName, sColName, pField), duplicatedVec);
+      }
+      if (duplicatedVec.size() == 0) {
+        break;
+      } else if (pTable->GetIsUnique(sColName)) {
+        auto e = Exception("Unique key existed");
+        std::cout << e.what() << "\n";
+        throw e;
       }
     }
     if (duplicatedVec.size() != 0) {
       // add exception here
-      String str = "";
-      auto e = Exception("Primary key existed" + str);
+      auto e = Exception("Primary key existed");
       std::cout << e.what() << "\n";
+      throw e;
+    }
+  }
+  
+#endif //NO_PRIMARY_KEY
+#ifndef NO_FOREIGN_KEY
+  // check foreignkey
+  const std::vector<Key>& uFKVec = GetKeyManager()->GetForeignKey(sTableName);
+  for(auto& ufk: uFKVec){
+    std::vector<PageSlotID> iDuplicated;
+    for (int i = 0; i < ufk.sLocalColName.size(); i++) {
+      const String& lColName = ufk.sLocalColName[i];
+      const String& fTableName = ufk.sForeignTableName;
+      const String& fColName = ufk.sForeignColName[i];
+      // check whether primary key conflicts with other records
+      Field* pField = pRecord->GetField(pTable->GetColPos(lColName));
+      // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
+      if(iDuplicated.size() == 0){
+        iDuplicated = _GetDuplicated(fTableName, fColName, pField);
+      }else{
+        iDuplicated = Intersection(iDuplicated,  _GetDuplicated(fTableName, fColName, pField));
+      }
+      if(iDuplicated.size() == 0){
+        break;
+      }
+    }
+    if(iDuplicated.size() == 0){
+      ForeignKeyException e("fk insert fail: not in refered key");
+      printf("%s\n", e.what());
+      throw e;
+    }
+  }
+  
+#endif //NO_PRIMARY_KEY
+#ifndef NO_FOREIGN_KEY
+  // check foreignkey
+  const std::vector<Key>& uFKVec = GetKeyManager()->GetForeignKey(sTableName);
+  bool ForeignKeyCheck = false;
+  for(auto& ufk: uFKVec){
+    std::vector<PageSlotID> iDuplicated;
+    for (int i = 0; i < ufk.sLocalColName.size(); i++) {
+      const String& lColName = ufk.sLocalColName[i];
+      const String& fTableName = ufk.sForeignTableName;
+      const String& fColName = ufk.sForeignColName[i];
+      ForeignKeyCheck = true;
+      // check whether primary key conflicts with other records
+      Field* pField = pRecord->GetField(pTable->GetColPos(ufk.sLocalColName[i]));
+      // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
+      // fPair.second.data());
+      std::vector<PageSlotID> tmpDuplicated;
+      if(iDuplicated.size() == 0){
+        iDuplicated = _GetDuplicated(fTableName, fColName, pField);
+      }else{
+        iDuplicated = Intersection(iDuplicated,  _GetDuplicated(fTableName, fColName, pField));
+      }
+      if(iDuplicated.size() == 0){
+        break;
+      }
+    }
+    if(iDuplicated.size() == 0){
+      ForeignKeyException e("fk insert fail: not in refered key");
+      printf("%s\n", e.what());
       throw e;
     }
   }
