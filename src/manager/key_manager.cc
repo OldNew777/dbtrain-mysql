@@ -307,4 +307,15 @@ std::vector<Key> KeyManager::GetForeignKey(const String& sLocalTableName) {
 std::vector<Key> KeyManager::GetPrimaryKey(const String& sLocalTableName) {
   return _iTablePKMap[sLocalTableName];
 }
+bool KeyManager::IsPrimary(const String& sTableName, const String& sColName){
+  for(auto& pk: _iTablePKMap[sTableName]){
+    for(auto& colName: pk.sLocalColName){
+      if (colName == sColName){
+        return true;
+      }
+    }
+  }
+  false;
+}
+
 }  // namespace dbtrain_mysql

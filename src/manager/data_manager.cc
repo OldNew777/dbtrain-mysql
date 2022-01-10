@@ -557,7 +557,8 @@ void DataManager::CheckDatabaseUsed() const {
 void DataManager::AddPrimaryKey(const String& sTableName,
                                 const std::vector<String> sColNameVec) {
   CheckDatabaseUsed();
-  _pDatabase->AddPrimaryKey(sTableName, sColNameVec);
+  // TODO: FIX ADD PK AND FK
+  // _pDatabase->AddPrimaryKey(sTableName, sColNameVec);
 }
 
 void DataManager::AddUniqueKey(const String& sTableName,
@@ -576,7 +577,8 @@ void DataManager::AddForeignKey(const String& lTableName,
                                 const String& lColName,
                                 const String& fTableName,
                                 const std::vector<String>& fColName) {
-  _pDatabase->AddForeignKey(lTableName, lColName, fTableName, fColName);
+                                  
+  // _pDatabase->AddForeignKey(lTableName, lColName, fTableName, fColName);
 }
 void DataManager::DropPrimaryKey(const String& sTableName,
                                  const String& sColName) {

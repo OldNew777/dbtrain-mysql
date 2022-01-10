@@ -49,6 +49,7 @@ class KeyManager {
                       const String& sConstraintName);
   std::vector<Key> GetForeignKey(const String& sLocalTableName);
   std::vector<Key> GetPrimaryKey(const String& sLocalTableName);
+  bool IsPrimary(const String& sTableName, const String& sColName);
  protected:
   PageID _nPageID;
   bool _bCleared = false;

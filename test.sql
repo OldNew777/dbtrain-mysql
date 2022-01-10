@@ -117,10 +117,10 @@ LOAD FROM FILE '../data-with-date/nation.csv' TO TABLE NATION;
 LOAD FROM FILE '../data-with-date/supplier.csv' TO TABLE SUPPLIER;
 LOAD FROM FILE '../data-with-date/part.csv' TO TABLE PART;
 SELECT * FROM PART WHERE PART.P_PARTKEY = 340;
--- LOAD FROM FILE '../data-with-date/partsupp.csv' TO TABLE PARTSUPP;
--- LOAD FROM FILE '../data-with-date/customer.csv' TO TABLE CUSTOMER;
--- LOAD FROM FILE '../data-with-date/orders.csv' TO TABLE ORDERS;
--- LOAD FROM FILE '../data-with-date/lineitem.csv' TO TABLE LINEITEM;
+LOAD FROM FILE '../data-with-date/partsupp.csv' TO TABLE PARTSUPP;
+LOAD FROM FILE '../data-with-date/customer.csv' TO TABLE CUSTOMER;
+LOAD FROM FILE '../data-with-date/orders.csv' TO TABLE ORDERS;
+LOAD FROM FILE '../data-with-date/lineitem.csv' TO TABLE LINEITEM;
 
 -- SELECT * FROM REGION, NATION, SUPPLIER 
 -- WHERE REGION.R_REGIONKEY = NATION.N_NATIONKEY

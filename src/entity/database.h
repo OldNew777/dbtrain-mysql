@@ -4,6 +4,7 @@
 #include "defines.h"
 #include "entity_manager.h"
 #include "manager/index_manager.h"
+#include "manager/key_manager.h"
 #include "page/database_page.h"
 #include "result/results.h"
 #include "table.h"
@@ -59,7 +60,7 @@ class Database : public EntityManager {
    * @brief 增添主键
    */
   IndexManager* GetIndexManager() const;
-
+    KeyManager* GetKeyManager() const;
   // ------------------------ RECORD ------------------------
   std::vector<PageSlotID> Search(const String& sTableName, Condition* pCond,
                                  const std::vector<Condition*>& iIndexCond);
@@ -78,11 +79,14 @@ class Database : public EntityManager {
   void DropIndex(const String& sTableName, const String& sColName);
   bool IsIndex(const String& sTableName, const String& sColName);
   Index* GetIndex(const String& sTableName, const String& sColName);
+
   void AddPrimaryKey(const String& sTableName,
-                     const std::vector<String> sColName);
-  void AddForeignKey(const String& lTableName, const String& lColName,
-                     const String& fTableName,
-                     const std::vector<String>& fColNameVec);
+                     const std::vector<String> sColName,
+                     const String& sConstraintName);
+  void AddForeignKey(const String& lTableName, const std::vector<String>& lColName,
+                     const String& fTableName, const std::vector<String>& fColNameVec,
+                     const String& sConstraintName);
+
   void AddUniqueKey(const String& sTableName, const String& sColName);
 
   void DropPrimaryKey(const String& sTableName, const String& sColName);
@@ -117,6 +121,7 @@ class Database : public EntityManager {
 
  protected:
   IndexManager* _pIndexManager;
+  KeyManager* _pKeyManager;
 
   std::vector<PageSlotID> _GetDuplicated(const String& sTableName,
                                          const String& sColName, Field* pField);
@@ -124,10 +129,6 @@ class Database : public EntityManager {
   bool _CheckDuplicate(const String& sTableName, const String& sColName);
   bool _CheckForeignKey(const String& fTableName, const String& fColName,
                         Field* pField);
-  uint32_t _DropShadowTableKey(const String& sTableName,
-                               const String& statusMode, const String& lColName,
-                               const String& rTableName,
-                               const String& fColName);
   void _UpdateReferedKey(const String& sTableName, const String& fColname);
 };
 
