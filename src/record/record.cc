@@ -18,7 +18,7 @@ Record::~Record() { Clear(); }
 Field* Record::GetField(FieldID nPos) const { return _iFields[nPos]; }
 
 void Record::SetField(FieldID nPos, Field* pField) {
-  if (_iFields[nPos]) delete _iFields[nPos];
+  if (_iFields[nPos] && pField != _iFields[nPos]) delete _iFields[nPos];
   _iFields[nPos] = pField;
 }
 
