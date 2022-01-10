@@ -106,19 +106,28 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
       sLocalColName.push_back(fk[0]);
       sForeignColName.push_back(fk[2]);
     }
+#ifndef NO_INDEX
+  // insert ref key index
+  for (auto& fColNmae: sForeignColName)
+    CreateIndex(sForeignTableName, fColNmae);
+#endif
     GetKeyManager()->AddForeignKey(sTableName, sForeignTableName, sLocalColName,
         sForeignColName, iFKNameVec[i]);
   }
   //construct pk
   for(int i = 0; i < iPKNameVec.size(); i ++){
+#ifndef NO_INDEX
+  // insert primary key index
+  for(auto& colName: iPKVec[i])
+    CreateIndex(sTableName, colName);
+#endif
     GetKeyManager()->AddPrimaryKey(sTableName, iPKVec[i], iPKNameVec[i]);
   }
-#ifdef PRIMARY_KEY_DEBUG
-  GetKeyManager()->ShowPK();
-#endif  
-#ifdef FOREIGN_KEY_DEBUG
-  GetKeyManager()->ShowFK();
-#endif 
+
+  // GetKeyManager()->ShowPK();
+
+  // GetKeyManager()->ShowFK();
+
 }
 
 void Database::DropTable(const String& sTableName) {
