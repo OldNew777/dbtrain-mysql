@@ -48,25 +48,8 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     std::cout << e.what() << "\n";
     throw e;
   }
-#ifndef NO_FOREIGN_KEY
-  // check foreign key
-  // insert foreign key
-  for (int i = 0; i < iSchema.GetSize(); ++i) {
-    const Column& column = iSchema.GetColumn(i);
-    if (column.GetForeignKeyVec().size() != 0) {
-      for (auto& tPair : column.GetForeignKeyVec()) {
-        String fTableName = tPair.first;
-        String fColName = tPair.second;
-        // check reference table is null
-        if (_CheckHaveNull(fTableName, fColName)) {
-          printf("reference column should not be null\n");
-          throw ForeignKeyException("reference column should not be null");
-        }
-      }
-      // insert local shadow table
-    }
-  }
-#endif //NO_FOREIGN_KEY
+
+  const Column& iFKPKCol = iSchema.GetColumn(iSchema.GetSize() - 1);
 
   // Create table and cache it
   TablePage* pPage = new TablePage(iSchema);
@@ -91,7 +74,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
     if(column.GetName() == "") continue;
-    if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
+    if(iFKPKCol.isPK(column.GetName())) CreateIndex(sTableName, column.GetName());
   }
 #endif
 #ifndef NO_FOREIGN_KEY
