@@ -191,8 +191,7 @@ antlrcpp::Any SystemVisitor::visitLoad_data(
       ++inserted;
       if (inserted % 1000 == 0) printf("Inserted : %d\n", inserted);
     } catch (const std::exception &e) {
-      printf("%s\n", e.what());
-      assert(0);
+      printf("Exception: %s\n", e.what());
 #ifdef PRIMARY_KEY_DEBUG
       assert(0);
 #endif

@@ -4,4 +4,4 @@
 
 using namespace dbtrain_mysql;
 
-int main() { Clear(); }
+int main() { Clear(); printf("Clear done\n");}
