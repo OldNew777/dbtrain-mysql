@@ -163,7 +163,8 @@ void Instance::AddPrimaryKey(const String& sTableName,
                              const std::vector<String> sColNameVec) {
   _pDataManager->AddPrimaryKey(sTableName, sColNameVec);
 }
-void Instance::AddForeignKey(const String& lTableName, const String& lColName,
+void Instance::AddForeignKey(const String& lTableName, 
+                              const std::vector<String>& lColName,
                              const String& fTableName,
                              const std::vector<String>& fColName) {
   _pDataManager->AddForeignKey(lTableName, lColName, fTableName, fColName);

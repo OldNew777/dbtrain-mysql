@@ -91,12 +91,12 @@ class Database : public EntityManager {
   void DropTableForeignKey(const String& sTableName);
   void DropUniqueKey(const String& sTableName, const String& sColName);
   /**
-   * @brief 获得这个表上某个键依赖的其他表上的键
+   * @brief 获得一个键依赖的其他表上的键
    */
   std::vector<std::pair<String, String>> GetForeignKey(const String& sTableName,
                                                        const String& sColName);
   /**
-   * @brief 获得这个表上某个键依赖的其他表上的键
+   * @brief 获得依赖一个键的其他表上的键
    */
   std::vector<std::pair<String, String>> GetReferedKey(const String& sTableName,
                                                        const String& sColName);
@@ -106,7 +106,7 @@ class Database : public EntityManager {
   std::vector<std::vector<String>> GetTableReferedKeys(
       const String& sTableName);  //获取依赖一个表中键的所有其他表的键
   /**
-   * @brief 获得这个表依赖的其他表上的键
+   * @brief 获得这个表
    */
   std::vector<std::vector<String>> GetTableForeignKeys(
       const String& sTableName);  //获取一个表中依赖的所有其他表的键

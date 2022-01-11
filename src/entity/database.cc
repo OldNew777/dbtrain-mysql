@@ -155,6 +155,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 }
 
 void Database::DropTable(const String& sTableName) {
+  printf("table: %s\n", sTableName.data());
   Table* pTable = GetTable(sTableName);
   if (pTable == nullptr) {
     auto e = TableNotExistException(sTableName);
@@ -163,40 +164,34 @@ void Database::DropTable(const String& sTableName) {
   }
   //check refered key
   for(auto& sColName : pTable->GetColumnNames()){
-    if(pTable->GetIsRefered(sColName)){
+    if(GetReferedKey(sTableName, sColName).size() != 0){
       ForeignKeyException e("The table has a refered col: " + sColName);
+      printf("%s\n", e.what());
       throw e;
     }
   }
+  //drop fk
+  for(auto& sColName : pTable->GetColumnNames()){
+    auto fkVec = GetForeignKey(sTableName, sColName);
+    if(fkVec.size() != 0){
+      DropFroeignKey(sTableName, sColName);
+    }
+  }
   _pIndexManager->DropIndex(sTableName);
-
   pTable->Clear();
   delete pTable;
-
   OS::GetOS()->DeletePage(_iEntityPageIDMap[sTableName]);
   _iEntityMap.erase(sTableName);
   _iEntityPageIDMap.erase(sTableName);
-
   DeleteEntity(sTableName, _iEntityPageSlotIDMap[sTableName]);
 
-  pTable = GetTable("@" + sTableName);
-  if (pTable == nullptr) {
-    auto e = TableNotExistException("@" + sTableName);
-    std::cout << e.what() << "\n";
-    throw e;
-  }
+  Table* shadowTable = GetTable("@" + sTableName);
   _pIndexManager->DropIndex("@" + sTableName);
-  if (pTable == nullptr) {
-    auto e = TableNotExistException("@" + sTableName);
-    std::cout << e.what() << "\n";
-    throw e;
-  }
-  pTable->Clear();
-  delete pTable;
+  shadowTable->Clear();
+  delete shadowTable;
   OS::GetOS()->DeletePage(_iEntityPageIDMap["@" + sTableName]);
   _iEntityMap.erase("@" + sTableName);
   _iEntityPageIDMap.erase("@" + sTableName);
-
   DeleteEntity("@" + sTableName, _iEntityPageSlotIDMap["@" + sTableName]);
 }
 
@@ -917,10 +912,7 @@ std::vector<std::pair<String, String>> Database::GetReferedKey(
     retVec.push_back(
         std::make_pair(res->GetFieldString(i, 2), res->GetFieldString(i, 3)));
   }
-  // if (retVec.size() == 0) {
-  //   printf("there should be a refered key in shadow table\n");
-  //   throw ForeignKeyException();
-  // }
+  return retVec;
 }
 std::vector<std::pair<String, String>> Database::GetForeignKey(
     const String& sTableName, const String& sColName) {
@@ -1137,18 +1129,18 @@ void Database::AddForeignKey(const String& lTableName,
     MemResult* lRes = new MemResult(lTable->GetColumnNames());
     for (auto& psid : lpsidVec)
       lRes->PushBack(lTable->GetRecord(psid.first, psid.second));
-    FieldID colPos = lTable->GetColPos(lColName);
+    FieldID lcolPos = lTable->GetColPos(lColName);
     for (int i = 0; i < lRes->GetDataSize(); i++) {
-      sLocalSet.insert(lRes->GetFieldString(i, colPos));
+      sLocalSet.insert(lRes->GetFieldString(i, lcolPos));
     }
     if (lRes) delete lRes;
 
     MemResult* fRes = new MemResult(fTable->GetColumnNames());
     for (auto& psid : fpsidVec)
       fRes->PushBack(fTable->GetRecord(psid.first, psid.second));
-    FieldID colPos = fTable->GetColPos(fColName);
+    FieldID fcolPos = fTable->GetColPos(fColName);
     for (int i = 0; i < fRes->GetDataSize(); i++) {
-      sForeignSet.insert(fRes->GetFieldString(i, colPos));
+      sForeignSet.insert(fRes->GetFieldString(i, fcolPos));
     }
     if (fRes) delete fRes;
     std::set_intersection(sLocalSet.begin(), sLocalSet.end(), 

@@ -65,7 +65,6 @@ class Table : public Entity {
   void AddPrimaryKey(const std::vector<String>& sColVec);
   void SetForeignKey(const String& sColName);
   void SetReferedKey(const String& sColName);
-  void SetReferedKey(const String& sColName);
   void AddUniqueKey(const String& sColName);
   void DropReferedKey(const String& sColName);
   void DropPrimaryKey(const String& sColName);

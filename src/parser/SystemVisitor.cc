@@ -252,6 +252,7 @@ antlrcpp::Any SystemVisitor::visitDrop_table(
     _pDB->DropTable(sTableName);
     nSize = 1;
   } catch (const std::exception &e) {
+    printf("%s\n", e.what());
   }
   Result *res = new MemResult({"Drop Table"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
@@ -608,13 +609,11 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
     throw ForeignKeyException(
         "local key number should be equal to foreign key number");
   }
-  for (int i = 0; i < lColVec.size(); i++) {
-    try {
-      _pDB->AddForeignKey(lTableName, lColVec[i], fTableName, fColVec);
-      nSize++;
-    } catch (const Exception &e) {
-      printf("%s\n", e.what());
-    }
+  try {
+    _pDB->AddForeignKey(lTableName, lColVec, fTableName, fColVec);
+    nSize++;
+  } catch (const Exception &e) {
+    printf("%s\n", e.what());
   }
 #endif
   Result *res = new MemResult({"Add Primary Key"});
