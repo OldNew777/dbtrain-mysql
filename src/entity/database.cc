@@ -102,9 +102,10 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     const Column& column = iSchema.GetColumn(i);
     if(column.GetIsPrimary() &&
       !IsIndex(sTableName, column.GetName()) && 
-        GetTable(sTableName)->GetType(column.GetName()) == FieldType::INT_TYPE &&
-        GetTable(sTableName)->GetType(column.GetName()) == FieldType::FLOAT_TYPE){
+        (GetTable(sTableName)->GetType(column.GetName()) == FieldType::INT_TYPE ||
+        GetTable(sTableName)->GetType(column.GetName()) == FieldType::FLOAT_TYPE)){
       CreateIndex(sTableName, column.GetName());
+      printf("create index: %s.%s\n", sTableName.data(), column.GetName().data());
     }
   }
 #endif
@@ -137,15 +138,17 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
 
         //update fk index
         if(!IsIndex(fTableName, fColName) && 
-        GetTable(fTableName)->GetType(fColName) == FieldType::INT_TYPE &&
-        GetTable(fTableName)->GetType(fColName) == FieldType::FLOAT_TYPE){
+        (GetTable(fTableName)->GetType(fColName) == FieldType::INT_TYPE ||
+        GetTable(fTableName)->GetType(fColName) == FieldType::FLOAT_TYPE)){
           CreateIndex(fTableName, fColName);
+          // printf("create index: %s.%s\n", fTableName.data(), fColName.data());
         }
-        if(!IsIndex(sTableName, column.GetName()) && 
-            GetTable(sTableName)->GetType(column.GetName()) == FieldType::INT_TYPE &&
-            GetTable(sTableName)->GetType(column.GetName()) == FieldType::FLOAT_TYPE){
-          CreateIndex(sTableName, column.GetName());
-        }
+        // if(!IsIndex(sTableName, column.GetName()) && 
+        //     (GetTable(sTableName)->GetType(column.GetName()) == FieldType::INT_TYPE ||
+        //     GetTable(sTableName)->GetType(column.GetName()) == FieldType::FLOAT_TYPE)){
+        //   CreateIndex(sTableName, column.GetName());
+        //   // printf("create index: %s.%s\n", sTableName.data(), column.GetName().data());
+        // }
       }
     }
 
@@ -507,7 +510,13 @@ PageSlotID Database::Insert(const String& sTableName,
     std::cout << e.what() << "\n";
     throw e;
   }
-
+  Record* pRecord = pTable->EmptyRecord();
+  try {
+    pRecord->Build(iRawVec);
+  } catch (const Exception& e) {
+    delete pRecord;
+    throw e;
+  }
 #ifndef NO_INSERT_CHECK;
   // check null
   for (int i = 0; i < iColNameVec.size(); i++) {
@@ -518,14 +527,6 @@ PageSlotID Database::Insert(const String& sTableName,
       std::cout << e.what() << "\n";
       throw e;
     }
-  }
-
-  Record* pRecord = pTable->EmptyRecord();
-  try {
-    pRecord->Build(iRawVec);
-  } catch (const Exception& e) {
-    delete pRecord;
-    throw e;
   }
 
   // check primary key
@@ -585,7 +586,7 @@ PageSlotID Database::Insert(const String& sTableName,
       }
     }
   }
-#endif
+#endif //no insert check
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);
 #ifndef NO_INDEX
@@ -636,9 +637,20 @@ PageSlotID Database::Insert(const String& sTableName,
     delete pRecord;
     throw e;
   }
+#ifndef NO_INSERT_CHECK;
+  // check null
+  for (int i = 0; i < iColNameVec.size(); i++) {
+    const String& sColName = iColNameVec[i];
+    if (iValueVec[i]->GetType() == FieldType::NULL_TYPE &&
+        (!pTable->GetCanBeNull(sColName) || pTable->GetIsPrimary(sColName))) {
+      auto e = FieldListException("Column should not be NULL");
+      std::cout << e.what() << "\n";
+      throw e;
+    }
+  }
 
-#ifndef NO_INSERT_CHECK
- 
+
+
   // check primary key
   std::vector<PageSlotID> duplicatedVec;
   for (int i = 0; i < iColNameVec.size(); i++) {
@@ -696,7 +708,7 @@ PageSlotID Database::Insert(const String& sTableName,
       }
     }
   }
-#endif
+#endif //no insert check
 
   PageSlotID iPair = pTable->InsertRecord(pRecord);
 #ifndef NO_INDEX
@@ -870,8 +882,8 @@ void Database::AddPrimaryKey(const String& sTableName,
   pTable->AddPrimaryKey(sColNameVec);
   for(auto& sColName: sColNameVec)
     if(!IsIndex(sTableName, sColName) && 
-        GetTable(sTableName)->GetType(sColName) == FieldType::INT_TYPE &&
-        GetTable(sTableName)->GetType(sColName) == FieldType::FLOAT_TYPE){
+        (GetTable(sTableName)->GetType(sColName) == FieldType::INT_TYPE ||
+        GetTable(sTableName)->GetType(sColName) == FieldType::FLOAT_TYPE)){
       CreateIndex(sTableName, sColName);
     }
   return;
@@ -1216,15 +1228,15 @@ void Database::AddForeignKey(const String& lTableName,
     fTable->SetReferedKey(fColName);
 
     if(!IsIndex(fTableName, fColName) && 
-        GetTable(fTableName)->GetType(fColName) == FieldType::INT_TYPE &&
-        GetTable(fTableName)->GetType(fColName) == FieldType::FLOAT_TYPE){
+        (GetTable(fTableName)->GetType(fColName) == FieldType::INT_TYPE ||
+        GetTable(fTableName)->GetType(fColName) == FieldType::FLOAT_TYPE)){
       CreateIndex(fTableName, fColName);
     }
-    if(!IsIndex(lTableName, lColName) && 
-        GetTable(lTableName)->GetType(lColName) == FieldType::INT_TYPE &&
-        GetTable(lTableName)->GetType(lColName) == FieldType::FLOAT_TYPE){
-      CreateIndex(lTableName, lColName);
-    }
+    // if(!IsIndex(lTableName, lColName) && 
+    //     (GetTable(lTableName)->GetType(lColName) == FieldType::INT_TYPE ||
+    //     GetTable(lTableName)->GetType(lColName) == FieldType::FLOAT_TYPE)){
+    //   CreateIndex(lTableName, lColName);
+    // }
   }
 }
 void Database::DropFroeignKey(const String& sTableName,
@@ -1325,8 +1337,8 @@ void Database::AddUniqueKey(const String& sTableName, const String& sColName) {
   pTable->AddUniqueKey(sColName);
 
   if(!IsIndex(sTableName, sColName) && 
-        GetTable(sTableName)->GetType(sColName) == FieldType::INT_TYPE &&
-        GetTable(sTableName)->GetType(sColName) == FieldType::FLOAT_TYPE){
+        (GetTable(sTableName)->GetType(sColName) == FieldType::INT_TYPE ||
+        GetTable(sTableName)->GetType(sColName) == FieldType::FLOAT_TYPE)){
       CreateIndex(sTableName, sColName);
     }
 }
