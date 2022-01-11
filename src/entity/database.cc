@@ -299,6 +299,38 @@ uint32_t Database::Delete(const String& sTableName, Condition* pCond,
   auto iResVec = Search(sTableName, pCond, iIndexCond);
   Table* pTable = GetTable(sTableName);
   bool bHasIndex = _pIndexManager->HasIndex(sTableName);
+  //check refered
+  if(sTableName[0] != '@'){
+    MemResult* pMemRes = new MemResult(pTable->GetColumnNames());
+    for(auto& psid: iResVec) 
+      pMemRes->PushBack(pTable->GetRecord(psid.first, psid.second));
+    for(int i = 0; i < pMemRes->GetDataSize(); i ++){
+      for(auto& sColName: pTable->GetColumnNames()){
+        auto rkVec = GetReferedKey(sTableName, sColName);
+        // printf("%d %d :%s %s \n",i,pTable->GetColPos(sColName), sTableName.data(), sColName.data());
+        if(rkVec.size() == 0) continue;
+        for(auto& rkPair: rkVec){
+          printf("%s %s %s\n", rkPair.first.data(), rkPair.second.data(),
+            pMemRes->GetField(i, pTable->GetColPos(sColName))->ToString().data());
+          if(_GetDuplicated(rkPair.first, rkPair.second, 
+            pMemRes->GetField(i, pTable->GetColPos(sColName))).size() != 0){ //某个要删除数值有人引用
+              auto localDuplicated = _GetDuplicated(sTableName, sColName, 
+                          pMemRes->GetField(i, pTable->GetColPos(sColName)));//该数值在本地表的重复行
+            if(Intersection(localDuplicated, iResVec).size() 
+                == localDuplicated.size()){//如果本地表的重复行是删除行的子集，不能删除
+              ForeignKeyException e("the key has a reference in " + rkPair.first + "."
+                    + rkPair.second);
+              printf("%s\n", e.what());
+              if(pMemRes) delete pMemRes;
+              throw e;
+            }
+          }
+        }
+      } 
+    }
+    if(pMemRes) delete pMemRes;
+  }
+  
   for (const auto& iPair : iResVec) {
     // Handle Delete on Index
     if (bHasIndex) {
@@ -313,6 +345,7 @@ uint32_t Database::Delete(const String& sTableName, Condition* pCond,
 
     pTable->DeleteRecord(iPair.first, iPair.second);
   }
+  
   return iResVec.size();
 }
 
@@ -932,7 +965,6 @@ std::vector<std::pair<String, String>> Database::GetForeignKey(
     throw e;
   }
   std::vector<std::pair<String, String>> retVec;
-  FieldID colPos = pTable->GetColPos(SHADOW_LOCAL_COLUMN_NAME);
   std::vector<PageSlotID> iPageSlotIDVec = pTable->SearchRecord(nullptr);
   MemResult* res =
       new MemResult({SHADOW_STATUS_NAME, SHADOW_LOCAL_COLUMN_NAME,
@@ -941,8 +973,10 @@ std::vector<std::pair<String, String>> Database::GetForeignKey(
     res->PushBack(pTable->GetRecord(psid.first, psid.second));
   }
   for (int i = 0; i < res->GetDataSize(); i++) {
-    // printf("%s %s\n", res->GetFieldString(i, 0).data(),
-    //   res->GetFieldString(i, 1).data());
+    // printf("%s %s %s %s\n", res->GetFieldString(i, 0).data(),
+      // res->GetFieldString(i, 1).data(),
+      // res->GetFieldString(i, 2).data(),
+      // res->GetFieldString(i, 3).data());
     if (res->GetFieldString(i, 0) != SHADOW_STATUS_FOREIGN_KEY ||
         res->GetFieldString(i, 1) != sColName)
       continue;
@@ -1095,7 +1129,7 @@ uint32_t Database::_DropShadowTableKey(const String& lTableName,
   if (statusMode == SHADOW_STATUS_FOREIGN_KEY) {
     GetTable(lTableName)->DropForeignKey(lColName);
   } else if (statusMode == SHADOW_STATUS_REFERED_KEY) {
-    _UpdateReferedKey(fTableName, fColName);
+    GetTable(lTableName)->DropReferedKey(lColName);
   }
   return ret;
 }
@@ -1201,6 +1235,7 @@ void Database::DropFroeignKey(const String& sTableName,
   // drop ref key of foreign table
   for (auto fPair : fPairVec) {
     //drop foreign table refered key
+    // printf("drop ref: %s, %s\n", fPair.first.data(), fPair.second.data());
     _DropShadowTableKey(fPair.first, SHADOW_STATUS_REFERED_KEY, fPair.second,
                         sTableName, sColName);
     //drop for key of local table
@@ -1209,7 +1244,7 @@ void Database::DropFroeignKey(const String& sTableName,
     // printf("%s %s %s %s %s\n", sTableName.data(),
     // SHADOW_STATUS_FOREIGN_KEY.data(),
     //   sColName.data(),fPair.first.data(),fPair.second.data());
-    _UpdateReferedKey(fPair.first, fPair.second);
+    // _UpdateReferedKey(fPair.first, fPair.second);
   }
 }
 void Database::DropTableForeignKey(const String& sTableName) {

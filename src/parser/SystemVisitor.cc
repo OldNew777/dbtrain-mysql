@@ -616,7 +616,7 @@ antlrcpp::Any SystemVisitor::visitAlter_table_add_foreign_key(
     printf("%s\n", e.what());
   }
 #endif
-  Result *res = new MemResult({"Add Primary Key"});
+  Result *res = new MemResult({"Add Foreign Key"});
   FixedRecord *pRes = new FixedRecord(1, {FieldType::INT_TYPE}, {4});
   pRes->SetField(0, new IntField(nSize));
   res->PushBack(pRes);
