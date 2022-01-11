@@ -132,7 +132,7 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         GetTable(sTableName)->SetForeignKey(column.GetName());
 
         //update fk index
-        // if(!IsIndex(fTableName, fColName)) CreateIndex(fTableName, fColName);
+        if(!IsIndex(fTableName, fColName)) CreateIndex(fTableName, fColName);
       }
     }
 
@@ -346,8 +346,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
         throw e;
       }
       if (iResVec.size() + iDuplicated.size() -
-              Intersection(iResVec, iDuplicated).size() <=
-          1) {
+              Intersection(iResVec, iDuplicated).size() <= 1) {
         primaryKeyConflict = false;
         break;
       }
@@ -362,9 +361,10 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
 
 #ifndef NO_FOREIGN_KEY
   // check fk
+
   for (int i = 0; i < iTrans.size(); ++i) {
     const String& sColName = iColNameVec[iTrans[i].GetColPos()];
-    if (pTable->GetIsForeign(sColName)) {
+    if (pTable->GetIsForeign(sColName)) { //if is
       std::vector<std::pair<String, String>> fPairVec =
           GetForeignKey(sTableName, sColName);
       for (auto& iPair : fPairVec) {
@@ -386,22 +386,21 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
       for (auto& iPair : rPairVec) {
         const String& rTableName = iPair.first;
         const String& rColName = iPair.second;
-        MemResult* memRes = new MemResult(pTable->GetColumnNames());
-        for (auto& psid : iResVec) {
-          memRes->PushBack(pTable->GetRecord(psid.first, psid.second));
-        }
-        for (int j = 0; j < memRes->GetDataSize(); j++) {
+        auto iPageSlotVec = Search(rTableName, nullptr, {});
+        MemResult* rMemRes = new MemResult(pTable->GetColumnNames());
+        Table* rTable = GetTable(rTableName);
+        for (int j = 0; j < rMemRes->GetDataSize(); j++) {
           std::vector<PageSlotID> iDuplicated = _GetDuplicated(
-              rTableName, rColName, memRes->GetField(j, iTrans[i].GetColPos()));
-          if (iDuplicated.size() != 0) {
-            if (memRes) delete memRes;
+              sTableName, sColName, rMemRes->GetField(j, rTable->GetColPos(rColName)));
+          if (Intersection(iDuplicated, iResVec).size() == iDuplicated.size()) {
+            if (rMemRes) delete rMemRes;
             ForeignKeyException e(
                 "Update fail: A key has a reference dependence");
             printf("%s\n", e.what());
             throw e;
           }
         }
-        if (memRes) delete memRes;
+        if(rMemRes) delete rMemRes;
       }
     }
   }
@@ -529,8 +528,6 @@ PageSlotID Database::Insert(const String& sTableName,
           ForeignKeyException e("key out of range:" + pField->ToString());
           throw e;
         }
-        printf("key (%s, %s):%s good\n",
-          fPair.first.data(),fPair.second.data(), pField->ToString().data());
       }
     }
   }
@@ -787,12 +784,8 @@ void Database::AddPrimaryKey(const String& sTableName,
     if (!pTable->GetIsPrimary(sColName[i])) sColNameVec.push_back(sColName[i]);
   }
   if (sColNameVec.size() == 0) return;
-  std::vector<PageSlotID> psidVec = pTable->SearchRecord(nullptr);
-  Result* result = new MemResult(pTable->GetColumnNames());
-  for (auto& psid : psidVec) {
-    result->PushBack(pTable->GetRecord(psid.first, psid.second));
-  }
-  //如果已经有其他外键，那么一定不需要检查新外键的重复性
+
+  //如果已经有其他主键，那么一定不需要检查新主键的重复性
   bool needCheckDuplication = true;
   std::vector<std::string> iColNameVec = pTable->GetColumnNames();
   for (int i = 0; i < iColNameVec.size(); i++) {
@@ -814,12 +807,15 @@ void Database::AddPrimaryKey(const String& sTableName,
       throw AlterException("the new Primary Key column cannot be duplicated");
     }
   }
+
   for (auto& colName : sColName) {
     if (_CheckHaveNull(sTableName, colName)) {
       throw AlterException("the new Primary Key column cannot be Null");
     }
   }
   pTable->AddPrimaryKey(sColNameVec);
+  for(auto& pk: sColNameVec)
+    if(!IsIndex(sTableName, pk)) CreateIndex(sTableName, pk);
   // TODO: a space bug
   // if(result != nullptr) delete result;
   return;
@@ -829,6 +825,7 @@ void Database::DropPrimaryKey(const String& sTableName,
                               const String& sColName) {
   Table* pTable = GetTable(sTableName);
   pTable->DropPrimaryKey(sColName);
+  if(IsIndex(sTableName, sColName)) DropIndex(sTableName, sColName);
 }
 bool Database::_CheckHaveNull(const String& fTableName,
                               const String& fColName) {
@@ -864,7 +861,7 @@ bool Database::_CheckDuplicate(const String& sTableName,
   std::set<String> pSet;
   for (int i = 0; i < result->GetDataSize(); i++) {
     // TODO: 这么写可能会重复遍历
-    if (pSet.count(result->GetFieldString(i, colPos)) != 0) {
+    if (pSet.find(result->GetFieldString(i, colPos)) != pSet.end()) {
       if (result) delete result;
       return true;
     }
