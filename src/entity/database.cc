@@ -101,7 +101,12 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
   // insert index
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
-    if (column.GetIsPrimary()) CreateIndex(sTableName, column.GetName());
+    if(column.GetIsPrimary() &&
+      !IsIndex(sTableName, column.GetName()) && 
+        GetTable(sTableName)->GetType(column.GetName()) == FieldType::INT_TYPE &&
+        GetTable(sTableName)->GetType(column.GetName()) == FieldType::FLOAT_TYPE){
+      CreateIndex(sTableName, column.GetName());
+    }
   }
 #endif
 
@@ -132,7 +137,16 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         GetTable(sTableName)->SetForeignKey(column.GetName());
 
         //update fk index
-        if(!IsIndex(fTableName, fColName)) CreateIndex(fTableName, fColName);
+        if(!IsIndex(fTableName, fColName) && 
+        GetTable(fTableName)->GetType(fColName) == FieldType::INT_TYPE &&
+        GetTable(fTableName)->GetType(fColName) == FieldType::FLOAT_TYPE){
+          CreateIndex(fTableName, fColName);
+        }
+        if(!IsIndex(sTableName, column.GetName()) && 
+            GetTable(sTableName)->GetType(column.GetName()) == FieldType::INT_TYPE &&
+            GetTable(sTableName)->GetType(column.GetName()) == FieldType::FLOAT_TYPE){
+          CreateIndex(sTableName, column.GetName());
+        }
       }
     }
 
@@ -147,14 +161,18 @@ void Database::DropTable(const String& sTableName) {
     std::cout << e.what() << "\n";
     throw e;
   }
-  _pIndexManager->DropIndex(sTableName);
-  if (pTable == nullptr) {
-    auto e = TableNotExistException(sTableName);
-    std::cout << e.what() << "\n";
-    throw e;
+  //check refered key
+  for(auto& sColName : pTable->GetColumnNames()){
+    if(pTable->GetIsRefered(sColName)){
+      ForeignKeyException e("The table has a refered col: " + sColName);
+      throw e;
+    }
   }
+  _pIndexManager->DropIndex(sTableName);
+
   pTable->Clear();
   delete pTable;
+
   OS::GetOS()->DeletePage(_iEntityPageIDMap[sTableName]);
   _iEntityMap.erase(sTableName);
   _iEntityPageIDMap.erase(sTableName);
@@ -814,10 +832,12 @@ void Database::AddPrimaryKey(const String& sTableName,
     }
   }
   pTable->AddPrimaryKey(sColNameVec);
-  for(auto& pk: sColNameVec)
-    if(!IsIndex(sTableName, pk)) CreateIndex(sTableName, pk);
-  // TODO: a space bug
-  // if(result != nullptr) delete result;
+  for(auto& sColName: sColNameVec)
+    if(!IsIndex(sTableName, sColName) && 
+        GetTable(sTableName)->GetType(sColName) == FieldType::INT_TYPE &&
+        GetTable(sTableName)->GetType(sColName) == FieldType::FLOAT_TYPE){
+      CreateIndex(sTableName, sColName);
+    }
   return;
 }
 
@@ -1078,10 +1098,10 @@ uint32_t Database::_DropShadowTableKey(const String& lTableName,
   }
   return ret;
 }
-void Database::AddForeignKey(const String& lTableName, const String& lColName,
+void Database::AddForeignKey(const String& lTableName, 
+                             const std::vector<String>& lColNameVec,
                              const String& fTableName,
                              const std::vector<String>& fColNameVec) {
-  // TODO: ADD FOREIGNKEY
   Table* lTable = GetTable(lTableName);
   Table* fTable = GetTable(fTableName);
   if (lTable == nullptr) {
@@ -1095,21 +1115,11 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
     throw e;
   }
   // check fk validation
-  for (auto& fColName : fColNameVec) {
-    std::vector<PageSlotID> psidVec = lTable->SearchRecord(nullptr);
-    MemResult* lRes = new MemResult(lTable->GetColumnNames());
-    for (auto& psid : psidVec)
-      lRes->PushBack(lTable->GetRecord(psid.first, psid.second));
-    FieldID colPos = lTable->GetColPos(lColName);
-    for (int i = 0; i < lRes->GetDataSize(); i++) {
-      if (!_CheckForeignKey(fTableName, fColName, lRes->GetField(i, colPos))) {
-        if (lRes) delete lRes;
-        printf("Foreign key should be in range of refernce key\n");
-        throw ForeignKeyException(
-            "Foreign key should be in range of refernce key");
-      }
-    }
-    if (lRes) delete lRes;
+  for (int i = 0; i < lColNameVec.size(); i ++) {
+    auto lpsidVec = lTable->SearchRecord(nullptr);
+    auto fpsidVec = fTable->SearchRecord(nullptr);
+    const String& lColName = lColNameVec[i];
+    const String& fColName = fColNameVec[i];
     // check type
     if (lTable->GetType(lColName) != fTable->GetType(fColName)) {
       printf("foreign key should have same type\n");
@@ -1120,7 +1130,39 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
       printf("reference key cannot be null\n");
       throw ForeignKeyException("reference key cannot be null");
     }
+    //check duplicated
+    std::set<String> sLocalSet;
+    std::set<String> sForeignSet;
 
+    MemResult* lRes = new MemResult(lTable->GetColumnNames());
+    for (auto& psid : lpsidVec)
+      lRes->PushBack(lTable->GetRecord(psid.first, psid.second));
+    FieldID colPos = lTable->GetColPos(lColName);
+    for (int i = 0; i < lRes->GetDataSize(); i++) {
+      sLocalSet.insert(lRes->GetFieldString(i, colPos));
+    }
+    if (lRes) delete lRes;
+
+    MemResult* fRes = new MemResult(fTable->GetColumnNames());
+    for (auto& psid : fpsidVec)
+      fRes->PushBack(fTable->GetRecord(psid.first, psid.second));
+    FieldID colPos = fTable->GetColPos(fColName);
+    for (int i = 0; i < fRes->GetDataSize(); i++) {
+      sForeignSet.insert(fRes->GetFieldString(i, colPos));
+    }
+    if (fRes) delete fRes;
+    std::set_intersection(sLocalSet.begin(), sLocalSet.end(), 
+                          sForeignSet.begin(), sLocalSet.end(),
+                          std::inserter(sForeignSet, sForeignSet.begin()));
+    if(sLocalSet.size() != sForeignSet.size()){
+      ForeignKeyException e("forign key not exist in refered key");
+      throw e;
+    }
+  }
+  //add fk
+  for (int i = 0; i < lColNameVec.size(); i ++) {
+    const String& lColName = lColNameVec[i];
+    const String& fColName = fColNameVec[i];
     // add this table foreign key
     std::vector<Field*> LocalVec;
     LocalVec.push_back(new CharField(SHADOW_STATUS_FOREIGN_KEY));
@@ -1137,7 +1179,18 @@ void Database::AddForeignKey(const String& lTableName, const String& lColName,
     // printf("2\n");
     Insert("@" + fTableName, ForeignVec);
     lTable->SetForeignKey(lColName);
-    _UpdateReferedKey(fTableName, fColName);
+    fTable->SetReferedKey(fColName);
+
+    if(!IsIndex(fTableName, fColName) && 
+        GetTable(fTableName)->GetType(fColName) == FieldType::INT_TYPE &&
+        GetTable(fTableName)->GetType(fColName) == FieldType::FLOAT_TYPE){
+      CreateIndex(fTableName, fColName);
+    }
+    if(!IsIndex(lTableName, lColName) && 
+        GetTable(lTableName)->GetType(lColName) == FieldType::INT_TYPE &&
+        GetTable(lTableName)->GetType(lColName) == FieldType::FLOAT_TYPE){
+      CreateIndex(lTableName, lColName);
+    }
   }
 }
 void Database::DropFroeignKey(const String& sTableName,
@@ -1146,10 +1199,11 @@ void Database::DropFroeignKey(const String& sTableName,
       GetForeignKey(sTableName, sColName);
   // drop ref key of foreign table
   for (auto fPair : fPairVec) {
+    //drop foreign table refered key
     _DropShadowTableKey(fPair.first, SHADOW_STATUS_REFERED_KEY, fPair.second,
                         sTableName, sColName);
-    // frop for key of local table
-    uint32_t res = _DropShadowTableKey(sTableName, SHADOW_STATUS_FOREIGN_KEY,
+    //drop for key of local table
+    _DropShadowTableKey(sTableName, SHADOW_STATUS_FOREIGN_KEY,
                                        sColName, fPair.first, fPair.second);
     // printf("%s %s %s %s %s\n", sTableName.data(),
     // SHADOW_STATUS_FOREIGN_KEY.data(),
@@ -1210,13 +1264,14 @@ void Database::_UpdateReferedKey(const String& fTableName,
   MemResult* result = new MemResult(fTable->GetColumnNames());
   for (auto& psid : fpsidVec)
     result->PushBack(fTable->GetRecord(psid.first, psid.second));
+
   for (int j = 0; j < result->GetDataSize(); j++) {
     if (result->GetFieldString(j, 0) != SHADOW_STATUS_REFERED_KEY) continue;
     sMap[result->GetFieldString(j, 1)] = true;
   }
   for (auto& iPair : sMap) {
     if (iPair.second) {
-      sTable->AddReferedKey(iPair.first);
+      sTable->SetReferedKey(iPair.first);
     } else {
       sTable->DropReferedKey(iPair.first);
     }
@@ -1237,7 +1292,11 @@ void Database::AddUniqueKey(const String& sTableName, const String& sColName) {
   }
   pTable->AddUniqueKey(sColName);
 
-  if (!IsIndex(sTableName, sColName)) CreateIndex(sTableName, sColName);
+  if(!IsIndex(sTableName, sColName) && 
+        GetTable(sTableName)->GetType(sColName) == FieldType::INT_TYPE &&
+        GetTable(sTableName)->GetType(sColName) == FieldType::FLOAT_TYPE){
+      CreateIndex(sTableName, sColName);
+    }
 }
 
 }  // namespace dbtrain_mysql

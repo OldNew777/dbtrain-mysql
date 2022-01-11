@@ -223,7 +223,7 @@ void Table::AddPrimaryKey(const std::vector<String>& iColVec) {
 void Table::SetForeignKey(const String& sColName) {
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b00000100;
 }
-void Table::AddReferedKey(const String& sColName) {
+void Table::SetReferedKey(const String& sColName) {
   _pTablePage->_iStatusVec[_pTablePage->GetColPos(sColName)] |= 0b00001000;
 }
 void Table::AddUniqueKey(const String& sColName) {
