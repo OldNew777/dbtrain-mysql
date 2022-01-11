@@ -185,7 +185,6 @@ void Database::DropTable(const String& sTableName) {
   DeleteEntity(sTableName, _iEntityPageSlotIDMap[sTableName]);
 
   Table* shadowTable = GetTable("@" + sTableName);
-  _pIndexManager->DropIndex("@" + sTableName);
   shadowTable->Clear();
   delete shadowTable;
   OS::GetOS()->DeletePage(_iEntityPageIDMap["@" + sTableName]);
@@ -1241,10 +1240,10 @@ void Database::DropFroeignKey(const String& sTableName,
     //drop for key of local table
     _DropShadowTableKey(sTableName, SHADOW_STATUS_FOREIGN_KEY,
                                        sColName, fPair.first, fPair.second);
-    // printf("%s %s %s %s %s\n", sTableName.data(),
-    // SHADOW_STATUS_FOREIGN_KEY.data(),
-    //   sColName.data(),fPair.first.data(),fPair.second.data());
-    // _UpdateReferedKey(fPair.first, fPair.second);
+    _UpdateReferedKey(fPair.first, fPair.second);
+    if(IsIndex(sTableName, sColName)) DropIndex(sTableName, sColName);
+    if(!GetTable(fPair.first)->GetIsRefered(fPair.second) && 
+        IsIndex(fPair.first, fPair.second)) DropIndex(fPair.first, fPair.second);
   }
 }
 void Database::DropTableForeignKey(const String& sTableName) {
@@ -1292,10 +1291,7 @@ void Database::_UpdateReferedKey(const String& fTableName,
 
   // printf("into\n");
   std::vector<String> colNames = sTable->GetColumnNames();
-  std::map<String, bool> sMap;
-  for (auto& col : colNames) {
-    sMap[col] = false;
-  }
+  std::set<String> colSet;
   std::vector<PageSlotID> fpsidVec = fTable->SearchRecord(nullptr);
   MemResult* result = new MemResult(fTable->GetColumnNames());
   for (auto& psid : fpsidVec)
@@ -1303,13 +1299,13 @@ void Database::_UpdateReferedKey(const String& fTableName,
 
   for (int j = 0; j < result->GetDataSize(); j++) {
     if (result->GetFieldString(j, 0) != SHADOW_STATUS_REFERED_KEY) continue;
-    sMap[result->GetFieldString(j, 1)] = true;
+    colSet.insert(result->GetFieldString(j, 1));
   }
-  for (auto& iPair : sMap) {
-    if (iPair.second) {
-      sTable->SetReferedKey(iPair.first);
+  for (auto& colName : colNames) {
+    if (colSet.find(colName) != colSet.end()) {
+      sTable->SetReferedKey(colName);
     } else {
-      sTable->DropReferedKey(iPair.first);
+      sTable->DropReferedKey(colName);
     }
   }
 
