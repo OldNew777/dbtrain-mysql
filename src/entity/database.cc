@@ -130,6 +130,9 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
         Insert("@" + fTableName, ForeignVec);
         _UpdateReferedKey(fTableName, fColName);
         GetTable(sTableName)->SetForeignKey(column.GetName());
+
+        //update fk index
+        // if(!IsIndex(fTableName, fColName)) CreateIndex(fTableName, fColName);
       }
     }
 
@@ -157,6 +160,26 @@ void Database::DropTable(const String& sTableName) {
   _iEntityPageIDMap.erase(sTableName);
 
   DeleteEntity(sTableName, _iEntityPageSlotIDMap[sTableName]);
+
+  pTable = GetTable("@" + sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException("@" + sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  _pIndexManager->DropIndex("@" + sTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException("@" + sTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  pTable->Clear();
+  delete pTable;
+  OS::GetOS()->DeletePage(_iEntityPageIDMap["@" + sTableName]);
+  _iEntityMap.erase("@" + sTableName);
+  _iEntityPageIDMap.erase("@" + sTableName);
+
+  DeleteEntity("@" + sTableName, _iEntityPageSlotIDMap["@" + sTableName]);
 }
 
 void Database::RenameTable(const String& sOldTableName,
@@ -180,6 +203,33 @@ void Database::RenameTable(const String& sOldTableName,
   _iEntityPageIDMap[sNewTableName] = _iEntityPageIDMap[sOldTableName];
   _iEntityMap.erase(sOldTableName);
   _iEntityPageIDMap.erase(sOldTableName);
+
+
+
+  _iEntityMap["@" + sNewTableName] = pTable;
+  _iEntityPageIDMap["@" + sNewTableName] = _iEntityPageIDMap["@" + sOldTableName];
+  _iEntityMap.erase("@" + sOldTableName);
+  _iEntityPageIDMap.erase("@" + sOldTableName);
+
+  pTable = GetTable("@" + sOldTableName);
+  if (pTable == nullptr) {
+    auto e = TableNotExistException("@" + sOldTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+  if (GetTable("@" + sNewTableName) != nullptr) {
+    auto e = TableExistException("@" + sNewTableName);
+    std::cout << e.what() << "\n";
+    throw e;
+  }
+
+  DeleteEntity("@" + sOldTableName, _iEntityPageSlotIDMap["@" + sOldTableName]);
+  InsertEntity("@" + sNewTableName);
+
+  _iEntityMap["@" + sNewTableName] = pTable;
+  _iEntityPageIDMap["@" + sNewTableName] = _iEntityPageIDMap["@" + sOldTableName];
+  _iEntityMap.erase("@" + sOldTableName);
+  _iEntityPageIDMap.erase("@" + sOldTableName);
 }
 
 std::vector<String> Database::GetTableNames() { return GetEntityNames(); }
@@ -322,7 +372,7 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
         const String& fColName = iPair.second;
         std::vector<PageSlotID> iDuplicated =
             _GetDuplicated(fTableName, fColName, iTrans[i].GetField());
-        if (iDuplicated.size() != 0) {
+        if (iDuplicated.size() == 0) {
           ForeignKeyException e("Update fail: Foreign key not in range");
           printf("%s\n", e.what());
           throw e;
@@ -472,12 +522,15 @@ PageSlotID Database::Insert(const String& sTableName,
       // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
       // fPair.second.data());
       for (auto& fPair : fPairVec) {
-        // printf("%s %s\n", fPair.first.data(), fPair.second.data());
-        if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
-          printf("key out of range:%s\n", pField->ToString().data());
+        // printf("%s %s\n", fPair.first.data(), fPair.first.data());
+        if (_GetDuplicated(fPair.first, fPair.second, pField).size() == 0) {
+          printf("key (%s, %s) out of range:%s\n",
+            fPair.first.data(),fPair.second.data(), pField->ToString().data());
           ForeignKeyException e("key out of range:" + pField->ToString());
           throw e;
         }
+        printf("key (%s, %s):%s good\n",
+          fPair.first.data(),fPair.second.data(), pField->ToString().data());
       }
     }
   }
@@ -534,6 +587,7 @@ PageSlotID Database::Insert(const String& sTableName,
   }
 
 #ifndef NO_INSERT_CHECK
+ 
   // check primary key
   std::vector<PageSlotID> duplicatedVec;
   for (int i = 0; i < iColNameVec.size(); i++) {
@@ -561,8 +615,8 @@ PageSlotID Database::Insert(const String& sTableName,
     // add exception here
     String str = "";
 #ifdef PRIMARY_KEY_DEBUG
-    for (auto& row : iValueVec) {
-      str += row->ToString() + " ";
+    for (auto& row : iRawVec) {
+      str += row + " ";
     }
 #endif
     auto e = Exception("Primary key existed" + str);
@@ -581,9 +635,10 @@ PageSlotID Database::Insert(const String& sTableName,
       // printf("FK of %s: %s %s\n", sColName.data(), fPair.first.data(),
       // fPair.second.data());
       for (auto& fPair : fPairVec) {
-        // printf("%s %s\n", fPair.first.data(), fPair.second.data());
-        if (!_CheckForeignKey(fPair.first, fPair.second, pField)) {
-          printf("key out of range:%s\n", pField->ToString().data());
+        // printf("%s %s\n", fPair.first.data(), fPair.first.data());
+        if (_GetDuplicated(fPair.first, fPair.second, pField).size() == 0) {
+          printf("key (%s, %s) out of range:%s\n",
+            fPair.first.data(),fPair.second.data(), pField->ToString().data());
           ForeignKeyException e("key out of range:" + pField->ToString());
           throw e;
         }
