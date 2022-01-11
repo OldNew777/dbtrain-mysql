@@ -776,8 +776,8 @@ antlrcpp::Any SystemVisitor::visitField_list(
       size = std::stoi(colDefVec[3]);
     }
     bool canBeNull = (colDefVec[2] == "1") ? true : false;
-    // bool isPrimary = (iPKSet.find(sColName) != iPKSet.end());
-    bool isPrimary = false;
+    bool isPrimary = (iPKSet.find(sColName) != iPKSet.end());
+    // bool isPrimary = false;
     bool isForeign = (iFKSet.find(sColName) != iFKSet.end());
     //process fk name
     if(iFKMap.find(sColName) == iFKMap.end()){

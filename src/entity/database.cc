@@ -49,7 +49,6 @@ void Database::CreateTable(const String& sTableName, const Schema& iSchema) {
     throw e;
   }
   // check foreign key
-  // insert foreign key
   for (int i = 0; i < iSchema.GetSize(); ++i) {
     const Column& column = iSchema.GetColumn(i);
     if (column.GetForeignKeyVec().size() != 0) {
@@ -347,6 +346,8 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
       // check whether primary key conflicts with other records
       std::vector<PageSlotID> iDuplicated =
           _GetDuplicated(sTableName, sColName, iTrans[i].GetField());
+      // printf("%s %s %s\n", sTableName.data(), sColName.data(),
+      //       iTrans[i].GetField()->ToString().data());
 #ifdef PRIMARY_KEY_DEBUG
       printf("iResVec.size() = %d\n", iResVec.size());
       printf("iDuplicated.size() = %d\n", iDuplicated.size());
@@ -358,6 +359,8 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
         std::cout << e.what() << "\n";
         throw e;
       }
+      // printf("%d %d %d\n", iResVec.size(), iDuplicated.size(), 
+      //   Intersection(iResVec, iDuplicated).size());
       if (iResVec.size() + iDuplicated.size() -
               Intersection(iResVec, iDuplicated).size() <= 1) {
         primaryKeyConflict = false;
@@ -394,14 +397,20 @@ uint32_t Database::Update(const String& sTableName, Condition* pCond,
     }
     if (pTable->GetIsRefered(sColName)) {
       // check refered key 需要确保改变的那个键的没有对应的依赖值
+      printf("into check ref\n");
       std::vector<std::pair<String, String>> rPairVec =
-          GetForeignKey(sTableName, sColName);
+          GetReferedKey(sTableName, sColName);
       for (auto& iPair : rPairVec) {
         const String& rTableName = iPair.first;
         const String& rColName = iPair.second;
-        auto iPageSlotVec = Search(rTableName, nullptr, {});
-        MemResult* rMemRes = new MemResult(pTable->GetColumnNames());
+        // printf("%s %s %s\n", rTableName.data(), rColName.data(),
+        //     iTrans[i].GetField()->ToString().data());
         Table* rTable = GetTable(rTableName);
+        auto iPageSlotVec = Search(rTableName, nullptr, {});
+        MemResult* rMemRes = new MemResult(rTable->GetColumnNames());
+        for(auto& psid: iPageSlotVec)
+          rMemRes->PushBack(rTable->GetRecord(psid.first, psid.second));
+        
         for (int j = 0; j < rMemRes->GetDataSize(); j++) {
           std::vector<PageSlotID> iDuplicated = _GetDuplicated(
               sTableName, sColName, rMemRes->GetField(j, rTable->GetColPos(rColName)));
