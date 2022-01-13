@@ -27,6 +27,6 @@ make -j `nproc`
 ```bash
 sh run.sh
 或
-sh console
+sh console.sh
 ```
 
